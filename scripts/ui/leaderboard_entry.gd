@@ -10,9 +10,11 @@ signal screenshot_clicked(url: String)
 
 # Static screenshot cache shared across all entries
 static var _screenshot_cache: Dictionary = {}
+# Static flag cache shared across all entries
+static var _flag_cache: Dictionary = {}
 
 @onready var rank_label: Label = $RankLabel
-@onready var flag_label: Label = $FlagLabel
+@onready var flag_texture: TextureRect = $FlagTexture
 @onready var location_label: Label = $LocationLabel
 @onready var name_label: Label = $NameLabel
 @onready var name_edit: LineEdit = $NameEdit
@@ -51,11 +53,13 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	var rank: int = data.get("rank", 0)
 	rank_label.text = "#%d" % rank if rank > 0 else "—"
 
-	# Country flag emoji
+	# Country flag image
 	var country_val = data.get("country")
 	var country: String = country_val if country_val != null else ""
-	flag_label.text = _country_to_flag(country)
-	flag_label.visible = not country.is_empty()
+	if not country.is_empty():
+		_load_flag(country.to_lower())
+	else:
+		flag_texture.visible = false
 
 	# City/location display
 	var city_val = data.get("city")
@@ -204,19 +208,47 @@ func _format_score(score: int) -> String:
 	return result
 
 
-func _country_to_flag(country_code: String) -> String:
+var _flag_http_request: HTTPRequest = null
+
+func _load_flag(country_code: String):
 	if country_code.length() != 2:
-		return ""
+		flag_texture.visible = false
+		return
 
-	# Regional indicator symbols start at U+1F1E6 for 'A'
-	var base := 0x1F1E6
-	var c1 := country_code.to_upper()[0].unicode_at(0) - "A".unicode_at(0)
-	var c2 := country_code.to_upper()[1].unicode_at(0) - "A".unicode_at(0)
+	# Check cache first
+	if _flag_cache.has(country_code):
+		flag_texture.texture = _flag_cache[country_code]
+		flag_texture.visible = true
+		return
 
-	if c1 < 0 or c1 > 25 or c2 < 0 or c2 > 25:
-		return ""
+	# Load from CDN
+	var url := "https://flagcdn.com/w40/%s.png" % country_code
+	if _flag_http_request == null:
+		_flag_http_request = HTTPRequest.new()
+		add_child(_flag_http_request)
+		_flag_http_request.request_completed.connect(_on_flag_loaded.bind(country_code))
 
-	return char(base + c1) + char(base + c2)
+	_flag_http_request.request(url)
+
+
+func _on_flag_loaded(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, country_code: String):
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		flag_texture.visible = false
+		return
+
+	var image := Image.new()
+	var err := image.load_png_from_buffer(body)
+	if err != OK:
+		flag_texture.visible = false
+		return
+
+	var texture := ImageTexture.create_from_image(image)
+
+	# Cache the texture
+	_flag_cache[country_code] = texture
+
+	flag_texture.texture = texture
+	flag_texture.visible = true
 
 
 func _on_report_pressed():

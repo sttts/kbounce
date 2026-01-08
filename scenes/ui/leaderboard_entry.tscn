@@ -17,12 +17,11 @@ theme_override_font_sizes/font_size = 14
 text = "#1"
 horizontal_alignment = 2
 
-[node name="FlagLabel" type="Label" parent="."]
-custom_minimum_size = Vector2(24, 0)
+[node name="FlagTexture" type="TextureRect" parent="."]
+custom_minimum_size = Vector2(24, 16)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
-text = "🇩🇪"
-horizontal_alignment = 1
+expand_mode = 1
+stretch_mode = 5
 
 [node name="LocationLabel" type="Label" parent="."]
 custom_minimum_size = Vector2(100, 0)
