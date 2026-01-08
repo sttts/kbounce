@@ -505,14 +505,14 @@ func _on_nickname_update_timeout():
 			LeaderboardManager.update_nickname(nickname)
 
 
-func _on_screenshot_clicked(url: String):
+func _on_screenshot_clicked(url: String, score_id: String):
 	if _screenshot_popup == null:
 		_screenshot_popup = _screenshot_popup_scene.instantiate()
 		add_child(_screenshot_popup)
 	if url == "local:" and _current_screenshot != null:
 		_screenshot_popup.show_texture(_current_screenshot)
 	else:
-		_screenshot_popup.show_screenshot(url)
+		_screenshot_popup.show_screenshot(url, score_id)
 
 
 func _update_game_over_button_state():

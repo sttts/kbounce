@@ -6,7 +6,7 @@
 extends HBoxContainer
 
 signal name_changed(new_name: String)
-signal screenshot_clicked(url: String)
+signal screenshot_clicked(url: String, score_id: String)
 
 # Static screenshot cache shared across all entries
 static var _screenshot_cache: Dictionary = {}
@@ -21,19 +21,18 @@ static var _flag_cache: Dictionary = {}
 @onready var level_label: Label = $LevelLabel
 @onready var score_label: Label = $ScoreLabel
 @onready var screenshot_button: TextureButton = $ScreenshotButton
-@onready var report_button: Button = $ReportButton
 
 var _score_id: String = ""
 var _screenshot_url: String = ""
 var _screenshot_thumbnail_url: String = ""
 var _local_screenshot: Texture2D = null
 var _is_editable: bool = false
+var _is_reportable: bool = false
 var _http_request: HTTPRequest = null
 var _pulse_tween: Tween = null
 
 
 func _ready():
-	report_button.pressed.connect(_on_report_pressed)
 	screenshot_button.pressed.connect(_on_screenshot_pressed)
 	name_edit.text_changed.connect(_on_name_text_changed)
 
@@ -107,8 +106,8 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	else:
 		screenshot_button.visible = false
 
-	# Hide report button for own entries or editable entries
-	report_button.visible = not is_current_user and not editable and not _score_id.is_empty()
+	# Only allow reporting other users' entries
+	_is_reportable = not is_current_user and not editable and not _score_id.is_empty()
 
 
 func get_nickname() -> String:
@@ -189,10 +188,11 @@ func _on_screenshot_loaded(result: int, response_code: int, _headers: PackedStri
 
 
 func _on_screenshot_pressed():
+	var reportable_id := _score_id if _is_reportable else ""
 	if _local_screenshot != null:
-		screenshot_clicked.emit("local:")
+		screenshot_clicked.emit("local:", reportable_id)
 	elif not _screenshot_url.is_empty():
-		screenshot_clicked.emit(_screenshot_url)
+		screenshot_clicked.emit(_screenshot_url, reportable_id)
 
 
 func _format_score(score: int) -> String:
@@ -249,10 +249,3 @@ func _on_flag_loaded(result: int, response_code: int, _headers: PackedStringArra
 
 	flag_texture.texture = texture
 	flag_texture.visible = true
-
-
-func _on_report_pressed():
-	if not _score_id.is_empty():
-		LeaderboardManager.report_score(_score_id)
-		report_button.disabled = true
-		report_button.text = "✓"
