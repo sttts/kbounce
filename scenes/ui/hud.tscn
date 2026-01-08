@@ -1,0 +1,624 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
+[ext_resource type="Texture2D" path="res://assets/icons/stop.svg" id="icon_stop"]
+[ext_resource type="Texture2D" path="res://assets/icons/pause.svg" id="icon_pause"]
+[ext_resource type="Texture2D" path="res://assets/icons/play.svg" id="icon_play"]
+[ext_resource type="Texture2D" path="res://assets/icons/arrow_vertical.svg" id="icon_arrow_v"]
+[ext_resource type="Texture2D" path="res://assets/icons/arrow_horizontal.svg" id="icon_arrow_h"]
+[ext_resource type="Texture2D" path="res://assets/icons/trophy.png" id="icon_trophy"]
+[ext_resource type="Texture2D" path="res://assets/icons/score.svg" id="icon_score"]
+[ext_resource type="Texture2D" path="res://assets/icons/ball.png" id="icon_ball"]
+[ext_resource type="Texture2D" path="res://assets/icons/lives.svg" id="icon_lives"]
+[ext_resource type="Texture2D" path="res://assets/icons/time.svg" id="icon_time"]
+[ext_resource type="Texture2D" path="res://assets/icons/filled.svg" id="icon_filled"]
+[ext_resource type="Texture2D" path="res://assets/icons/play_green.svg" id="icon_play_green"]
+[ext_resource type="Texture2D" path="res://assets/icons/gameover.png" id="icon_gameover"]
+[ext_resource type="Texture2D" path="res://assets/icons/leaderboard.svg" id="icon_leaderboard"]
+[ext_resource type="Texture2D" path="res://assets/icons/help.svg" id="icon_help"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 40.0
+content_margin_top = 30.0
+content_margin_right = 40.0
+content_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_impressum"]
+bg_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 40.0
+content_margin_top = 30.0
+content_margin_right = 40.0
+content_margin_bottom = 30.0
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_hud")
+
+[node name="TopBarBg" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 24.0
+grow_horizontal = 2
+color = Color(1, 1, 1, 0.9)
+
+[node name="TopBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_left = 11.0
+offset_right = -36.0
+offset_bottom = 24.0
+grow_horizontal = 2
+
+[node name="ScoreBox" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="Icon" type="TextureRect" parent="TopBar/ScoreBox"]
+custom_minimum_size = Vector2(16, 16)
+custom_maximum_size = Vector2(16, 16)
+layout_mode = 2
+texture = ExtResource("icon_score")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ScoreLabel" type="Label" parent="TopBar/ScoreBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "0"
+
+[node name="LevelBox" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="Icon" type="TextureRect" parent="TopBar/LevelBox"]
+custom_minimum_size = Vector2(16, 16)
+custom_maximum_size = Vector2(16, 16)
+layout_mode = 2
+texture = ExtResource("icon_ball")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelLabel" type="Label" parent="TopBar/LevelBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "1"
+
+[node name="LivesBox" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 4
+
+[node name="Icon" type="TextureRect" parent="TopBar/LivesBox"]
+custom_minimum_size = Vector2(16, 16)
+custom_maximum_size = Vector2(16, 16)
+layout_mode = 2
+texture = ExtResource("icon_lives")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LivesLabel" type="Label" parent="TopBar/LivesBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "3"
+
+[node name="TimeBox" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="TextureRect" parent="TopBar/TimeBox"]
+custom_minimum_size = Vector2(16, 16)
+custom_maximum_size = Vector2(16, 16)
+layout_mode = 2
+texture = ExtResource("icon_time")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TimeLabel" type="Label" parent="TopBar/TimeBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "90"
+
+[node name="FillBox" type="HBoxContainer" parent="TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+theme_override_constants/separation = 4
+
+[node name="Icon" type="TextureRect" parent="TopBar/FillBox"]
+custom_minimum_size = Vector2(16, 16)
+custom_maximum_size = Vector2(16, 16)
+layout_mode = 2
+texture = ExtResource("icon_filled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FillLabel" type="Label" parent="TopBar/FillBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "0%"
+
+[node name="RightSpacer" type="Control" parent="TopBar"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="TopRightButtons" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -42.0
+offset_right = -6.0
+offset_top = 32.0
+offset_bottom = 100.0
+grow_horizontal = 0
+theme_override_constants/separation = 4
+
+[node name="StopButton" type="Button" parent="TopRightButtons"]
+custom_minimum_size = Vector2(42, 38)
+layout_mode = 2
+icon = ExtResource("icon_stop")
+icon_alignment = 1
+
+[node name="PauseButton" type="Button" parent="TopRightButtons"]
+custom_minimum_size = Vector2(42, 38)
+layout_mode = 2
+icon = ExtResource("icon_pause")
+icon_alignment = 1
+
+[node name="HelpButton" type="Button" parent="TopRightButtons"]
+custom_minimum_size = Vector2(42, 38)
+layout_mode = 2
+icon = ExtResource("icon_help")
+icon_alignment = 1
+
+[node name="ImpressumButton" type="LinkButton" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_right = 1.0
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 44.0
+offset_top = -170.0
+offset_right = 56.0
+offset_bottom = -104.0
+grow_horizontal = 0
+grow_vertical = 0
+rotation = -1.5708
+pivot_offset = Vector2(6, 33)
+theme_override_colors/font_color = Color(0.3, 0.18, 0.05, 1)
+theme_override_font_sizes/font_size = 9
+text = "Impressum"
+underline = 2
+alignment = 2
+
+[node name="DirectionButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -48.0
+offset_top = -46.0
+offset_right = -6.0
+offset_bottom = -8.0
+grow_horizontal = 0
+grow_vertical = 0
+custom_minimum_size = Vector2(42, 38)
+icon = ExtResource("icon_arrow_v")
+icon_alignment = 1
+
+[node name="PauseOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="PauseOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="PauseOverlay/CenterContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="Label" type="Label" parent="PauseOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="GameOverSplash" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="GameOverSplash"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="GameOverSplash/CenterContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="VBox" type="VBoxContainer" parent="GameOverSplash/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="GameOverIcon" type="TextureRect" parent="GameOverSplash/CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(200, 200)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("icon_gameover")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GameOverLabel" type="Label" parent="GameOverSplash/CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 32
+text = "Game Over"
+horizontal_alignment = 1
+
+[node name="GameOverOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="GameOverOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="GameOverOverlay/CenterContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="HBox" type="HBoxContainer" parent="GameOverOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="TrophyIcon" type="TextureRect" parent="GameOverOverlay/CenterContainer/Panel/HBox"]
+custom_minimum_size = Vector2(120, 160)
+layout_mode = 2
+size_flags_vertical = 4
+texture = ExtResource("icon_trophy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBox" type="VBoxContainer" parent="GameOverOverlay/CenterContainer/Panel/HBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ScrollContainer" type="ScrollContainer" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
+custom_minimum_size = Vector2(500, 400)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="EntriesContainer" type="VBoxContainer" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="LoadingLabel" type="Label" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+text = "Loading..."
+horizontal_alignment = 1
+
+[node name="NewGameButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+text = ""
+icon = ExtResource("icon_play_green")
+icon_alignment = 1
+expand_icon = true
+
+[node name="LevelCompleteOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="LevelCompleteOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Panel" type="PanelContainer" parent="LevelCompleteOverlay/CenterContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_overlay")
+
+[node name="VBox" type="VBoxContainer" parent="LevelCompleteOverlay/CenterContainer/Panel"]
+custom_minimum_size = Vector2(300, 180)
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Trophy" type="TextureRect" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(120, 160)
+layout_mode = 2
+size_flags_horizontal = 4
+texture = ExtResource("icon_trophy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LevelLabel" type="Label" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 36
+text = "Level 1 Complete!"
+horizontal_alignment = 1
+
+[node name="Spacer1" type="Control" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+
+[node name="ScoreBox" type="HBoxContainer" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox/ScoreBox"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("icon_score")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ScoreLabel" type="Label" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox/ScoreBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "0"
+
+[node name="FillBonusBox" type="HBoxContainer" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox/FillBonusBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("icon_filled")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="FillBonusLabel" type="Label" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox/FillBonusBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "+0"
+
+[node name="LivesBonusBox" type="HBoxContainer" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 8
+
+[node name="Icon" type="TextureRect" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox/LivesBonusBox"]
+custom_minimum_size = Vector2(20, 20)
+layout_mode = 2
+texture = ExtResource("icon_lives")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LivesBonusLabel" type="Label" parent="LevelCompleteOverlay/CenterContainer/Panel/VBox/LivesBonusBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "+0"
+
+[node name="ImpressumOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="ImpressumOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.5)
+
+[node name="CenterContainer" type="CenterContainer" parent="ImpressumOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ImpressumOverlay/CenterContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_impressum")
+
+[node name="VBox" type="VBoxContainer" parent="ImpressumOverlay/CenterContainer/Panel"]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="ImpressumOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "Impressum"
+horizontal_alignment = 1
+
+[node name="Content" type="Label" parent="ImpressumOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 14
+text = "Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+
+E-Mail: kbounce@1stein.org
+
+Recreation of the KDE KBounce
+using Godot 4.5."
+horizontal_alignment = 1
+
+[node name="GithubLink" type="LinkButton" parent="ImpressumOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(0.2, 0.4, 0.8, 1)
+theme_override_colors/font_hover_color = Color(1.0, 0.5, 0.0, 1)
+theme_override_font_sizes/font_size = 14
+text = "github.com/sttts/kbounce"
+uri = "https://github.com/sttts/kbounce"
+
+[node name="CloseButton" type="Button" parent="ImpressumOverlay/CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close"
+
+[node name="HelpOverlay" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Background" type="ColorRect" parent="HelpOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.5)
+
+[node name="CenterContainer" type="CenterContainer" parent="HelpOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="HelpOverlay/CenterContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_impressum")
+
+[node name="VBox" type="VBoxContainer" parent="HelpOverlay/CenterContainer/Panel"]
+custom_minimum_size = Vector2(500, 0)
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="HelpOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 24
+text = "Rules"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="HelpOverlay/CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(0, 300)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Content" type="Label" parent="HelpOverlay/CenterContainer/Panel/VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+text = "Game
+1. Fill 75% of the field to advance.
+2. Game over when lives reach zero or time runs out.
+
+Lives
+3. Start with one life per ball.
+4. Lose a life if a ball hits the inner part of a building wall.
+
+Walls
+5. Tap/click to build a wall. Swipe to change direction.
+6. Two wall halves can build at once.
+7. A wall half finishes when its tip reaches a border or filled wall.
+8. Ball hitting the tip does nothing (tip is protected).
+9. A wall half is removed if:
+   - a ball hits the inner part (non-tip), or
+   - two wall halves hit each other with their tips."
+autowrap_mode = 3
+
+[node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Close"

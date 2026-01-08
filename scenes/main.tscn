@@ -1,0 +1,135 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_main"]
+[ext_resource type="PackedScene" path="res://scenes/game/game.tscn" id="2_game"]
+[ext_resource type="Texture2D" path="res://assets/icons/play_green.svg" id="icon_play_green"]
+[ext_resource type="Texture2D" path="res://assets/icons/trophy.png" id="icon_trophy"]
+[ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_entry.tscn" id="scene_entry"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu"]
+bg_color = Color(1, 1, 1, 0.75)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+content_margin_left = 40.0
+content_margin_top = 30.0
+content_margin_right = 40.0
+content_margin_bottom = 30.0
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_main")
+
+[node name="GameContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Game" parent="GameContainer" instance=ExtResource("2_game")]
+
+[node name="MainMenu" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="MainMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="MenuPanel" type="PanelContainer" parent="MainMenu/CenterContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainMenu/CenterContainer/MenuPanel"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="Title" type="Label" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 48
+text = "KBounce"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Fill 75% of the board without getting hit!"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LeaderboardSection" type="VBoxContainer" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="LeaderboardHeader" type="HBoxContainer" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection"]
+layout_mode = 2
+alignment = 1
+
+[node name="TrophyIcon" type="TextureRect" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/LeaderboardHeader"]
+custom_minimum_size = Vector2(24, 24)
+layout_mode = 2
+texture = ExtResource("icon_trophy")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LeaderboardTitle" type="Label" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/LeaderboardHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
+text = " Leaderboard"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection"]
+custom_minimum_size = Vector2(580, 200)
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="EntriesContainer" type="VBoxContainer" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/ScrollContainer"]
+custom_minimum_size = Vector2(580, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Spacer2" type="Control" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ButtonsBox" type="HBoxContainer" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+alignment = 1
+theme_override_constants/separation = 16
+
+[node name="NewGameButton" type="Button" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox"]
+custom_minimum_size = Vector2(168, 60)
+layout_mode = 2
+mouse_filter = 0
+text = ""
+icon = ExtResource("icon_play_green")
+icon_alignment = 1
+expand_icon = true
+

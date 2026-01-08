@@ -1,0 +1,470 @@
+# leaderboard_manager.gd - Online leaderboard manager (Autoload)
+#
+# SPDX-FileCopyrightText: 2025 Stefan Schimanski <1Stein@gmx.de>
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
+extends Node
+
+## Emitted when user identity is ready
+signal identity_ready(user_id: String, nickname: String)
+## Emitted when game token is received
+signal token_received(token: String)
+## Emitted when token request fails
+signal token_failed(error: String)
+## Emitted when score is submitted (returns score_id and update_token for nickname updates)
+signal score_submitted(score_id: String, update_token: String, rank: int, stored: bool)
+## Emitted when score submission fails
+signal score_failed(error: String)
+## Emitted when nickname is updated
+signal nickname_updated(success: bool)
+## Emitted when leaderboard is loaded (entries around user, user_entries are all user's scores)
+signal leaderboard_loaded(entries: Array, user_rank: int, user_entries: Array)
+## Emitted when leaderboard load fails
+signal leaderboard_failed(error: String)
+## Emitted when report is submitted
+signal report_submitted()
+## Emitted when report fails
+signal report_failed(error: String)
+## Emitted when rate limited (retry_after in seconds)
+signal rate_limited(retry_after: int)
+
+## API base URL
+const API_URL := "https://api.kbounce.workers.dev"
+
+## Config file path for user identity
+const CONFIG_PATH := "user://leaderboard.cfg"
+
+## User's unique ID (UUID v4)
+var user_id: String = ""
+## User's display nickname
+var nickname: String = ""
+## User's country (from last score submission)
+var country: String = ""
+## User's city (from last score submission)
+var city: String = ""
+
+## Current game token (single-use, expires after 30 min)
+var _game_token: String = ""
+## Token expiry timestamp
+var _token_expires_at: int = 0
+## Refresh token 5 minutes before expiry
+const TOKEN_REFRESH_BUFFER := 300
+
+## Current score's update token (for nickname updates)
+var _current_score_id: String = ""
+var _current_update_token: String = ""
+
+## Pending screenshot for submission (50% size)
+var pending_screenshot: Image = null
+## Pending thumbnail for submission (small for leaderboard display)
+var pending_thumbnail: Image = null
+## Thumbnail width (leaderboard button is 48x32, we generate slightly larger for quality)
+const THUMBNAIL_WIDTH := 96
+
+## HTTP request nodes (created on demand)
+var _http_token: HTTPRequest = null
+var _http_score: HTTPRequest = null
+var _http_nickname: HTTPRequest = null
+var _http_leaderboard: HTTPRequest = null
+var _http_report: HTTPRequest = null
+
+
+func _ready():
+	_load_identity()
+
+
+## Load user identity from config file, or create new one
+func _load_identity():
+	var config := ConfigFile.new()
+	var err := config.load(CONFIG_PATH)
+
+	if err == OK:
+		user_id = config.get_value("identity", "user_id", "")
+		nickname = config.get_value("identity", "nickname", "")
+		country = config.get_value("identity", "country", "")
+		city = config.get_value("identity", "city", "")
+
+	# Generate new UUID if none exists
+	if user_id.is_empty():
+		user_id = _generate_uuid_v4()
+		_save_identity()
+
+	if not user_id.is_empty():
+		identity_ready.emit(user_id, nickname)
+
+
+## Save user identity to config file
+func _save_identity():
+	var config := ConfigFile.new()
+	config.set_value("identity", "user_id", user_id)
+	config.set_value("identity", "nickname", nickname)
+	config.set_value("identity", "country", country)
+	config.set_value("identity", "city", city)
+	config.save(CONFIG_PATH)
+
+
+## Set the user's nickname locally (call update_nickname to sync to server)
+func set_nickname(new_nickname: String):
+	nickname = new_nickname.strip_edges()
+	_save_identity()
+	identity_ready.emit(user_id, nickname)
+
+
+## Update nickname on server for current score
+func update_nickname(new_nickname: String):
+	if _current_score_id.is_empty() or _current_update_token.is_empty():
+		nickname_updated.emit(false)
+		return
+
+	nickname = new_nickname.strip_edges()
+	_save_identity()
+
+	if _http_nickname == null:
+		_http_nickname = HTTPRequest.new()
+		add_child(_http_nickname)
+		_http_nickname.request_completed.connect(_on_nickname_update_completed)
+
+	var data := {
+		"update_token": _current_update_token,
+		"nickname": nickname
+	}
+
+	var body := JSON.stringify(data)
+	var headers := ["Content-Type: application/json"]
+	var url := API_URL + "/score/" + _current_score_id
+	var err := _http_nickname.request(url, headers, HTTPClient.METHOD_PATCH, body)
+
+	if err != OK:
+		nickname_updated.emit(false)
+
+
+func _on_nickname_update_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	if result != HTTPRequest.RESULT_SUCCESS:
+		nickname_updated.emit(false)
+		return
+
+	if response_code == 429:
+		var retry_after := _parse_retry_after(headers)
+		rate_limited.emit(retry_after)
+		nickname_updated.emit(false)
+		return
+
+	if response_code != 200:
+		nickname_updated.emit(false)
+		return
+
+	# Update local country/city from response
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json != null:
+		if json.has("country"):
+			country = json["country"]
+		if json.has("city"):
+			city = json["city"]
+		_save_identity()
+
+	nickname_updated.emit(true)
+
+
+## Check if user has set a nickname
+func has_nickname() -> bool:
+	return not nickname.is_empty() and nickname.length() >= 3
+
+
+## Generate a crypto-secure UUID v4
+func _generate_uuid_v4() -> String:
+	var crypto := Crypto.new()
+	var bytes := crypto.generate_random_bytes(16)
+
+	# Set version (4) and variant (RFC 4122)
+	bytes[6] = (bytes[6] & 0x0f) | 0x40  # Version 4
+	bytes[8] = (bytes[8] & 0x3f) | 0x80  # Variant RFC 4122
+
+	# Format as UUID string
+	var hex := bytes.hex_encode()
+	return "%s-%s-%s-%s-%s" % [
+		hex.substr(0, 8),
+		hex.substr(8, 4),
+		hex.substr(12, 4),
+		hex.substr(16, 4),
+		hex.substr(20, 12)
+	]
+
+
+## Request a game token before starting a game
+func request_game_token():
+	if user_id.is_empty():
+		token_failed.emit("No user identity")
+		return
+
+	if _http_token == null:
+		_http_token = HTTPRequest.new()
+		add_child(_http_token)
+		_http_token.request_completed.connect(_on_token_request_completed)
+
+	var body := JSON.stringify({"user_id": user_id})
+	var headers := ["Content-Type: application/json"]
+	var err := _http_token.request(API_URL + "/token", headers, HTTPClient.METHOD_POST, body)
+
+	if err != OK:
+		token_failed.emit("HTTP request failed: %d" % err)
+
+
+func _on_token_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	if result != HTTPRequest.RESULT_SUCCESS:
+		token_failed.emit("Request failed: %d" % result)
+		return
+
+	if response_code == 429:
+		var retry_after := _parse_retry_after(headers)
+		rate_limited.emit(retry_after)
+		token_failed.emit("Rate limited")
+		return
+
+	if response_code != 200:
+		token_failed.emit("Server error: %d" % response_code)
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json == null or not json.has("token"):
+		token_failed.emit("Invalid response")
+		return
+
+	_game_token = json["token"]
+	var expires_in: int = json.get("expires_in", 1800)
+	_token_expires_at = int(Time.get_unix_time_from_system()) + expires_in
+
+	token_received.emit(_game_token)
+
+
+## Check if we have a valid (unused, not expired) game token
+func is_token_valid() -> bool:
+	if _game_token.is_empty():
+		return false
+	if int(Time.get_unix_time_from_system()) >= _token_expires_at:
+		_game_token = ""
+		return false
+	return true
+
+
+## Check if token needs refreshing (within buffer time of expiry)
+func should_refresh_token() -> bool:
+	if _game_token.is_empty():
+		return false
+	var time_remaining := _token_expires_at - int(Time.get_unix_time_from_system())
+	return time_remaining > 0 and time_remaining < TOKEN_REFRESH_BUFFER
+
+
+## Capture screenshot from viewport for later submission
+## Crop margin to exclude UI buttons on the right (in logical pixels)
+const SCREENSHOT_RIGHT_CROP_LOGICAL := 48
+
+func capture_screenshot(viewport: Viewport):
+	# Capture immediately (synchronous) to avoid overlays appearing
+	var image := viewport.get_texture().get_image()
+
+	# Calculate scale factor between logical and actual pixels
+	var logical_size := viewport.get_visible_rect().size
+	var actual_size := Vector2(image.get_width(), image.get_height())
+	var scale := actual_size.x / logical_size.x
+
+	# Crop right side to exclude UI buttons (convert logical to actual pixels)
+	var crop_pixels := int(SCREENSHOT_RIGHT_CROP_LOGICAL * scale)
+	var crop_width := image.get_width() - crop_pixels
+	image = image.get_region(Rect2i(0, 0, crop_width, image.get_height()))
+
+	# Create thumbnail first (before resizing the main image)
+	# Keep original aspect ratio, scale to THUMBNAIL_WIDTH
+	var thumb := image.duplicate()
+	var aspect := float(thumb.get_height()) / float(thumb.get_width())
+	var thumb_height := int(THUMBNAIL_WIDTH * aspect)
+	thumb.resize(THUMBNAIL_WIDTH, thumb_height, Image.INTERPOLATE_LANCZOS)
+	pending_thumbnail = thumb
+
+	# Resize to 50% for smaller upload size
+	var target_width := image.get_width() / 2
+	var target_height := image.get_height() / 2
+	image.resize(target_width, target_height, Image.INTERPOLATE_LANCZOS)
+	pending_screenshot = image
+
+
+## Submit score to leaderboard (can be called without nickname - update later via PATCH)
+func submit_score(score: int, level: int):
+	if not is_token_valid():
+		score_failed.emit("No valid game token")
+		return
+
+	if _http_score == null:
+		_http_score = HTTPRequest.new()
+		add_child(_http_score)
+		_http_score.request_completed.connect(_on_score_request_completed)
+
+	# Prepare request body
+	var data := {
+		"token": _game_token,
+		"user_id": user_id,
+		"nickname": nickname,  # May be empty on first submission
+		"score": score,
+		"level": level
+	}
+
+	# Add screenshot if available (already resized to 50%)
+	if pending_screenshot != null:
+		var png_data := pending_screenshot.save_png_to_buffer()
+		data["screenshot"] = Marshalls.raw_to_base64(png_data)
+		pending_screenshot = null
+
+	# Add thumbnail if available (small square for leaderboard)
+	if pending_thumbnail != null:
+		var thumb_data := pending_thumbnail.save_png_to_buffer()
+		data["screenshot_thumbnail"] = Marshalls.raw_to_base64(thumb_data)
+		pending_thumbnail = null
+
+	# Clear token (single-use)
+	_game_token = ""
+
+	var body := JSON.stringify(data)
+	var headers := ["Content-Type: application/json"]
+	var err := _http_score.request(API_URL + "/score", headers, HTTPClient.METHOD_POST, body)
+
+	if err != OK:
+		score_failed.emit("HTTP request failed: %d" % err)
+
+
+func _on_score_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	if result != HTTPRequest.RESULT_SUCCESS:
+		score_failed.emit("Request failed: %d" % result)
+		return
+
+	if response_code == 429:
+		var retry_after := _parse_retry_after(headers)
+		rate_limited.emit(retry_after)
+		score_failed.emit("Rate limited")
+		return
+
+	if response_code != 200:
+		score_failed.emit("Server error: %d" % response_code)
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json == null:
+		score_failed.emit("Invalid response")
+		return
+
+	var score_id: String = json.get("score_id", "")
+	var update_token: String = json.get("update_token", "")
+	var rank: int = json.get("rank", 0)
+	var stored: bool = json.get("stored", false)
+	var entries: Array = json.get("entries", [])
+
+	# Store for later nickname updates
+	_current_score_id = score_id
+	_current_update_token = update_token
+
+	# Update local country/city from response
+	if json.has("country"):
+		country = json["country"]
+	if json.has("city"):
+		city = json["city"]
+	_save_identity()
+
+	score_submitted.emit(score_id, update_token, rank, stored)
+
+	# Emit leaderboard entries (always emit, even if empty, so UI can update)
+	var user_entries: Array = json.get("user_entries", [])
+	leaderboard_loaded.emit(entries, rank, user_entries)
+
+
+## Load leaderboard entries
+## mode: "top" for top 10 global, "around_user" for entries around user's position
+func load_leaderboard(mode: String = "around_user"):
+	if user_id.is_empty():
+		leaderboard_failed.emit("No user identity")
+		return
+
+	if _http_leaderboard == null:
+		_http_leaderboard = HTTPRequest.new()
+		add_child(_http_leaderboard)
+		_http_leaderboard.request_completed.connect(_on_leaderboard_request_completed)
+
+	var url := API_URL + "/leaderboard?user_id=" + user_id.uri_encode() + "&mode=" + mode
+	var err := _http_leaderboard.request(url)
+
+	if err != OK:
+		leaderboard_failed.emit("HTTP request failed: %d" % err)
+
+
+func _on_leaderboard_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	if result != HTTPRequest.RESULT_SUCCESS:
+		leaderboard_failed.emit("Request failed: %d" % result)
+		return
+
+	if response_code == 429:
+		var retry_after := _parse_retry_after(headers)
+		rate_limited.emit(retry_after)
+		leaderboard_failed.emit("Rate limited")
+		return
+
+	if response_code != 200:
+		leaderboard_failed.emit("Server error: %d" % response_code)
+		return
+
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json == null or not json.has("entries"):
+		leaderboard_failed.emit("Invalid response")
+		return
+
+	var entries: Array = json["entries"]
+	var user_rank: int = json.get("user_rank", 0)
+	var user_entries: Array = json.get("user_entries", [])
+
+	leaderboard_loaded.emit(entries, user_rank, user_entries)
+
+
+## Report a score entry for inappropriate content
+func report_score(score_id: String):
+	if user_id.is_empty():
+		report_failed.emit("No user identity")
+		return
+
+	if _http_report == null:
+		_http_report = HTTPRequest.new()
+		add_child(_http_report)
+		_http_report.request_completed.connect(_on_report_request_completed)
+
+	var body := JSON.stringify({
+		"score_id": score_id,
+		"user_id": user_id
+	})
+	var headers := ["Content-Type: application/json"]
+	var err := _http_report.request(API_URL + "/report", headers, HTTPClient.METHOD_POST, body)
+
+	if err != OK:
+		report_failed.emit("HTTP request failed: %d" % err)
+
+
+func _on_report_request_completed(result: int, response_code: int, headers: PackedStringArray, _body: PackedByteArray):
+	if result != HTTPRequest.RESULT_SUCCESS:
+		report_failed.emit("Request failed: %d" % result)
+		return
+
+	if response_code == 429:
+		var retry_after := _parse_retry_after(headers)
+		rate_limited.emit(retry_after)
+		report_failed.emit("Rate limited")
+		return
+
+	if response_code != 200:
+		report_failed.emit("Server error: %d" % response_code)
+		return
+
+	report_submitted.emit()
+
+
+## Parse Retry-After header value
+func _parse_retry_after(headers: PackedStringArray) -> int:
+	for header in headers:
+		if header.to_lower().begins_with("retry-after:"):
+			var value := header.substr(12).strip_edges()
+			if value.is_valid_int():
+				return value.to_int()
+	return 60  # Default to 60 seconds

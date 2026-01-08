@@ -1,0 +1,176 @@
+# ball.gd - Ball entity with physics and collision
+#
+# SPDX-FileCopyrightText: 2000-2026 Stefan Schimanski <1Stein@gmx.de>
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
+class_name Ball
+extends Sprite2D
+
+## Animation delay in ticks
+const BALL_ANIM_DELAY := 4
+
+## Ball size relative to tile (0.8 = 80% of tile size)
+const BALL_RELATIVE_SIZE := 0.8
+
+## Sound delay to prevent spam (in ticks)
+const SOUND_DELAY := 4
+
+## Reference to the game board
+var board: Board
+
+## Position in tile coordinates (not pixels)
+var relative_pos := Vector2.ZERO
+
+## Velocity in tiles per tick
+var velocity := Vector2.ZERO
+
+## Current tile size in pixels
+var _tile_size := Vector2i(32, 32)
+
+## Size in pixels
+var _size := Vector2i(26, 26)
+
+## Collision state
+var _reflect_x := false
+var _reflect_y := false
+
+## Predicted bounding rect for next frame
+var _next_bounding_rect := Rect2()
+
+## Sound cooldown counter
+var _sound_delay := 0
+
+## Animation frame counter
+var _anim_counter := 0
+
+## Number of animation frames
+var _frame_count := 1
+
+
+func _ready():
+	# Load ball texture from theme
+	texture = ThemeManager.get_texture("ball")
+
+	# Get frame count from sprite
+	if texture:
+		# Assuming horizontal sprite sheet
+		var frame_width := texture.get_height()  # Square frames
+		_frame_count = texture.get_width() / frame_width if frame_width > 0 else 1
+	else:
+		push_warning("Ball: No texture loaded from theme")
+
+	# Transparency is baked into the sprite now
+
+
+## Set ball position in tile coordinates
+func set_relative_pos(x: float, y: float):
+	relative_pos = Vector2(x, y)
+	_update_next_bounding_rect()
+
+
+## Get bounding rectangle in tile coordinates
+func ball_bounding_rect() -> Rect2:
+	return Rect2(relative_pos.x, relative_pos.y,
+				 BALL_RELATIVE_SIZE, BALL_RELATIVE_SIZE)
+
+
+## Get predicted bounding rectangle for next frame
+func next_bounding_rect() -> Rect2:
+	return _next_bounding_rect
+
+
+## Resize ball to match tile size
+func resize(tile_size: Vector2i):
+	_tile_size = tile_size
+	_size = Vector2i(int(tile_size.x * BALL_RELATIVE_SIZE),
+					 int(tile_size.y * BALL_RELATIVE_SIZE))
+
+	# Update sprite scale if needed
+	if texture:
+		var frame_size := texture.get_height()  # Assuming square frames
+		if frame_size > 0:
+			var scale_factor := float(_size.x) / float(frame_size)
+			scale = Vector2(scale_factor, scale_factor)
+
+
+## Set a random animation frame
+func set_random_frame():
+	if _frame_count > 1:
+		_anim_counter = randi() % (_frame_count * BALL_ANIM_DELAY)
+
+
+## Handle collision response
+func collide(collision: Array):
+	_reflect_x = false
+	_reflect_y = false
+
+	# Decrement sound delay
+	if _sound_delay > 0:
+		_sound_delay -= 1
+
+	for hit in collision:
+		var h := hit as Collision.Hit
+		if not h:
+			continue
+
+		# Determine reflection based on normal
+		if h.normal.x > 0:
+			_reflect_x = _reflect_x or velocity.x < 0
+		elif h.normal.x < 0:
+			_reflect_x = _reflect_x or velocity.x > 0
+
+		if h.normal.y > 0:
+			_reflect_y = _reflect_y or velocity.y < 0
+		elif h.normal.y < 0:
+			_reflect_y = _reflect_y or velocity.y > 0
+
+		# Play sound if not in cooldown
+		if _sound_delay <= 0:
+			if h.type == Collision.Type.WALL:
+				AudioManager.play("ball_bounce_wall")
+				_sound_delay = SOUND_DELAY
+			elif h.type == Collision.Type.TILE:
+				AudioManager.play("ball_bounce")
+				_sound_delay = SOUND_DELAY
+
+
+## Perform movement calculation
+func go_forward():
+	# Apply reflection
+	if _reflect_x:
+		velocity.x *= -1
+	if _reflect_y:
+		velocity.y *= -1
+
+	# Move
+	relative_pos += velocity
+
+	# Update next bounding rect for collision detection
+	_update_next_bounding_rect()
+
+
+## Update the predicted next bounding rect
+func _update_next_bounding_rect():
+	var next_pos := relative_pos + velocity
+	_next_bounding_rect = Rect2(next_pos.x, next_pos.y,
+								BALL_RELATIVE_SIZE, BALL_RELATIVE_SIZE)
+
+
+## Update visual representation
+func update_visuals():
+	# Update screen position (offset by half ball size since sprite is centered)
+	if board:
+		var top_left := board.map_position(relative_pos)
+		position = top_left + Vector2(_size) / 2.0
+
+	# Update animation frame
+	_anim_counter += 1
+	if _anim_counter >= _frame_count * BALL_ANIM_DELAY:
+		_anim_counter = 0
+
+	# Update sprite frame (for sprite sheet)
+	var current_frame := _anim_counter / BALL_ANIM_DELAY
+	if texture and _frame_count > 1:
+		var frame_width := texture.get_height()
+		region_enabled = true
+		region_rect = Rect2(current_frame * frame_width, 0, frame_width, frame_width)

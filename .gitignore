@@ -1,0 +1,44 @@
+# Godot 4+ specific ignores
+.godot/
+
+# Godot-specific ignores
+*.translation
+
+# Imported textures and samples
+.import/
+
+# Exported projects
+*.apk
+*.aab
+*.ipa
+*.zip
+*.pck
+*.exe
+*.dmg
+*.app/
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# Build artifacts
+build/
+export/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python (for tools/)
+__pycache__/
+*.pyc
+.env
+venv/
