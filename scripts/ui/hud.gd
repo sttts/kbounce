@@ -75,7 +75,8 @@ func _ready():
 	LeaderboardManager.leaderboard_failed.connect(_on_game_over_leaderboard_failed)
 	LeaderboardManager.rate_limited.connect(_on_rate_limited)
 
-	# Connect impressum buttons
+	# Connect impressum buttons (only visible on web)
+	impressum_button.visible = OS.has_feature("web")
 	impressum_button.pressed.connect(_on_impressum_button_pressed)
 	impressum_close_button.pressed.connect(_on_impressum_close_pressed)
 
