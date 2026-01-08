@@ -42,3 +42,8 @@ __pycache__/
 *.pyc
 .env
 venv/
+
+# Blender files (generated, require Blender to import)
+*.blend
+*.blend1
+*.blend.import
