@@ -376,16 +376,17 @@ layout_mode = 2
 theme_override_constants/separation = 8
 
 [node name="ShareButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 icon = ExtResource("icon_share")
-icon_alignment = 1
+text = "Share
+my score"
 
 [node name="NewGameButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 size_flags_horizontal = 3
-text = ""
 icon = ExtResource("icon_play_green")
 icon_alignment = 1
 expand_icon = true
