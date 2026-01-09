@@ -35,6 +35,13 @@ var _pulse_tween: Tween = null
 func _ready():
 	screenshot_button.pressed.connect(_on_screenshot_pressed)
 	name_edit.text_changed.connect(_on_name_text_changed)
+	name_edit.focus_entered.connect(_on_name_edit_focused)
+
+
+func _on_name_edit_focused():
+	# Show virtual keyboard on mobile web
+	if OS.has_feature("web"):
+		DisplayServer.virtual_keyboard_show(name_edit.text)
 
 
 func _exit_tree():

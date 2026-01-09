@@ -22,9 +22,16 @@ func _ready():
 	# Connect signals
 	continue_button.pressed.connect(_on_continue_pressed)
 	line_edit.text_submitted.connect(_on_text_submitted)
+	line_edit.focus_entered.connect(_on_line_edit_focused)
 
 	# Focus the text field
 	line_edit.grab_focus()
+
+
+func _on_line_edit_focused():
+	# Show virtual keyboard on mobile web
+	if OS.has_feature("web"):
+		DisplayServer.virtual_keyboard_show(line_edit.text)
 
 
 func _on_continue_pressed():
