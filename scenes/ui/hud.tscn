@@ -377,7 +377,7 @@ size_flags_horizontal = 4
 theme_override_constants/separation = 8
 
 [node name="ShareButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
-custom_minimum_size = Vector2(100, 48)
+custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
 icon = ExtResource("icon_share")
 text = "Share
