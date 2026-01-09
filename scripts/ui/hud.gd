@@ -85,8 +85,9 @@ func _ready():
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
 
-	# Connect fullscreen button (only visible on web)
-	fullscreen_button.visible = OS.has_feature("web")
+	# Connect fullscreen button (visible on web, but not iOS - Fullscreen API unsupported)
+	var is_ios := OS.has_feature("web_ios") or (OS.has_feature("web") and _is_ios_safari())
+	fullscreen_button.visible = OS.has_feature("web") and not is_ios
 	fullscreen_button.pressed.connect(_on_fullscreen_button_pressed)
 
 	# Connect to game's direction signal when game is available
@@ -103,6 +104,14 @@ func _ready():
 
 func _is_mobile() -> bool:
 	return OS.has_feature("mobile") or OS.has_feature("web_android") or OS.has_feature("web_ios")
+
+
+func _is_ios_safari() -> bool:
+	# Detect iOS Safari via JavaScript user agent
+	if not OS.has_feature("web"):
+		return false
+	var result = JavaScriptBridge.eval("(/iPhone|iPad|iPod/.test(navigator.userAgent))")
+	return result == true
 
 
 func _on_direction_changed(vertical: bool):
@@ -216,11 +225,30 @@ func _on_help_close_pressed():
 
 
 func _on_fullscreen_button_pressed():
-	var current_mode := DisplayServer.window_get_mode()
-	if current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	if OS.has_feature("web"):
+		# Use JavaScript Fullscreen API for better mobile Safari support
+		JavaScriptBridge.eval("""
+			if (document.fullscreenElement || document.webkitFullscreenElement) {
+				if (document.exitFullscreen) {
+					document.exitFullscreen();
+				} else if (document.webkitExitFullscreen) {
+					document.webkitExitFullscreen();
+				}
+			} else {
+				var elem = document.documentElement;
+				if (elem.requestFullscreen) {
+					elem.requestFullscreen();
+				} else if (elem.webkitRequestFullscreen) {
+					elem.webkitRequestFullscreen();
+				}
+			}
+		""")
 	else:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+		var current_mode := DisplayServer.window_get_mode()
+		if current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+		else:
+			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 func _on_state_changed(state: GameManager.GameState):
