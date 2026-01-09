@@ -30,18 +30,42 @@ var _is_editable: bool = false
 var _is_reportable: bool = false
 var _http_request: HTTPRequest = null
 var _pulse_tween: Tween = null
+var _last_text: String = ""  # For virtual keyboard polling workaround
 
 
 func _ready():
+	set_process(false)  # Disable polling by default
 	screenshot_button.pressed.connect(_on_screenshot_pressed)
 	name_edit.text_changed.connect(_on_name_text_changed)
 	name_edit.focus_entered.connect(_on_name_edit_focused)
+	name_edit.focus_exited.connect(_on_name_edit_unfocused)
 
 
 func _on_name_edit_focused():
 	# Show virtual keyboard on mobile web
 	if OS.has_feature("web"):
 		DisplayServer.virtual_keyboard_show(name_edit.text)
+		# Start polling for text changes (virtual keyboard workaround)
+		_last_text = name_edit.text
+		set_process(true)
+
+
+func _on_name_edit_unfocused():
+	# Hide virtual keyboard
+	if OS.has_feature("web"):
+		DisplayServer.virtual_keyboard_hide()
+		set_process(false)
+		# Final check for any text changes
+		if name_edit.text != _last_text:
+			_last_text = name_edit.text
+			name_changed.emit(name_edit.text)
+
+
+func _process(_delta: float):
+	# Poll for text changes when focused (virtual keyboard workaround)
+	if name_edit.has_focus() and name_edit.text != _last_text:
+		_last_text = name_edit.text
+		name_changed.emit(name_edit.text)
 
 
 func _exit_tree():
