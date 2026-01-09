@@ -45,13 +45,6 @@ const SWIPE_THRESHOLD := 20.0  # Pixels to determine swipe direction
 
 
 func _ready():
-	# Set initial window size based on screen scale (for Retina displays)
-	if not OS.has_feature("mobile") and not OS.has_feature("web"):
-		var scale := DisplayServer.screen_get_scale()
-		var target_width := int(1024 * scale)
-		var target_height := int(640 * scale)
-		DisplayServer.window_set_size(Vector2i(target_width, target_height))
-
 	# Add to game group so HUD can find us
 	add_to_group("game")
 	# Connect to game manager signals
