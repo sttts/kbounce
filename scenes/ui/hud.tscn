@@ -54,7 +54,7 @@ script = ExtResource("1_hud")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 24.0
+offset_bottom = 28.0
 grow_horizontal = 2
 color = Color(1, 1, 1, 0.9)
 
@@ -62,19 +62,20 @@ color = Color(1, 1, 1, 0.9)
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_left = 11.0
-offset_right = -36.0
-offset_bottom = 24.0
+offset_left = 5.0
+offset_right = -60.0
+offset_bottom = 28.0
 grow_horizontal = 2
 
 [node name="ScoreBox" type="HBoxContainer" parent="TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
+alignment = 1
 theme_override_constants/separation = 4
 
 [node name="Icon" type="TextureRect" parent="TopBar/ScoreBox"]
-custom_minimum_size = Vector2(16, 16)
-custom_maximum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(20, 20)
+custom_maximum_size = Vector2(20, 20)
 layout_mode = 2
 texture = ExtResource("icon_score")
 expand_mode = 1
@@ -83,6 +84,7 @@ stretch_mode = 5
 [node name="ScoreLabel" type="Label" parent="TopBar/ScoreBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
 text = "0"
 
 [node name="LevelBox" type="HBoxContainer" parent="TopBar"]
@@ -92,8 +94,8 @@ alignment = 1
 theme_override_constants/separation = 4
 
 [node name="Icon" type="TextureRect" parent="TopBar/LevelBox"]
-custom_minimum_size = Vector2(16, 16)
-custom_maximum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(20, 20)
+custom_maximum_size = Vector2(20, 20)
 layout_mode = 2
 texture = ExtResource("icon_ball")
 expand_mode = 1
@@ -102,6 +104,7 @@ stretch_mode = 5
 [node name="LevelLabel" type="Label" parent="TopBar/LevelBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
 text = "1"
 
 [node name="LivesBox" type="HBoxContainer" parent="TopBar"]
@@ -111,8 +114,8 @@ alignment = 1
 theme_override_constants/separation = 4
 
 [node name="Icon" type="TextureRect" parent="TopBar/LivesBox"]
-custom_minimum_size = Vector2(16, 16)
-custom_maximum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(28, 28)
+custom_maximum_size = Vector2(28, 28)
 layout_mode = 2
 texture = ExtResource("icon_lives")
 expand_mode = 1
@@ -121,17 +124,18 @@ stretch_mode = 5
 [node name="LivesLabel" type="Label" parent="TopBar/LivesBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
 text = "3"
 
 [node name="TimeBox" type="HBoxContainer" parent="TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 2
+alignment = 1
 theme_override_constants/separation = 4
 
 [node name="Icon" type="TextureRect" parent="TopBar/TimeBox"]
-custom_minimum_size = Vector2(16, 16)
-custom_maximum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(20, 20)
+custom_maximum_size = Vector2(20, 20)
 layout_mode = 2
 texture = ExtResource("icon_time")
 expand_mode = 1
@@ -140,17 +144,18 @@ stretch_mode = 5
 [node name="TimeLabel" type="Label" parent="TopBar/TimeBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
 text = "90"
 
 [node name="FillBox" type="HBoxContainer" parent="TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 2
+alignment = 1
 theme_override_constants/separation = 4
 
 [node name="Icon" type="TextureRect" parent="TopBar/FillBox"]
-custom_minimum_size = Vector2(16, 16)
-custom_maximum_size = Vector2(16, 16)
+custom_minimum_size = Vector2(20, 20)
+custom_maximum_size = Vector2(20, 20)
 layout_mode = 2
 texture = ExtResource("icon_filled")
 expand_mode = 1
@@ -159,44 +164,38 @@ stretch_mode = 5
 [node name="FillLabel" type="Label" parent="TopBar/FillBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 18
 text = "0%"
-
-[node name="RightSpacer" type="Control" parent="TopBar"]
-custom_minimum_size = Vector2(20, 0)
-layout_mode = 2
 
 [node name="TopRightButtons" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -42.0
-offset_right = -6.0
-offset_top = 32.0
-offset_bottom = 100.0
-grow_horizontal = 0
-theme_override_constants/separation = 4
+anchors_preset = 0
+offset_left = 965.0
+offset_right = 1019.0
+offset_top = 33.0
+offset_bottom = 258.0
+theme_override_constants/separation = 3
 
 [node name="StopButton" type="Button" parent="TopRightButtons"]
-custom_minimum_size = Vector2(42, 38)
+custom_minimum_size = Vector2(54, 54)
 layout_mode = 2
 icon = ExtResource("icon_stop")
 icon_alignment = 1
 
 [node name="PauseButton" type="Button" parent="TopRightButtons"]
-custom_minimum_size = Vector2(42, 38)
+custom_minimum_size = Vector2(54, 54)
 layout_mode = 2
 icon = ExtResource("icon_pause")
 icon_alignment = 1
 
 [node name="FullscreenButton" type="Button" parent="TopRightButtons"]
-custom_minimum_size = Vector2(42, 38)
+custom_minimum_size = Vector2(54, 54)
 layout_mode = 2
 icon = ExtResource("icon_fullscreen")
 icon_alignment = 1
 
 [node name="HelpButton" type="Button" parent="TopRightButtons"]
-custom_minimum_size = Vector2(42, 38)
+custom_minimum_size = Vector2(54, 54)
 layout_mode = 2
 icon = ExtResource("icon_help")
 icon_alignment = 1
@@ -229,13 +228,13 @@ anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -48.0
-offset_top = -46.0
-offset_right = -6.0
-offset_bottom = -8.0
+offset_left = -59.0
+offset_top = -63.0
+offset_right = -5.0
+offset_bottom = -9.0
 grow_horizontal = 0
 grow_vertical = 0
-custom_minimum_size = Vector2(42, 38)
+custom_minimum_size = Vector2(54, 54)
 icon = ExtResource("icon_arrow_v")
 icon_alignment = 1
 

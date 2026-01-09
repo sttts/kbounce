@@ -79,17 +79,13 @@ func _notification(what):
 
 func _resize_board():
 	var viewport_size := get_viewport_rect().size
+	const TOP_MARGIN := 26  # Space for HUD
 
-	# Margins
-	const TOP_MARGIN := 32  # Below HUD
-	const LEFT_MARGIN := 8  # Left side margin
+	var board_size := board.resize(Vector2i.ZERO)  # Fixed size, parameter ignored
 
-	var available_size := Vector2i(int(viewport_size.x) - LEFT_MARGIN, int(viewport_size.y) - TOP_MARGIN)
-	var board_size := board.resize(available_size)
-
-	# Position board with margins
-	board.position.x = LEFT_MARGIN
-	board.position.y = TOP_MARGIN
+	# Position board: left edge, centered vertically below HUD
+	board.position.x = 0
+	board.position.y = TOP_MARGIN + int((viewport_size.y - TOP_MARGIN - board_size.y) / 2.0)
 
 	# Update background
 	if background and ThemeManager.get_texture("background"):

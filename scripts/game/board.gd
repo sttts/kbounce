@@ -148,16 +148,12 @@ func clear():
 	queue_redraw()
 
 
-## Resize the board to fit a given size
-func resize(size: Vector2i) -> Vector2i:
-	# Calculate tile size to fit while maintaining aspect ratio
-	var min_tile_size: int
-	if TILE_NUM_H * size.x - TILE_NUM_W * size.y > 0:
-		min_tile_size = size.y / TILE_NUM_H
-	else:
-		min_tile_size = size.x / TILE_NUM_W
+## Fixed tile size
+const TILE_SIZE := 30
 
-	tile_size = Vector2i(min_tile_size, min_tile_size)
+## Resize the board (uses fixed tile size)
+func resize(_size: Vector2i) -> Vector2i:
+	tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 
 	# Resize all balls
 	for ball in balls:
@@ -168,7 +164,7 @@ func resize(size: Vector2i) -> Vector2i:
 		wall.resize(tile_size)
 
 	# Return actual board size
-	var actual_size := Vector2i(min_tile_size * TILE_NUM_W, min_tile_size * TILE_NUM_H)
+	var actual_size := Vector2i(TILE_SIZE * TILE_NUM_W, TILE_SIZE * TILE_NUM_H)
 	queue_redraw()
 	return actual_size
 
