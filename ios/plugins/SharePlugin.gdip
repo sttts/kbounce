@@ -1,0 +1,27 @@
+;
+; © 2024-present https://github.com/cengiz-pz
+;
+
+[config]
+
+name="SharePlugin"
+binary="SharePlugin.a"
+
+initialization="share_plugin_init"
+deinitialization="share_plugin_deinit"
+
+
+[dependencies]
+
+linked=[]
+embedded=[]
+system=["Foundation.framework"]
+
+capabilities=[]
+
+files=[]
+
+linker_flags=["-ObjC"]
+
+
+[plist]

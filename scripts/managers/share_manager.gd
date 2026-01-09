@@ -98,17 +98,22 @@ func _share_web(text: String, screenshot: Image):
 
 func _share_mobile(text: String, screenshot: Image):
 	# Check for native share plugin (godot-ios-share-plugin / godot-android-share-plugin)
-	if Engine.has_singleton("Share"):
-		var share_plugin = Engine.get_singleton("Share")
+	if Engine.has_singleton("SharePlugin"):
+		var share_plugin = Engine.get_singleton("SharePlugin")
+		var share_data := {
+			"title": "KBounce Score",
+			"subject": "My KBounce Score",
+			"content": text
+		}
 		if screenshot != null:
 			# Save image to user:// directory (required by plugins)
-			var save_path := "user://share_screenshot.png"
-			screenshot.save_png(save_path)
+			screenshot.save_png("user://share_screenshot.png")
 			# Get absolute path for plugin
-			var absolute_path := OS.get_user_data_dir().path_join("share_screenshot.png")
-			share_plugin.share_image(absolute_path, "KBounce Score", "My KBounce Score", text)
+			share_data["file_path"] = OS.get_user_data_dir().path_join("share_screenshot.png")
+			share_data["mime_type"] = "image/png"
 		else:
-			share_plugin.share_text("KBounce Score", "My KBounce Score", text)
+			share_data["mime_type"] = "text/plain"
+		share_plugin.share(share_data)
 		share_completed.emit(true)
 	else:
 		# No native plugin - fall back to clipboard
