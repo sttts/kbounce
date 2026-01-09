@@ -11,8 +11,11 @@ The Game collects minimal data for the online leaderboard feature:
 - Game score and level
 - Approximate location (country/city, derived from IP address)
 - Screenshot of completed levels (optional)
+- Platform (iOS, Android, Web, macOS, Windows, Linux)
+- Operating system version
+- App version
 
-This data is stored on our servers to display the global leaderboard.
+This data is stored on our servers to display the global leaderboard and for analytics.
 
 ## Data Not Collected
 
