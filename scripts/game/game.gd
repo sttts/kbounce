@@ -198,8 +198,9 @@ func _build_wall_at(screen_pos: Vector2):
 
 ## Update mouse cursor based on wall direction
 func _update_cursor():
-	# In a full implementation, load custom cursor images
-	# For now, just use default cursor
+	# Skip cursor updates on mobile (no mouse support)
+	if OS.has_feature("mobile"):
+		return
 	if vertical_wall:
 		Input.set_default_cursor_shape(Input.CURSOR_VSIZE)
 	else:
