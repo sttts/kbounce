@@ -150,6 +150,8 @@ func level_complete():
 ## Decrement time by one second, returns true if time ran out
 func tick_time() -> bool:
 	time -= 1
+	if time < 0:
+		time = 0
 	time_changed.emit(time)
 
 	if time <= 0:
