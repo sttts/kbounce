@@ -269,7 +269,13 @@ func _on_state_changed(state: GameManager.GameState):
 			game_over_splash.visible = false
 			# Skip leaderboard for zero points - go directly to start screen
 			if GameManager.score == 0:
-				GameManager.close_game()
+				# Keep splash visible and wait before closing
+				game_over_splash.visible = true
+				await get_tree().create_timer(2.0).timeout
+				game_over_splash.visible = false
+				# Only close if still in game over state (user may have started new game)
+				if GameManager.is_game_over():
+					GameManager.close_game()
 			else:
 				game_over_overlay.visible = true
 		GameManager.GameState.BEFORE_FIRST_GAME:
