@@ -7,7 +7,6 @@ extends HBoxContainer
 
 signal name_changed(new_name: String)
 signal screenshot_clicked(url: String, score_id: String)
-signal share_clicked(score: int, level: int, screenshot: Image)
 
 # Static screenshot cache shared across all entries
 static var _screenshot_cache: Dictionary = {}
@@ -22,17 +21,13 @@ static var _flag_cache: Dictionary = {}
 @onready var level_label: Label = $LevelLabel
 @onready var score_label: Label = $ScoreLabel
 @onready var screenshot_button: TextureButton = $ScreenshotButton
-@onready var share_button: TextureButton = $ShareButton
 
 var _score_id: String = ""
 var _screenshot_url: String = ""
 var _screenshot_thumbnail_url: String = ""
 var _local_screenshot: Texture2D = null
-var _local_screenshot_image: Image = null
 var _is_editable: bool = false
 var _is_reportable: bool = false
-var _score: int = 0
-var _level: int = 0
 var _http_request: HTTPRequest = null
 var _pulse_tween: Tween = null
 var _last_text: String = ""  # For virtual keyboard polling workaround
@@ -41,7 +36,6 @@ var _last_text: String = ""  # For virtual keyboard polling workaround
 func _ready():
 	set_process(false)  # Disable polling by default
 	screenshot_button.pressed.connect(_on_screenshot_pressed)
-	share_button.pressed.connect(_on_share_pressed)
 	name_edit.text_changed.connect(_on_name_text_changed)
 	name_edit.focus_entered.connect(_on_name_edit_focused)
 	name_edit.focus_exited.connect(_on_name_edit_unfocused)
@@ -85,8 +79,6 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	_screenshot_url = data.get("screenshot_url", "") if data.get("screenshot_url") != null else ""
 	_screenshot_thumbnail_url = data.get("screenshot_thumbnail_url", "") if data.get("screenshot_thumbnail_url") != null else ""
 	_is_editable = editable
-	_score = data.get("score", 0)
-	_level = data.get("level", 1)
 
 	var rank: int = data.get("rank", 0)
 	rank_label.text = "#%d" % rank if rank > 0 else "—"
@@ -148,17 +140,13 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	# Only allow reporting other users' entries
 	_is_reportable = not is_current_user and not editable and not _score_id.is_empty()
 
-	# Show share button for user's own editable entry
-	share_button.visible = editable
-
 
 func get_nickname() -> String:
 	return name_edit.text.strip_edges()
 
 
-func set_screenshot_texture(texture: Texture2D, image: Image = null):
+func set_screenshot_texture(texture: Texture2D):
 	_local_screenshot = texture
-	_local_screenshot_image = image
 	screenshot_button.texture_normal = texture
 	screenshot_button.visible = true
 
@@ -236,10 +224,6 @@ func _on_screenshot_pressed():
 		screenshot_clicked.emit("local:", reportable_id)
 	elif not _screenshot_url.is_empty():
 		screenshot_clicked.emit(_screenshot_url, reportable_id)
-
-
-func _on_share_pressed():
-	share_clicked.emit(_score, _level, _local_screenshot_image)
 
 
 func _format_score(score: int) -> String:

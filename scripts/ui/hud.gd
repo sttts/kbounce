@@ -28,7 +28,8 @@ var _user_entry: Node = null
 @onready var pause_overlay: Control = $PauseOverlay
 @onready var game_over_splash: Control = $GameOverSplash
 @onready var game_over_overlay: Control = $GameOverOverlay
-@onready var game_over_new_game_button: Button = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/NewGameButton
+@onready var game_over_share_button: Button = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer/ShareButton
+@onready var game_over_new_game_button: Button = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer/NewGameButton
 @onready var game_over_entries_container: VBoxContainer = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ScrollContainer/EntriesContainer
 @onready var game_over_loading_label: Label = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/LoadingLabel
 @onready var level_complete_overlay: Control = $LevelCompleteOverlay
@@ -65,8 +66,12 @@ func _ready():
 	pause_button.pressed.connect(_on_pause_button_pressed)
 	stop_button.pressed.connect(_on_stop_button_pressed)
 
-	# Connect game over button
+	# Connect game over buttons
+	game_over_share_button.pressed.connect(_on_game_over_share_pressed)
 	game_over_new_game_button.pressed.connect(_on_game_over_new_game_pressed)
+
+	# Connect share notification signal
+	ShareManager.show_notification.connect(_on_share_notification)
 
 	# Connect game over and leaderboard signals
 	GameManager.game_over.connect(_on_game_over_for_leaderboard)
@@ -523,11 +528,10 @@ func _create_user_entry(rank: int):
 	_user_entry.setup(user_data, true, true)  # is_current_user=true, always editable
 	_user_entry.name_changed.connect(_on_user_name_changed)
 	_user_entry.screenshot_clicked.connect(_on_screenshot_clicked)
-	_user_entry.share_clicked.connect(_on_share_clicked)
 
 	# Show local screenshot if available
 	if _current_screenshot != null:
-		_user_entry.set_screenshot_texture(_current_screenshot, _current_screenshot_image)
+		_user_entry.set_screenshot_texture(_current_screenshot)
 
 
 func _on_user_name_changed(new_name: String):
@@ -562,8 +566,19 @@ func _on_screenshot_clicked(url: String, score_id: String):
 		_screenshot_popup.show_screenshot(url, score_id, GameManager.score, GameManager.level)
 
 
-func _on_share_clicked(score: int, level: int, screenshot: Image):
-	ShareManager.share_score(score, level, screenshot)
+func _on_game_over_share_pressed():
+	ShareManager.share_score(GameManager.score, GameManager.level, _current_screenshot_image)
+
+
+var _share_notification_dialog: AcceptDialog = null
+
+func _on_share_notification(message: String):
+	if _share_notification_dialog == null:
+		_share_notification_dialog = AcceptDialog.new()
+		_share_notification_dialog.title = "Shared"
+		add_child(_share_notification_dialog)
+	_share_notification_dialog.dialog_text = message
+	_share_notification_dialog.popup_centered()
 
 
 func _update_game_over_button_state():

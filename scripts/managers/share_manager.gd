@@ -8,9 +8,12 @@ extends Node
 signal share_completed(success: bool)
 
 
+signal show_notification(message: String)
+
+
 func share_score(score: int, level: int, screenshot: Image = null):
 	var balls := level + 1
-	var text := "I scored %s points with %d balls in KBounce! Can you beat my score?\n\nPlay now: https://kbounce.de" % [_format_score(score), balls]
+	var text := "I scored %s points with %d balls in KBounce! Can you beat my score?\n\nPlay now: https://kbounce.app" % [_format_score(score), balls]
 
 	if OS.has_feature("web"):
 		_share_web(text, screenshot)
@@ -49,7 +52,7 @@ func _share_web(text: String, screenshot: Image):
 					await navigator.share({
 						title: 'KBounce Score',
 						text: '%s',
-						url: 'https://kbounce.de'
+						url: 'https://kbounce.app'
 					});
 					return 'success';
 				} else {
@@ -74,7 +77,7 @@ func _share_web(text: String, screenshot: Image):
 					await navigator.share({
 						title: 'KBounce Score',
 						text: '%s',
-						url: 'https://kbounce.de'
+						url: 'https://kbounce.app'
 					});
 					return 'success';
 				} else {
@@ -94,27 +97,48 @@ func _share_web(text: String, screenshot: Image):
 
 
 func _share_mobile(text: String, screenshot: Image):
-	# Native mobile sharing via plugins (to be integrated later)
-	# For now, fall back to clipboard
-	if screenshot != null:
-		screenshot.save_png("user://share_screenshot.png")
-
-	DisplayServer.clipboard_set(text)
-	share_completed.emit(true)
+	# Check for native share plugin (godot-ios-share-plugin / godot-android-share-plugin)
+	if Engine.has_singleton("Share"):
+		var share_plugin = Engine.get_singleton("Share")
+		if screenshot != null:
+			# Save image to user:// directory (required by plugins)
+			var save_path := "user://share_screenshot.png"
+			screenshot.save_png(save_path)
+			# Get absolute path for plugin
+			var absolute_path := OS.get_user_data_dir().path_join("share_screenshot.png")
+			share_plugin.share_image(absolute_path, "KBounce Score", "My KBounce Score", text)
+		else:
+			share_plugin.share_text("KBounce Score", "My KBounce Score", text)
+		share_completed.emit(true)
+	else:
+		# No native plugin - fall back to clipboard
+		if screenshot != null:
+			screenshot.save_png("user://share_screenshot.png")
+		DisplayServer.clipboard_set(text)
+		share_completed.emit(true)
 
 
 func _share_desktop(text: String, screenshot: Image):
+	var saved_path := ""
+
 	# Save screenshot to Downloads folder
 	if screenshot != null:
 		var downloads_path := _get_downloads_path()
 		if not downloads_path.is_empty():
 			var timestamp := Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_")
 			var filename := "kbounce-score-%s.png" % timestamp
-			var full_path := downloads_path.path_join(filename)
-			screenshot.save_png(full_path)
+			saved_path = downloads_path.path_join(filename)
+			screenshot.save_png(saved_path)
 
 	# Copy text to clipboard
 	DisplayServer.clipboard_set(text)
+
+	# Show notification about where files were saved
+	if not saved_path.is_empty():
+		show_notification.emit("Screenshot saved to %s\nText copied to clipboard" % saved_path)
+	else:
+		show_notification.emit("Text copied to clipboard")
+
 	share_completed.emit(true)
 
 

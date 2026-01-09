@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3]
+[gd_scene load_steps=18 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/stop.svg" id="icon_stop"]
@@ -17,6 +17,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/gameover.png" id="icon_gameover"]
 [ext_resource type="Texture2D" path="res://assets/icons/leaderboard.svg" id="icon_leaderboard"]
 [ext_resource type="Texture2D" path="res://assets/icons/help.svg" id="icon_help"]
+[ext_resource type="Texture2D" path="res://assets/icons/share.svg" id="icon_share"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
 bg_color = Color(1, 1, 1, 1)
@@ -370,9 +371,20 @@ theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
 text = "Loading..."
 horizontal_alignment = 1
 
-[node name="NewGameButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
+[node name="ButtonsContainer" type="HBoxContainer" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ShareButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+icon = ExtResource("icon_share")
+icon_alignment = 1
+
+[node name="NewGameButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
 custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+size_flags_horizontal = 3
 text = ""
 icon = ExtResource("icon_play_green")
 icon_alignment = 1
