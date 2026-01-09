@@ -85,9 +85,9 @@ func _ready():
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
 
-	# Connect fullscreen button (visible on web, but not iOS - Fullscreen API unsupported)
-	var is_ios := OS.has_feature("web_ios") or (OS.has_feature("web") and _is_ios_safari())
-	fullscreen_button.visible = OS.has_feature("web") and not is_ios
+	# Connect fullscreen button (web only, hidden on iOS where Fullscreen API is unsupported)
+	var is_ios_web := OS.has_feature("web") and (OS.has_feature("web_ios") or _is_ios_safari())
+	fullscreen_button.visible = OS.has_feature("web") and not is_ios_web
 	fullscreen_button.pressed.connect(_on_fullscreen_button_pressed)
 
 	# Connect to game's direction signal when game is available
@@ -110,8 +110,9 @@ func _is_ios_safari() -> bool:
 	# Detect iOS Safari via JavaScript user agent
 	if not OS.has_feature("web"):
 		return false
-	var result = JavaScriptBridge.eval("(/iPhone|iPad|iPod/.test(navigator.userAgent))")
-	return result == true
+	# eval returns Variant, convert to string for reliable comparison
+	var result = JavaScriptBridge.eval("(/iPhone|iPad|iPod/.test(navigator.userAgent)) ? 'yes' : 'no'")
+	return str(result) == "yes"
 
 
 func _on_direction_changed(vertical: bool):
