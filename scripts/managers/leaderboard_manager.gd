@@ -304,7 +304,10 @@ func submit_score(score: int, level: int):
 		"user_id": user_id,
 		"nickname": nickname,  # May be empty on first submission
 		"score": score,
-		"level": level
+		"level": level,
+		"platform": OS.get_name(),
+		"os_version": OS.get_version(),
+		"app_version": ProjectSettings.get_setting("application/config/version", "unknown")
 	}
 
 	# Add screenshot if available (already resized to 50%)

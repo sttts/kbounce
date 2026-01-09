@@ -21,6 +21,14 @@ jobs:
       image: barichello/godot-ci:4.5
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for git describe
+
+      - name: Inject version from git
+        run: |
+          VERSION=$(git describe --tags --dirty --always)
+          sed -i "s/config\/version=\"dev\"/config\/version=\"$VERSION\"/" project.godot
+          echo "Injected version: $VERSION"
 
       - name: Setup export templates
         run: |
