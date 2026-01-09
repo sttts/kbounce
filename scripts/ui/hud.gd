@@ -43,6 +43,7 @@ var _user_entry: Node = null
 @onready var help_button: Button = $TopRightButtons/HelpButton
 @onready var help_overlay: Control = $HelpOverlay
 @onready var help_close_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/CloseButton
+@onready var help_version_label: Label = $HelpOverlay/CenterContainer/Panel/VBox/VersionLabel
 @onready var fullscreen_button: Button = $TopRightButtons/FullscreenButton
 
 var _screenshot_popup: Control = null
@@ -89,6 +90,7 @@ func _ready():
 	# Connect help buttons
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
+	help_version_label.text = ProjectSettings.get_setting("application/config/version", "dev")
 
 	# Connect fullscreen button (web only, hidden on iOS where Fullscreen API is unsupported)
 	var is_ios_web := OS.has_feature("web") and (OS.has_feature("web_ios") or _is_ios_safari())
