@@ -593,20 +593,32 @@ func _on_wall_finished(x1: int, y1: int, x2: int, y2: int, wall: Wall):
 	queue_redraw()
 
 
-## Recursive flood fill algorithm
-func _flood_fill(x: int, y: int):
-	if x < 0 or x >= TILE_NUM_W or y < 0 or y >= TILE_NUM_H:
+## Iterative flood fill algorithm (avoids stack overflow on iOS)
+func _flood_fill(start_x: int, start_y: int):
+	if start_x < 0 or start_x >= TILE_NUM_W or start_y < 0 or start_y >= TILE_NUM_H:
 		return
-	if tiles[x][y] != TileType.FREE:
+	if tiles[start_x][start_y] != TileType.FREE:
 		return
 
-	tiles[x][y] = TileType.TEMP
+	var stack: Array[Vector2i] = [Vector2i(start_x, start_y)]
 
-	# Recursively fill adjacent tiles
-	_flood_fill(x, y - 1)  # Up
-	_flood_fill(x + 1, y)  # Right
-	_flood_fill(x, y + 1)  # Down
-	_flood_fill(x - 1, y)  # Left
+	while not stack.is_empty():
+		var pos: Vector2i = stack.pop_back()
+		var x: int = pos.x
+		var y: int = pos.y
+
+		if x < 0 or x >= TILE_NUM_W or y < 0 or y >= TILE_NUM_H:
+			continue
+		if tiles[x][y] != TileType.FREE:
+			continue
+
+		tiles[x][y] = TileType.TEMP
+
+		# Add adjacent tiles to stack
+		stack.push_back(Vector2i(x, y - 1))  # Up
+		stack.push_back(Vector2i(x + 1, y))  # Right
+		stack.push_back(Vector2i(x, y + 1))  # Down
+		stack.push_back(Vector2i(x - 1, y))  # Left
 
 
 ## Custom drawing for the board tiles
