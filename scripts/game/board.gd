@@ -420,11 +420,11 @@ func _check_ball_tile_collision(ball: Ball) -> Array:
 	if reflect_x or reflect_y:
 		var hit := Collision.Hit.new()
 		hit.type = Collision.Type.TILE
-		# Normal points in direction ball should bounce
+		# Normal points opposite to velocity (away from obstacle)
 		if reflect_x:
-			hit.normal.x = -1.0 if velocity.x > 0 else 1.0
+			hit.normal.x = 1.0 if velocity.x < 0 else -1.0
 		if reflect_y:
-			hit.normal.y = -1.0 if velocity.y > 0 else 1.0
+			hit.normal.y = 1.0 if velocity.y < 0 else -1.0
 		result.append(hit)
 
 	return result

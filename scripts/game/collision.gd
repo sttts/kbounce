@@ -57,31 +57,31 @@ static func calculate_normal_with_velocity(current_rect: Rect2, velocity: Vector
 	var collide_y := rect_y.intersects(obstacle)
 
 	if collide_x:
-		# Hit vertical edge
+		# Hit vertical edge - normal points opposite to velocity
 		if velocity.x < 0:
-			normal.x = -1.0  # Moving left, hit from left
+			normal.x = 1.0   # Moving left, normal points right
 		elif velocity.x > 0:
-			normal.x = 1.0   # Moving right, hit from right
+			normal.x = -1.0  # Moving right, normal points left
 
 	if collide_y:
-		# Hit horizontal edge
+		# Hit horizontal edge - normal points opposite to velocity
 		if velocity.y < 0:
-			normal.y = -1.0  # Moving up, hit from top
+			normal.y = 1.0   # Moving up, normal points down
 		elif velocity.y > 0:
-			normal.y = 1.0   # Moving down, hit from bottom
+			normal.y = -1.0  # Moving down, normal points up
 
 	# Corner case: neither axis alone collides, but diagonal does
 	if not collide_x and not collide_y:
 		var rect_xy := Rect2(current_rect.position + velocity, current_rect.size)
 		if rect_xy.intersects(obstacle):
 			if velocity.x < 0:
-				normal.x = -1.0
-			elif velocity.x > 0:
 				normal.x = 1.0
+			elif velocity.x > 0:
+				normal.x = -1.0
 			if velocity.y < 0:
-				normal.y = -1.0
-			elif velocity.y > 0:
 				normal.y = 1.0
+			elif velocity.y > 0:
+				normal.y = -1.0
 
 	return normal
 
