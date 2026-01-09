@@ -6,7 +6,7 @@
 
 Recreation of the classic KDE game KBounce using Godot 4.5 for iOS, Android, and web.
 
-**Play now: [kbounce.de](https://kbounce.de)**
+**Play now: [kbounce.app](https://kbounce.app)**
 
 ## Building
 
