@@ -42,6 +42,7 @@ var _user_entry: Node = null
 @onready var help_button: Button = $TopRightButtons/HelpButton
 @onready var help_overlay: Control = $HelpOverlay
 @onready var help_close_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/CloseButton
+@onready var fullscreen_button: Button = $TopRightButtons/FullscreenButton
 
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
@@ -83,6 +84,10 @@ func _ready():
 	# Connect help buttons
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
+
+	# Connect fullscreen button (only visible on web)
+	fullscreen_button.visible = OS.has_feature("web")
+	fullscreen_button.pressed.connect(_on_fullscreen_button_pressed)
 
 	# Connect to game's direction signal when game is available
 	await get_tree().process_frame
@@ -208,6 +213,14 @@ func _on_help_close_pressed():
 	# Resume game if it was paused by opening help
 	if GameManager.state == GameManager.GameState.PAUSED:
 		GameManager.set_paused(false)
+
+
+func _on_fullscreen_button_pressed():
+	var current_mode := DisplayServer.window_get_mode()
+	if current_mode == DisplayServer.WINDOW_MODE_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 func _on_state_changed(state: GameManager.GameState):

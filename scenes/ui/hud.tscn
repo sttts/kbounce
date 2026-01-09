@@ -1,8 +1,9 @@
-[gd_scene load_steps=16 format=3]
+[gd_scene load_steps=17 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/stop.svg" id="icon_stop"]
 [ext_resource type="Texture2D" path="res://assets/icons/pause.svg" id="icon_pause"]
+[ext_resource type="Texture2D" path="res://assets/icons/fullscreen.svg" id="icon_fullscreen"]
 [ext_resource type="Texture2D" path="res://assets/icons/play.svg" id="icon_play"]
 [ext_resource type="Texture2D" path="res://assets/icons/arrow_vertical.svg" id="icon_arrow_v"]
 [ext_resource type="Texture2D" path="res://assets/icons/arrow_horizontal.svg" id="icon_arrow_h"]
@@ -186,6 +187,12 @@ icon_alignment = 1
 custom_minimum_size = Vector2(42, 38)
 layout_mode = 2
 icon = ExtResource("icon_pause")
+icon_alignment = 1
+
+[node name="FullscreenButton" type="Button" parent="TopRightButtons"]
+custom_minimum_size = Vector2(42, 38)
+layout_mode = 2
+icon = ExtResource("icon_fullscreen")
 icon_alignment = 1
 
 [node name="HelpButton" type="Button" parent="TopRightButtons"]
