@@ -401,6 +401,7 @@ func _animate_bonus_counting(fill_bonus: int, lives_bonus: int):
 
 
 var _current_screenshot: ImageTexture = null
+var _current_screenshot_image: Image = null
 var _nickname_update_timer: Timer = null
 var _rate_limit_timer: Timer = null
 var _rate_limit_remaining: int = 0
@@ -418,8 +419,10 @@ func _on_game_over_for_leaderboard():
 
 	# Capture screenshot before submission clears it
 	if LeaderboardManager.pending_screenshot != null:
+		_current_screenshot_image = LeaderboardManager.pending_screenshot.duplicate()
 		_current_screenshot = ImageTexture.create_from_image(LeaderboardManager.pending_screenshot)
 	else:
+		_current_screenshot_image = null
 		_current_screenshot = null
 
 	# Submit score in background (splash visibility managed by _on_state_changed)
@@ -520,10 +523,11 @@ func _create_user_entry(rank: int):
 	_user_entry.setup(user_data, true, true)  # is_current_user=true, always editable
 	_user_entry.name_changed.connect(_on_user_name_changed)
 	_user_entry.screenshot_clicked.connect(_on_screenshot_clicked)
+	_user_entry.share_clicked.connect(_on_share_clicked)
 
 	# Show local screenshot if available
 	if _current_screenshot != null:
-		_user_entry.set_screenshot_texture(_current_screenshot)
+		_user_entry.set_screenshot_texture(_current_screenshot, _current_screenshot_image)
 
 
 func _on_user_name_changed(new_name: String):
@@ -553,9 +557,13 @@ func _on_screenshot_clicked(url: String, score_id: String):
 		_screenshot_popup = _screenshot_popup_scene.instantiate()
 		add_child(_screenshot_popup)
 	if url == "local:" and _current_screenshot != null:
-		_screenshot_popup.show_texture(_current_screenshot)
+		_screenshot_popup.show_texture(_current_screenshot, GameManager.score, GameManager.level)
 	else:
-		_screenshot_popup.show_screenshot(url, score_id)
+		_screenshot_popup.show_screenshot(url, score_id, GameManager.score, GameManager.level)
+
+
+func _on_share_clicked(score: int, level: int, screenshot: Image):
+	ShareManager.share_score(score, level, screenshot)
 
 
 func _update_game_over_button_state():
