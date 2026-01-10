@@ -34,6 +34,36 @@ const API_URL := "https://api.kbounce.workers.dev"
 ## Config file path for user identity
 const CONFIG_PATH := "user://leaderboard.cfg"
 
+## Funny name components for anonymous players
+const ADJECTIVES := [
+	"Lucky", "Bouncy", "Speedy", "Sleepy", "Grumpy", "Happy", "Sneaky", "Fluffy",
+	"Mighty", "Tiny", "Giant", "Frozen", "Blazing", "Dancing", "Flying", "Jumping",
+	"Lazy", "Crazy", "Dizzy", "Fuzzy", "Jolly", "Silly", "Wiggly", "Wobbly",
+	"Cosmic", "Electric", "Mystic", "Rainbow", "Golden", "Silver", "Crystal", "Shadow",
+	"Brave", "Clever", "Swift", "Noble", "Fierce", "Gentle", "Wild", "Calm",
+	"Bright", "Dark", "Loud", "Quiet", "Hungry", "Thirsty", "Curious", "Cautious",
+	"Daring", "Timid", "Bold", "Shy", "Proud", "Humble", "Fancy", "Plain",
+	"Sparkly", "Glowing", "Shiny", "Dusty", "Rusty", "Fresh", "Ancient", "Young",
+	"Wise", "Foolish", "Quick", "Slow", "Hot", "Cold", "Warm", "Cool",
+	"Sweet", "Sour", "Spicy", "Salty", "Bitter", "Tangy", "Zesty", "Mellow",
+	"Bubbly", "Fizzy", "Crunchy", "Squishy", "Bumpy", "Smooth", "Rough", "Soft",
+	"Hyper", "Manic", "Chill", "Zen", "Funky", "Groovy", "Radical", "Epic"
+]
+const ANIMALS := [
+	"Penguin", "Elephant", "Giraffe", "Kangaroo", "Dolphin", "Panda", "Koala", "Tiger",
+	"Hamster", "Rabbit", "Squirrel", "Hedgehog", "Octopus", "Flamingo", "Pelican", "Toucan",
+	"Raccoon", "Otter", "Sloth", "Lemur", "Walrus", "Narwhal", "Unicorn", "Dragon",
+	"Phoenix", "Yeti", "Sasquatch", "Kraken", "Griffin", "Sphinx", "Chimera", "Pegasus",
+	"Hippo", "Rhino", "Zebra", "Lion", "Leopard", "Cheetah", "Jaguar", "Panther",
+	"Wolf", "Fox", "Bear", "Moose", "Deer", "Elk", "Bison", "Buffalo",
+	"Gorilla", "Chimp", "Monkey", "Baboon", "Gibbon", "Orangutan", "Mandrill", "Tamarin",
+	"Parrot", "Macaw", "Cockatoo", "Owl", "Eagle", "Hawk", "Falcon", "Vulture",
+	"Shark", "Whale", "Seal", "Manatee", "Stingray", "Jellyfish", "Starfish", "Seahorse",
+	"Turtle", "Tortoise", "Iguana", "Gecko", "Chameleon", "Cobra", "Python", "Viper",
+	"Frog", "Toad", "Newt", "Axolotl", "Salamander", "Cricket", "Beetle", "Mantis",
+	"Butterfly", "Moth", "Firefly", "Ladybug", "Dragonfly", "Bumblebee", "Wasp", "Ant"
+]
+
 ## User's unique ID (UUID v4)
 var user_id: String = ""
 ## User's display nickname
@@ -87,10 +117,22 @@ func _load_identity():
 	# Generate new UUID if none exists
 	if user_id.is_empty():
 		user_id = _generate_uuid_v4()
-		_save_identity()
+
+	# Generate funny name if no nickname set
+	if nickname.is_empty():
+		nickname = _generate_funny_name(user_id.hash())
+
+	_save_identity()
 
 	if not user_id.is_empty():
 		identity_ready.emit(user_id, nickname)
+
+
+## Generate a funny random name from a seed (deterministic)
+func _generate_funny_name(seed_value: int) -> String:
+	var adj_idx := absi(seed_value) % ADJECTIVES.size()
+	var animal_idx := (absi(seed_value) / ADJECTIVES.size()) % ANIMALS.size()
+	return ADJECTIVES[adj_idx] + " " + ANIMALS[animal_idx]
 
 
 ## Save user identity to config file

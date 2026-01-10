@@ -13,6 +13,36 @@ static var _screenshot_cache: Dictionary = {}
 # Static flag cache shared across all entries
 static var _flag_cache: Dictionary = {}
 
+# Funny name components for anonymous players
+const ADJECTIVES := [
+	"Lucky", "Bouncy", "Speedy", "Sleepy", "Grumpy", "Happy", "Sneaky", "Fluffy",
+	"Mighty", "Tiny", "Giant", "Frozen", "Blazing", "Dancing", "Flying", "Jumping",
+	"Lazy", "Crazy", "Dizzy", "Fuzzy", "Jolly", "Silly", "Wiggly", "Wobbly",
+	"Cosmic", "Electric", "Mystic", "Rainbow", "Golden", "Silver", "Crystal", "Shadow",
+	"Brave", "Clever", "Swift", "Noble", "Fierce", "Gentle", "Wild", "Calm",
+	"Bright", "Dark", "Loud", "Quiet", "Hungry", "Thirsty", "Curious", "Cautious",
+	"Daring", "Timid", "Bold", "Shy", "Proud", "Humble", "Fancy", "Plain",
+	"Sparkly", "Glowing", "Shiny", "Dusty", "Rusty", "Fresh", "Ancient", "Young",
+	"Wise", "Foolish", "Quick", "Slow", "Hot", "Cold", "Warm", "Cool",
+	"Sweet", "Sour", "Spicy", "Salty", "Bitter", "Tangy", "Zesty", "Mellow",
+	"Bubbly", "Fizzy", "Crunchy", "Squishy", "Bumpy", "Smooth", "Rough", "Soft",
+	"Hyper", "Manic", "Chill", "Zen", "Funky", "Groovy", "Radical", "Epic"
+]
+const ANIMALS := [
+	"Penguin", "Elephant", "Giraffe", "Kangaroo", "Dolphin", "Panda", "Koala", "Tiger",
+	"Hamster", "Rabbit", "Squirrel", "Hedgehog", "Octopus", "Flamingo", "Pelican", "Toucan",
+	"Raccoon", "Otter", "Sloth", "Lemur", "Walrus", "Narwhal", "Unicorn", "Dragon",
+	"Phoenix", "Yeti", "Sasquatch", "Kraken", "Griffin", "Sphinx", "Chimera", "Pegasus",
+	"Hippo", "Rhino", "Zebra", "Lion", "Leopard", "Cheetah", "Jaguar", "Panther",
+	"Wolf", "Fox", "Bear", "Moose", "Deer", "Elk", "Bison", "Buffalo",
+	"Gorilla", "Chimp", "Monkey", "Baboon", "Gibbon", "Orangutan", "Mandrill", "Tamarin",
+	"Parrot", "Macaw", "Cockatoo", "Owl", "Eagle", "Hawk", "Falcon", "Vulture",
+	"Shark", "Whale", "Seal", "Manatee", "Stingray", "Jellyfish", "Starfish", "Seahorse",
+	"Turtle", "Tortoise", "Iguana", "Gecko", "Chameleon", "Cobra", "Python", "Viper",
+	"Frog", "Toad", "Newt", "Axolotl", "Salamander", "Cricket", "Beetle", "Mantis",
+	"Butterfly", "Moth", "Firefly", "Ladybug", "Dragonfly", "Bumblebee", "Wasp", "Ant"
+]
+
 @onready var rank_label: Label = $RankLabel
 @onready var flag_texture: TextureRect = $FlagTexture
 @onready var location_label: Label = $LocationLabel
@@ -106,6 +136,12 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	var nickname_val = data.get("nickname")
 	var nickname: String = nickname_val if nickname_val != null else ""
 
+	# Generate funny name for anonymous players (use rank + score as seed)
+	var display_name := nickname
+	if display_name.is_empty():
+		var seed_val: int = rank * 10000 + data.get("score", 0)
+		display_name = _generate_funny_name(seed_val)
+
 	# Show editable field for current user entry
 	if editable:
 		# Hide flag and location to give more space to name edit
@@ -117,7 +153,7 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	else:
 		name_label.visible = true
 		name_edit.visible = false
-		name_label.text = nickname if not nickname.is_empty() else "???"
+		name_label.text = display_name
 
 	# Display balls count (balls = level + 1)
 	var level: int = data.get("level", 1)
@@ -284,3 +320,10 @@ func _on_flag_loaded(result: int, response_code: int, _headers: PackedStringArra
 
 	flag_texture.texture = texture
 	flag_texture.visible = true
+
+
+## Generate a funny random name from a seed (deterministic per player)
+static func _generate_funny_name(seed_value: int) -> String:
+	var adj_idx := seed_value % ADJECTIVES.size()
+	var animal_idx := (seed_value / ADJECTIVES.size()) % ANIMALS.size()
+	return ADJECTIVES[adj_idx] + " " + ANIMALS[animal_idx]
