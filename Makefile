@@ -5,6 +5,7 @@ GODOT ?= godot
 APP_NAME := KBounce
 BUNDLE_ID := app.kbounce
 TEAM_ID := QUY34Y5C3U
+PERSONAL_ID := CR5QELQ9YC
 
 # Version: use git describe, allow override via VERSION env var for CI
 # CI usage: make web VERSION=${{ github.ref_name }}
@@ -27,6 +28,7 @@ IOS_IPA := $(IOS_DIR)/$(APP_NAME).ipa
 
 # Signing identities (adjust these to match your certificates)
 MAC_APP_IDENTITY := Apple Distribution: Stefan Schimanski ($(TEAM_ID))
+MAC_DEV_IDENTITY := Apple Development: Stefan Schimanski ($(PERSONAL_ID))
 MAC_INSTALLER_IDENTITY := 3rd Party Mac Developer Installer: Stefan Schimanski ($(TEAM_ID))
 MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 
@@ -37,7 +39,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all mac mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs
+.PHONY: all mac mac-dev mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -81,6 +83,18 @@ $(MAC_APP): $(VERSION_FILE)
 	@echo "==> Verifying code signature..."
 	codesign -dv --verbose=2 $(MAC_APP)
 	@echo "==> macOS app exported to $(MAC_APP)"
+
+mac-dev: $(VERSION_FILE) ## Export macOS app for local development
+	@echo "==> Exporting macOS dev app..."
+	@mkdir -p $(MAC_DIR)
+	@rm -rf $(MAC_APP)
+	$(GODOT) --headless --export-release "macOS" $(MAC_APP)
+	@echo "==> Patching version to $(APPLE_VERSION)..."
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
+	@echo "==> Signing with development identity..."
+	codesign --force --options runtime --sign "$(MAC_DEV_IDENTITY)" $(MAC_APP)
+	@echo "==> macOS dev app exported to $(MAC_APP)"
 
 mac-pkg: $(MAC_PKG) ## Create macOS installer package (.pkg)
 
