@@ -185,6 +185,34 @@ func get_nickname() -> String:
 	return name_edit.text.strip_edges()
 
 
+func set_nickname(new_nickname: String):
+	name_edit.text = new_nickname
+
+
+func set_nickname_invalid(invalid: bool):
+	if invalid:
+		# Red border to indicate invalid
+		var error_style := StyleBoxFlat.new()
+		error_style.bg_color = Color(1, 0.9, 0.9)  # Light red background
+		error_style.border_width_left = 3
+		error_style.border_width_top = 3
+		error_style.border_width_right = 3
+		error_style.border_width_bottom = 3
+		error_style.border_color = Color(0.8, 0.2, 0.2)  # Red border
+		error_style.corner_radius_top_left = 4
+		error_style.corner_radius_top_right = 4
+		error_style.corner_radius_bottom_left = 4
+		error_style.corner_radius_bottom_right = 4
+		name_edit.add_theme_stylebox_override("normal", error_style)
+		# Stop pulse animation if active
+		if _pulse_tween != null and _pulse_tween.is_valid():
+			_pulse_tween.kill()
+			_pulse_tween = null
+	else:
+		# Restore pulsing gold style
+		_start_pulse_animation()
+
+
 func set_screenshot_texture(texture: Texture2D):
 	_local_screenshot = texture
 	screenshot_button.texture_normal = texture

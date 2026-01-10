@@ -78,6 +78,7 @@ func _ready():
 	GameManager.game_over.connect(_on_game_over_for_leaderboard)
 	LeaderboardManager.score_submitted.connect(_on_score_submitted)
 	LeaderboardManager.score_failed.connect(_on_score_failed)
+	LeaderboardManager.nickname_updated.connect(_on_nickname_updated)
 	LeaderboardManager.leaderboard_loaded.connect(_on_game_over_leaderboard_loaded)
 	LeaderboardManager.leaderboard_failed.connect(_on_game_over_leaderboard_failed)
 	LeaderboardManager.rate_limited.connect(_on_rate_limited)
@@ -194,12 +195,10 @@ func _on_stop_button_pressed():
 
 
 func _on_game_over_new_game_pressed():
-	# Ensure nickname is saved (score already submitted on game over)
+	# Send final nickname update (only saves locally after server confirms)
 	if _user_entry and _user_entry.has_method("get_nickname"):
 		var nickname: String = _user_entry.get_nickname()
 		if nickname.length() >= 3:
-			LeaderboardManager.set_nickname(nickname)
-			# Final update to server if not already sent
 			LeaderboardManager.update_nickname(nickname)
 
 	GameManager.new_game()
@@ -422,11 +421,16 @@ var _rate_limit_timer: Timer = null
 var _rate_limit_remaining: int = 0
 # Flow ID to validate API responses are for current game over
 var _pending_flow_id: int = 0
+# Track if current nickname is rejected (profanity etc)
+var _nickname_rejected: bool = false
 
 
 func _on_game_over_for_leaderboard():
 	# Capture flow ID for validating API responses
 	_pending_flow_id = GameManager.get_game_over_flow_id()
+
+	# Reset nickname rejection state
+	_nickname_rejected = false
 
 	# Clear previous entries
 	_clear_game_over_entries()
@@ -464,6 +468,26 @@ func _on_score_failed(error: String):
 
 	# Score submission failed, try to load leaderboard as fallback
 	LeaderboardManager.load_leaderboard()
+
+
+func _on_nickname_updated(success: bool, error: String):
+	if success:
+		_nickname_rejected = false
+		if _user_entry and _user_entry.has_method("set_nickname_invalid"):
+			_user_entry.set_nickname_invalid(false)
+		_update_game_over_button_state()
+		return
+
+	# Rate limited errors are handled by _on_rate_limited
+	if error == "Rate limited":
+		return
+
+	# Mark nickname as rejected (profanity filter etc)
+	if error == "Nickname not allowed":
+		_nickname_rejected = true
+		if _user_entry and _user_entry.has_method("set_nickname_invalid"):
+			_user_entry.set_nickname_invalid(true)
+		_update_game_over_button_state()
 
 
 func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_entries: Array):
@@ -589,6 +613,12 @@ func _create_user_entry(rank: int):
 
 
 func _on_user_name_changed(new_name: String):
+	# Clear rejected state when user types
+	if _nickname_rejected:
+		_nickname_rejected = false
+		if _user_entry and _user_entry.has_method("set_nickname_invalid"):
+			_user_entry.set_nickname_invalid(false)
+
 	_update_game_over_button_state()
 
 	# Debounce nickname updates (wait 1 second after typing stops)
@@ -647,10 +677,10 @@ func _show_error_notification(message: String):
 
 
 func _update_game_over_button_state():
-	# Require nickname (3+ chars) when user entry is editable
+	# Require nickname (3+ chars) and not rejected (profanity)
 	if _user_entry and _user_entry.has_method("get_nickname"):
 		var nickname: String = _user_entry.get_nickname()
-		var is_valid := nickname.length() >= 3
+		var is_valid := nickname.length() >= 3 and not _nickname_rejected
 		game_over_new_game_button.disabled = not is_valid
 	else:
 		# No user entry (e.g., score = 0), button always enabled

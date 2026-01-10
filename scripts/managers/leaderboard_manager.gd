@@ -16,7 +16,7 @@ signal score_submitted(score_id: String, update_token: String, rank: int, stored
 ## Emitted when score submission fails
 signal score_failed(error: String)
 ## Emitted when nickname is updated
-signal nickname_updated(success: bool)
+signal nickname_updated(success: bool, error: String)
 ## Emitted when leaderboard is loaded (entries around user, user_entries are all user's scores)
 signal leaderboard_loaded(entries: Array, user_rank: int, user_entries: Array)
 ## Emitted when leaderboard load fails
@@ -154,14 +154,17 @@ func set_nickname(new_nickname: String):
 	identity_ready.emit(user_id, nickname)
 
 
+## Pending nickname waiting for server confirmation
+var _pending_nickname: String = ""
+
 ## Update nickname on server for current score
 func update_nickname(new_nickname: String):
 	if _current_score_id.is_empty() or _current_update_token.is_empty():
-		nickname_updated.emit(false)
+		nickname_updated.emit(false, "No score to update")
 		return
 
-	nickname = new_nickname.strip_edges()
-	_save_identity()
+	# Store pending - only save locally after server confirms
+	_pending_nickname = new_nickname.strip_edges()
 
 	if _http_nickname == null:
 		_http_nickname = HTTPRequest.new()
@@ -170,7 +173,7 @@ func update_nickname(new_nickname: String):
 
 	var data := {
 		"update_token": _current_update_token,
-		"nickname": nickname
+		"nickname": _pending_nickname
 	}
 
 	var body := JSON.stringify(data)
@@ -179,23 +182,28 @@ func update_nickname(new_nickname: String):
 	var err := _http_nickname.request(url, headers, HTTPClient.METHOD_PATCH, body)
 
 	if err != OK:
-		nickname_updated.emit(false)
+		nickname_updated.emit(false, "HTTP request failed")
 
 
 func _on_nickname_update_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	if result != HTTPRequest.RESULT_SUCCESS:
-		nickname_updated.emit(false)
+		nickname_updated.emit(false, "Request failed")
 		return
 
 	if response_code == 429:
 		var retry_after := _parse_retry_after(headers)
 		rate_limited.emit(retry_after)
-		nickname_updated.emit(false)
+		nickname_updated.emit(false, "Rate limited")
 		return
 
 	if response_code != 200:
-		nickname_updated.emit(false)
+		var error_msg := _parse_error_response(body, response_code)
+		nickname_updated.emit(false, error_msg)
 		return
+
+	# Server confirmed - now save nickname locally
+	nickname = _pending_nickname
+	_pending_nickname = ""
 
 	# Update local country/city from response
 	var json = JSON.parse_string(body.get_string_from_utf8())
@@ -204,9 +212,9 @@ func _on_nickname_update_completed(result: int, response_code: int, headers: Pac
 			country = json["country"]
 		if json.has("city"):
 			city = json["city"]
-		_save_identity()
+	_save_identity()
 
-	nickname_updated.emit(true)
+	nickname_updated.emit(true, "")
 
 
 ## Check if user has set a nickname
