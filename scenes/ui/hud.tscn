@@ -632,7 +632,12 @@ Walls
 8. Ball hitting the tip does nothing (tip is protected).
 9. A wall half is removed if:
    - a ball hits the inner part (non-tip), or
-   - two wall halves hit each other with their tips."
+   - two wall halves hit each other with their tips.
+
+Built with:
+Godot Engine
+Copyright (c) 2014-present Godot Engine contributors.
+License: MIT (godotengine.org/license)"
 autowrap_mode = 3
 
 [node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox"]
