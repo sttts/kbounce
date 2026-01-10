@@ -39,7 +39,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all mac mac-dev mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs
+.PHONY: all mac mac-dev mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -172,6 +172,32 @@ clean: ## Remove build artifacts
 	rm -rf $(WEB_DIR)/*.html $(WEB_DIR)/*.js $(WEB_DIR)/*.wasm $(WEB_DIR)/*.pck
 	rm -f $(VERSION_FILE)
 	@echo "==> Clean complete"
+
+# Icon generation
+ICON_SRC := icon-grey-1024.png
+IOS_ICON_SIZES := 20 29 40 58 60 76 80 87 120 152 167 180 1024
+
+icons: ## Generate iOS icons and macOS icns from grey source
+	@echo "==> Generating iOS icons from $(ICON_SRC)..."
+	@mkdir -p ios_icons
+	@for size in $(IOS_ICON_SIZES); do \
+		sips -z $$size $$size $(ICON_SRC) --out ios_icons/icon-$$size.png >/dev/null; \
+	done
+	@echo "==> Generating macOS icns..."
+	@mkdir -p icon.iconset
+	@sips -z 16 16 $(ICON_SRC) --out icon.iconset/icon_16x16.png >/dev/null
+	@sips -z 32 32 $(ICON_SRC) --out icon.iconset/icon_16x16@2x.png >/dev/null
+	@sips -z 32 32 $(ICON_SRC) --out icon.iconset/icon_32x32.png >/dev/null
+	@sips -z 64 64 $(ICON_SRC) --out icon.iconset/icon_32x32@2x.png >/dev/null
+	@sips -z 128 128 $(ICON_SRC) --out icon.iconset/icon_128x128.png >/dev/null
+	@sips -z 256 256 $(ICON_SRC) --out icon.iconset/icon_128x128@2x.png >/dev/null
+	@sips -z 256 256 $(ICON_SRC) --out icon.iconset/icon_256x256.png >/dev/null
+	@sips -z 512 512 $(ICON_SRC) --out icon.iconset/icon_256x256@2x.png >/dev/null
+	@sips -z 512 512 $(ICON_SRC) --out icon.iconset/icon_512x512.png >/dev/null
+	@sips -z 1024 1024 $(ICON_SRC) --out icon.iconset/icon_512x512@2x.png >/dev/null
+	@iconutil -c icns icon.iconset -o icon.icns
+	@rm -rf icon.iconset
+	@echo "==> Icons generated"
 
 # Utility targets
 verify-mac: ## Verify macOS app signature
