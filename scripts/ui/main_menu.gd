@@ -23,6 +23,10 @@ const CACHE_PATH = "user://leaderboard_cache.json"
 
 
 func _ready():
+	# Set initial window size on desktop (80% of screen, maintaining aspect ratio)
+	if not OS.has_feature("web") and not OS.has_feature("mobile"):
+		_setup_window_size()
+
 	# Connect signals
 	if new_game_button:
 		new_game_button.pressed.connect(_on_new_game_pressed)
@@ -298,3 +302,29 @@ func _unhandled_input(event):
 			if new_game_button and new_game_button.get_global_rect().has_point(event.position):
 				_on_new_game_pressed()
 				get_viewport().set_input_as_handled()
+
+
+func _setup_window_size():
+	const ASPECT_RATIO := 1024.0 / 640.0  # 1.6:1
+	const SCREEN_PERCENTAGE := 0.8
+
+	var screen_size := DisplayServer.screen_get_size()
+	var max_width := int(screen_size.x * SCREEN_PERCENTAGE)
+	var max_height := int(screen_size.y * SCREEN_PERCENTAGE)
+
+	# Calculate window size maintaining aspect ratio
+	var window_width := max_width
+	var window_height := int(window_width / ASPECT_RATIO)
+
+	# If height exceeds max, scale down from height instead
+	if window_height > max_height:
+		window_height = max_height
+		window_width = int(window_height * ASPECT_RATIO)
+
+	var window_size := Vector2i(window_width, window_height)
+	DisplayServer.window_set_size(window_size)
+
+	# Center the window
+	var screen_center := screen_size / 2
+	var window_pos := Vector2i(screen_center.x - window_width / 2, screen_center.y - window_height / 2)
+	DisplayServer.window_set_position(window_pos)
