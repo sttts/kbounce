@@ -376,12 +376,21 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 		var check_rect := inner_rect if inner_rect.has_area() else rect
 		for ball in balls:
 			if ball != object:
-				if check_rect.intersects(ball.next_bounding_rect()):
+				var ball_next: Rect2 = ball.next_bounding_rect()
+				if check_rect.intersects(ball_next):
+					# Ball hit inner wall area - wall dies
 					var hit := Collision.Hit.new()
 					hit.type = Collision.Type.BALL
-					hit.bounding_rect = ball.next_bounding_rect()
-					hit.normal = Collision.calculate_normal(check_rect, hit.bounding_rect)
+					hit.bounding_rect = ball_next
+					hit.normal = Collision.calculate_normal(check_rect, ball_next)
 					result.append(hit)
+				elif object is Wall and rect.intersects(ball_next):
+					# Ball hit wall tip (not inner rect) - check if ball would be trapped
+					if _would_ball_be_trapped(ball, object as Wall):
+						# Ball would be trapped - wall should materialize early
+						var hit := Collision.Hit.new()
+						hit.type = Collision.Type.TILE
+						result.append(hit)
 
 	return result
 
@@ -682,6 +691,57 @@ func _flood_fill(start_x: int, start_y: int):
 		stack.push_back(Vector2i(x + 1, y))  # Right
 		stack.push_back(Vector2i(x, y + 1))  # Down
 		stack.push_back(Vector2i(x - 1, y))  # Left
+
+
+## Check if ball would be trapped if wall continues growing
+## Returns true if ball has insufficient space to escape after reflecting off wall tip
+func _would_ball_be_trapped(ball: Ball, wall: Wall) -> bool:
+	var ball_rect := ball.ball_bounding_rect()
+	var ball_center := ball_rect.get_center()
+	var check_x := int(ball_center.x)
+	var check_y := int(ball_center.y)
+
+	# Ball needs at least 2 tiles of free space to escape safely
+	const MIN_ESCAPE_SPACE := 2
+
+	match wall.direction:
+		Wall.Direction.DOWN:
+			# Wall going down, ball must escape upward
+			var free := 0
+			for y in range(check_y - 1, 0, -1):
+				if tiles[check_x][y] != TileType.FREE:
+					break
+				free += 1
+			return free < MIN_ESCAPE_SPACE
+
+		Wall.Direction.UP:
+			# Wall going up, ball must escape downward
+			var free := 0
+			for y in range(check_y + 1, TILE_NUM_H - 1):
+				if tiles[check_x][y] != TileType.FREE:
+					break
+				free += 1
+			return free < MIN_ESCAPE_SPACE
+
+		Wall.Direction.RIGHT:
+			# Wall going right, ball must escape leftward
+			var free := 0
+			for x in range(check_x - 1, 0, -1):
+				if tiles[x][check_y] != TileType.FREE:
+					break
+				free += 1
+			return free < MIN_ESCAPE_SPACE
+
+		Wall.Direction.LEFT:
+			# Wall going left, ball must escape rightward
+			var free := 0
+			for x in range(check_x + 1, TILE_NUM_W - 1):
+				if tiles[x][check_y] != TileType.FREE:
+					break
+				free += 1
+			return free < MIN_ESCAPE_SPACE
+
+	return false
 
 
 ## Custom drawing for the board tiles
