@@ -391,7 +391,8 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 		return
 
 	if response_code != 200:
-		score_failed.emit("Server error: %d" % response_code)
+		var error_msg := _parse_error_response(body, response_code)
+		score_failed.emit(error_msg)
 		return
 
 	var json = JSON.parse_string(body.get_string_from_utf8())
@@ -517,3 +518,15 @@ func _parse_retry_after(headers: PackedStringArray) -> int:
 			if value.is_valid_int():
 				return value.to_int()
 	return 60  # Default to 60 seconds
+
+
+## Parse error response body to extract error message
+func _parse_error_response(body: PackedByteArray, response_code: int) -> String:
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if json != null and json is Dictionary and json.has("error"):
+		var error: String = json["error"]
+		# Return user-friendly messages for known errors
+		if error == "Nickname contains inappropriate content":
+			return "Nickname not allowed"
+		return error
+	return "Server error: %d" % response_code

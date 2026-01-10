@@ -458,6 +458,10 @@ func _on_score_failed(error: String):
 	if error == "Rate limited":
 		return
 
+	# Show user-facing errors (like profanity filter)
+	if error == "Nickname not allowed":
+		_show_error_notification(error)
+
 	# Score submission failed, try to load leaderboard as fallback
 	LeaderboardManager.load_leaderboard()
 
@@ -629,6 +633,17 @@ func _on_share_notification(message: String):
 		add_child(_share_notification_dialog)
 	_share_notification_dialog.dialog_text = message
 	_share_notification_dialog.popup_centered()
+
+
+var _error_notification_dialog: AcceptDialog = null
+
+func _show_error_notification(message: String):
+	if _error_notification_dialog == null:
+		_error_notification_dialog = AcceptDialog.new()
+		_error_notification_dialog.title = "Error"
+		add_child(_error_notification_dialog)
+	_error_notification_dialog.dialog_text = message
+	_error_notification_dialog.popup_centered()
 
 
 func _update_game_over_button_state():
