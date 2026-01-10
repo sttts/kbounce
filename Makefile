@@ -66,6 +66,8 @@ $(MAC_APP): $(VERSION_FILE)
 	@echo "==> Patching version to $(APPLE_VERSION)..."
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
+	@/usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 11.0" $(MAC_APP)/Contents/Info.plist 2>/dev/null || \
+		/usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion 11.0" $(MAC_APP)/Contents/Info.plist
 	@echo "==> Verifying code signature..."
 	codesign -dv --verbose=2 $(MAC_APP)
 	@echo "==> macOS app exported to $(MAC_APP)"
