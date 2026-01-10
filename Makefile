@@ -39,12 +39,15 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all mac mac-dev mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 all: mac ios web ## Build all platforms
+
+test: ## Run unit tests
+	$(GODOT) --headless --script tests/test_runner.gd
 
 $(VERSION_FILE): version ;
 
