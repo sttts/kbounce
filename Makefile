@@ -26,7 +26,7 @@ IOS_ARCHIVE := $(IOS_DIR)/$(APP_NAME).xcarchive
 IOS_IPA := $(IOS_DIR)/$(APP_NAME).ipa
 
 # Signing identities (adjust these to match your certificates)
-MAC_APP_IDENTITY := 3rd Party Mac Developer Application: Stefan Schimanski ($(TEAM_ID))
+MAC_APP_IDENTITY := Apple Distribution: Stefan Schimanski ($(TEAM_ID))
 MAC_INSTALLER_IDENTITY := 3rd Party Mac Developer Installer: Stefan Schimanski ($(TEAM_ID))
 
 # App Store Connect API credentials (loaded from credentials.mk)
@@ -63,11 +63,16 @@ $(MAC_APP): $(VERSION_FILE)
 	@echo "==> Exporting macOS app..."
 	@mkdir -p $(MAC_DIR)
 	$(GODOT) --headless --export-release "macOS" $(MAC_APP)
+	@echo "==> Extracting entitlements..."
+	@codesign -d --entitlements - --xml $(MAC_APP) > $(MAC_DIR)/entitlements.plist
 	@echo "==> Patching version to $(APPLE_VERSION)..."
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@/usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 11.0" $(MAC_APP)/Contents/Info.plist 2>/dev/null || \
 		/usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion 11.0" $(MAC_APP)/Contents/Info.plist
+	@echo "==> Re-signing app after modifications..."
+	codesign --force --options runtime --entitlements $(MAC_DIR)/entitlements.plist \
+		--sign "$(MAC_APP_IDENTITY)" $(MAC_APP)
 	@echo "==> Verifying code signature..."
 	codesign -dv --verbose=2 $(MAC_APP)
 	@echo "==> macOS app exported to $(MAC_APP)"
