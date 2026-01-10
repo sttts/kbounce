@@ -84,10 +84,12 @@ const TOKEN_REFRESH_BUFFER := 300
 var _current_score_id: String = ""
 var _current_update_token: String = ""
 
-## Pending screenshot for submission (50% size)
+## Pending screenshot for submission (resized to fixed width)
 var pending_screenshot: Image = null
 ## Pending thumbnail for submission (small for leaderboard display)
 var pending_thumbnail: Image = null
+## Screenshot width (popup displays at 650px, slightly larger for quality)
+const SCREENSHOT_WIDTH := 800
 ## Thumbnail width (leaderboard button is 48x32, we generate slightly larger for quality)
 const THUMBNAIL_WIDTH := 96
 
@@ -322,10 +324,9 @@ func capture_screenshot(viewport: Viewport):
 	thumb.resize(THUMBNAIL_WIDTH, thumb_height, Image.INTERPOLATE_LANCZOS)
 	pending_thumbnail = thumb
 
-	# Resize to 50% for smaller upload size
-	var target_width := image.get_width() / 2
-	var target_height := image.get_height() / 2
-	image.resize(target_width, target_height, Image.INTERPOLATE_LANCZOS)
+	# Resize to fixed width for consistent upload size (aspect ratio same as thumbnail)
+	var screenshot_height := int(SCREENSHOT_WIDTH * aspect)
+	image.resize(SCREENSHOT_WIDTH, screenshot_height, Image.INTERPOLATE_LANCZOS)
 	pending_screenshot = image
 
 
