@@ -89,11 +89,14 @@ mac-dev: $(VERSION_FILE) ## Export macOS app for local development
 	@mkdir -p $(MAC_DIR)
 	@rm -rf $(MAC_APP)
 	$(GODOT) --headless --export-release "macOS" $(MAC_APP)
+	@echo "==> Extracting entitlements..."
+	@codesign -d --entitlements - --xml $(MAC_APP) > $(MAC_DIR)/entitlements-dev.plist
 	@echo "==> Patching version to $(APPLE_VERSION)..."
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
-	@echo "==> Signing with development identity..."
-	codesign --force --options runtime --sign "$(MAC_DEV_IDENTITY)" $(MAC_APP)
+	@echo "==> Re-signing with development identity..."
+	codesign --force --options runtime --entitlements $(MAC_DIR)/entitlements-dev.plist \
+		--sign "$(MAC_DEV_IDENTITY)" $(MAC_APP)
 	@echo "==> macOS dev app exported to $(MAC_APP)"
 
 mac-pkg: $(MAC_PKG) ## Create macOS installer package (.pkg)
