@@ -90,11 +90,11 @@ func _ready():
 	# Connect help buttons
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
-	help_version_label.text = ProjectSettings.get_setting("application/config/version", "dev")
+	help_version_label.text = Version.TAG
 
-	# Connect fullscreen button (web only, hidden on iOS where Fullscreen API is unsupported)
+	# Connect fullscreen button (hidden on iOS where Fullscreen API is unsupported)
 	var is_ios_web := OS.has_feature("web") and (OS.has_feature("web_ios") or _is_ios_safari())
-	fullscreen_button.visible = OS.has_feature("web") and not is_ios_web
+	fullscreen_button.visible = not is_ios_web
 	fullscreen_button.pressed.connect(_on_fullscreen_button_pressed)
 
 	# Connect to game's direction signal when game is available
