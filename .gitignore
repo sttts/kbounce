@@ -26,6 +26,9 @@ mono_crash.*.json
 build/
 export/
 
+# Generated version file
+scripts/version.gd
+
 # OS-specific
 .DS_Store
 Thumbs.db

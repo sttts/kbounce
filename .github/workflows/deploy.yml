@@ -24,13 +24,6 @@ jobs:
         with:
           fetch-depth: 0  # Need full history for git describe
 
-      - name: Inject version from git
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          VERSION=$(git describe --tags --dirty --always)
-          sed -i "s/config\/version=\"dev\"/config\/version=\"$VERSION\"/" project.godot
-          echo "Injected version: $VERSION"
-
       - name: Setup export templates
         run: |
           mkdir -p ~/.local/share/godot/export_templates/4.5.stable
@@ -38,8 +31,9 @@ jobs:
 
       - name: Export web build
         run: |
-          mkdir -p build
-          godot --headless --export-release "Web" build/kbounce.html
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          VERSION=$(git describe --tags --dirty --always)
+          make web VERSION="$VERSION"
           cp docs/index.html build/
           cp docs/CNAME build/
 
