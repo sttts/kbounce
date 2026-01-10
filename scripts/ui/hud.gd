@@ -155,7 +155,7 @@ func _on_time_changed(time: int):
 	if time <= 5:
 		time_label.add_theme_color_override("font_color", Color.RED)
 	else:
-		time_label.add_theme_color_override("font_color", Color.BLACK)
+		time_label.add_theme_color_override("font_color", Color.WHITE)
 
 
 func _on_fill_changed(percent: int):
@@ -163,9 +163,9 @@ func _on_fill_changed(percent: int):
 
 	# Highlight when close to goal
 	if percent >= 75:
-		fill_label.add_theme_color_override("font_color", Color(0, 0.5, 0))  # Dark green
+		fill_label.add_theme_color_override("font_color", Color(0.5, 1.0, 0.5))  # Light green
 	else:
-		fill_label.add_theme_color_override("font_color", Color.BLACK)
+		fill_label.add_theme_color_override("font_color", Color.WHITE)
 
 
 func _on_direction_button_pressed():

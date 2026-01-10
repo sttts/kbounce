@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjkuukdmsrbnu"
-path="res://.godot/imported/play.svg-e9236ccb724ef92a26e89cd871a33e4f.ctex"
+uid="uid://c6k12s24dw1xa"
+path="res://.godot/imported/grid_tile_dark.png-c41c259c0a3273cb3da5b6650bffb759.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/icons/play.svg"
-dest_files=["res://.godot/imported/play.svg-e9236ccb724ef92a26e89cd871a33e4f.ctex"]
+source_file="res://assets/themes/glass/grid_tile_dark.png"
+dest_files=["res://.godot/imported/grid_tile_dark.png-c41c259c0a3273cb3da5b6650bffb759.ctex"]
 
 [params]
 
@@ -38,6 +38,3 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=2.0
-editor/scale_with_editor_scale=false
-editor/convert_colors_with_editor_theme=false

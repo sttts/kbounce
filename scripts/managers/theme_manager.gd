@@ -10,7 +10,8 @@ signal theme_changed(theme_name: String)
 
 ## Available themes
 const THEMES := [
-	"classic"
+	"classic",
+	"glass"
 ]
 
 ## Required sprite names for each theme
@@ -25,7 +26,7 @@ const SPRITE_NAMES := [
 ]
 
 ## Currently loaded theme name
-var current_theme := "classic"
+var current_theme := "glass"
 
 ## Loaded textures for current theme
 var textures := {}

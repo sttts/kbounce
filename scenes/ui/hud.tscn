@@ -97,7 +97,7 @@ anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 28.0
 grow_horizontal = 2
-color = Color(1, 1, 1, 0.9)
+color = Color(0.165, 0.204, 0.255, 0.95)
 
 [node name="TopBar" type="HBoxContainer" parent="."]
 layout_mode = 1
@@ -124,7 +124,7 @@ stretch_mode = 5
 
 [node name="ScoreLabel" type="Label" parent="TopBar/ScoreBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "0"
 
@@ -144,7 +144,7 @@ stretch_mode = 5
 
 [node name="LevelLabel" type="Label" parent="TopBar/LevelBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "1"
 
@@ -164,7 +164,7 @@ stretch_mode = 5
 
 [node name="LivesLabel" type="Label" parent="TopBar/LivesBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "3"
 
@@ -184,7 +184,7 @@ stretch_mode = 5
 
 [node name="TimeLabel" type="Label" parent="TopBar/TimeBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "90"
 
@@ -204,7 +204,7 @@ stretch_mode = 5
 
 [node name="FillLabel" type="Label" parent="TopBar/FillBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 text = "0%"
 
@@ -256,7 +256,7 @@ grow_horizontal = 0
 grow_vertical = 0
 rotation = -1.5708
 pivot_offset = Vector2(6, 33)
-theme_override_colors/font_color = Color(0.3, 0.18, 0.05, 1)
+theme_override_colors/font_color = Color(0.55, 0.55, 0.55, 1)
 theme_override_font_sizes/font_size = 9
 text = "Impressum"
 underline = 2
