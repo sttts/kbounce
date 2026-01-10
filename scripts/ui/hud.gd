@@ -309,11 +309,12 @@ func _update_overlays():
 
 
 func _update_button_states(state: GameManager.GameState):
-	# Stop button: enabled during active game
+	# Stop button: enabled during active game and game over leaderboard
 	var can_stop := state in [
 		GameManager.GameState.RUNNING,
 		GameManager.GameState.PAUSED,
-		GameManager.GameState.BETWEEN_LEVELS
+		GameManager.GameState.BETWEEN_LEVELS,
+		GameManager.GameState.GAME_OVER_LEADERBOARD
 	]
 	stop_button.disabled = not can_stop
 
