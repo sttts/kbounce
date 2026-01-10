@@ -453,9 +453,12 @@ func _on_score_submitted(_score_id: String, _update_token: String, _rank: int, _
 	pass
 
 
-func _on_score_failed(_error: String):
+func _on_score_failed(error: String):
+	# Rate limited errors are handled by _on_rate_limited with retry timer
+	if error == "Rate limited":
+		return
+
 	# Score submission failed, try to load leaderboard as fallback
-	# (don't call on_api_ready yet - wait for leaderboard response)
 	LeaderboardManager.load_leaderboard()
 
 
@@ -536,10 +539,15 @@ func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_ent
 	GameManager.on_api_ready(_pending_flow_id)
 
 
-func _on_game_over_leaderboard_failed(_error: String):
+func _on_game_over_leaderboard_failed(error: String):
 	# Only handle during game over (either sub-state)
 	if not GameManager.is_game_over():
 		return
+
+	# Rate limited errors are handled by _on_rate_limited with retry timer
+	if error == "Rate limited":
+		return
+
 	game_over_loading_label.text = "Offline mode"
 	game_over_loading_label.visible = true
 	_clear_game_over_entries()
@@ -655,16 +663,21 @@ func _on_rate_limited(retry_after: int):
 
 
 func _on_rate_limit_tick():
+	# Stop if no longer in game over state (user started new game)
+	if not GameManager.is_game_over():
+		_rate_limit_timer.stop()
+		return
+
 	_rate_limit_remaining -= 1
 
 	if _rate_limit_remaining <= 0:
 		_rate_limit_timer.stop()
 		game_over_loading_label.text = "Retrying..."
-		# Retry score submission
+
+		# Retry score submission or load leaderboard
 		if LeaderboardManager.is_token_valid():
 			LeaderboardManager.submit_score(GameManager.score, GameManager.level)
 		else:
-			# Token expired during wait, just load leaderboard
 			LeaderboardManager.load_leaderboard()
 	else:
 		game_over_loading_label.text = "Rate limited. Retry in %ds..." % _rate_limit_remaining
