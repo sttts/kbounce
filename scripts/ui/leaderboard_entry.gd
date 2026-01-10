@@ -31,6 +31,7 @@ var _is_reportable: bool = false
 var _http_request: HTTPRequest = null
 var _pulse_tween: Tween = null
 var _last_text: String = ""  # For virtual keyboard polling workaround
+var _edit_stylebox: StyleBoxFlat = null  # For pulse animation
 
 
 func _ready():
@@ -155,28 +156,28 @@ func set_screenshot_texture(texture: Texture2D):
 
 
 func _start_pulse_animation():
-	# Set initial bright gold color
-	modulate = Color(1.0, 0.9, 0.4)
+	# Create a custom StyleBox for the edit field with animated border
+	_edit_stylebox = StyleBoxFlat.new()
+	_edit_stylebox.bg_color = Color(1, 1, 0.9)  # Slight yellow tint
+	_edit_stylebox.border_width_left = 3
+	_edit_stylebox.border_width_top = 3
+	_edit_stylebox.border_width_right = 3
+	_edit_stylebox.border_width_bottom = 3
+	_edit_stylebox.border_color = Color(1.0, 0.8, 0.0)  # Gold border
+	_edit_stylebox.corner_radius_left = 4
+	_edit_stylebox.corner_radius_top = 4
+	_edit_stylebox.corner_radius_right = 4
+	_edit_stylebox.corner_radius_bottom = 4
+	name_edit.add_theme_stylebox_override("normal", _edit_stylebox)
 
-	# Wait until size is computed (may take multiple frames)
-	for i in range(10):
-		await get_tree().process_frame
-		if size.x > 0:
-			break
+	# Wait a frame for the stylebox to be applied
+	await get_tree().process_frame
 
-	if size.x > 0:
-		pivot_offset = size / 2
-
-		# Create looping pulse animation with color and subtle scale
-		_pulse_tween = create_tween()
-		_pulse_tween.set_loops()
-		_pulse_tween.set_parallel(true)
-		_pulse_tween.tween_property(self, "modulate", Color(1.0, 1.0, 0.6), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_pulse_tween.tween_property(self, "scale", Vector2(1.02, 1.02), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_pulse_tween.chain()
-		_pulse_tween.set_parallel(true)
-		_pulse_tween.tween_property(self, "modulate", Color(1.0, 0.85, 0.3), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		_pulse_tween.tween_property(self, "scale", Vector2(1.0, 1.0), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	# Create looping pulse animation on border color
+	_pulse_tween = create_tween()
+	_pulse_tween.set_loops()
+	_pulse_tween.tween_property(_edit_stylebox, "border_color", Color(1.0, 0.6, 0.0), 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_pulse_tween.tween_property(_edit_stylebox, "border_color", Color(1.0, 0.9, 0.2), 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _on_name_text_changed(new_text: String):

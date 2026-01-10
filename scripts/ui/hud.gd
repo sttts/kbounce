@@ -465,37 +465,69 @@ func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_ent
 	game_over_loading_label.visible = false
 	_clear_game_over_entries()
 
+	const MAX_VISIBLE := 9
 	var user_score := GameManager.score
-	var user_entry_inserted := false
 
-	# Note: _user_rank from API is the rank of user's BEST score overall, not this game's score.
-	# We insert by score comparison to ensure correct position regardless of API response.
+	# Build combined list with user entry at correct position
+	var combined_entries: Array = []
+	var user_position := -1
+
 	for entry_data in entries:
-		var entry_rank: int = entry_data.get("rank", 0)
 		var entry_score: int = entry_data.get("score", 0)
 		var is_user: bool = entry_data.get("is_user", false)
 
-		# Insert user's editable entry when we find a lower score (if score > 0)
-		if user_score > 0 and not user_entry_inserted and user_score >= entry_score:
-			_create_user_entry(entry_rank)
-			user_entry_inserted = true
+		# Insert user entry when we find a lower score (if score > 0)
+		if user_score > 0 and user_position == -1 and user_score >= entry_score:
+			user_position = combined_entries.size()
+			combined_entries.append({"is_user_entry": true, "rank": entry_data.get("rank", 0)})
 
 		# Skip API entry if it's the same user with same score (we replaced it)
-		if is_user and entry_score == user_score and user_entry_inserted:
+		if is_user and entry_score == user_score and user_position != -1:
 			continue
 
-		var entry = _entry_scene.instantiate()
-		game_over_entries_container.add_child(entry)
-		entry.setup(entry_data, is_user, false)  # never editable for API entries
-		entry.screenshot_clicked.connect(_on_screenshot_clicked)
+		combined_entries.append(entry_data)
 
-	# Add user's editable entry at end if not inserted yet (if score > 0)
-	if user_score > 0 and not user_entry_inserted:
-		# Rank is after the last entry, or 1 if no entries
+	# Add user entry at end if not inserted yet (if score > 0)
+	if user_score > 0 and user_position == -1:
+		user_position = combined_entries.size()
 		var last_rank: int = 1
 		if entries.size() > 0:
 			last_rank = entries[entries.size() - 1].get("rank", 0) + 1
-		_create_user_entry(last_rank)
+		combined_entries.append({"is_user_entry": true, "rank": last_rank})
+
+	# Calculate which entries to show (max 9, centered on user)
+	var start_idx := 0
+	var end_idx := combined_entries.size()
+
+	if combined_entries.size() > MAX_VISIBLE:
+		if user_position == -1:
+			# No user entry, just show first 9
+			end_idx = MAX_VISIBLE
+		else:
+			# Center around user position
+			var half := MAX_VISIBLE / 2
+			start_idx = user_position - half
+			end_idx = start_idx + MAX_VISIBLE
+
+			# Clamp to valid range
+			if start_idx < 0:
+				start_idx = 0
+				end_idx = MAX_VISIBLE
+			elif end_idx > combined_entries.size():
+				end_idx = combined_entries.size()
+				start_idx = end_idx - MAX_VISIBLE
+
+	# Create visible entries
+	for i in range(start_idx, end_idx):
+		var entry_data = combined_entries[i]
+		if entry_data.get("is_user_entry", false):
+			_create_user_entry(entry_data.get("rank", 0))
+		else:
+			var is_user: bool = entry_data.get("is_user", false)
+			var entry = _entry_scene.instantiate()
+			game_over_entries_container.add_child(entry)
+			entry.setup(entry_data, is_user, false)
+			entry.screenshot_clicked.connect(_on_screenshot_clicked)
 
 	_update_game_over_button_state()
 
