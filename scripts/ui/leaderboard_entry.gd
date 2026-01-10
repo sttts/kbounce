@@ -107,6 +107,9 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 
 	# Show editable field for current user entry
 	if editable:
+		# Hide flag and location to give more space to name edit
+		flag_texture.visible = false
+		location_label.visible = false
 		name_label.visible = false
 		name_edit.visible = true
 		name_edit.text = nickname
