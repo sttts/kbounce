@@ -112,7 +112,7 @@ ios-archive: $(IOS_XCODEPROJ)
 		-allowProvisioningUpdates archive
 	@echo "==> Archive created: $(IOS_ARCHIVE)"
 
-ios-ipa: $(IOS_ARCHIVE)
+ios-ipa: ios-archive
 	@echo "==> Exporting IPA..."
 	xcodebuild -exportArchive -archivePath $(IOS_ARCHIVE) \
 		-exportOptionsPlist export_options.plist \
