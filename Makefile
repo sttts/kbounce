@@ -9,6 +9,7 @@ TEAM_ID := QUY34Y5C3U
 # Version: use git describe, allow override via VERSION env var for CI
 # CI usage: make web VERSION=${{ github.ref_name }}
 VERSION ?= $(shell git describe --tags --always 2>/dev/null || echo "dev")
+APPLE_VERSION := $(patsubst v%,%,$(VERSION))
 VERSION_FILE := scripts/version.gd
 
 # Directories
@@ -62,6 +63,9 @@ $(MAC_APP): $(VERSION_FILE)
 	@echo "==> Exporting macOS app..."
 	@mkdir -p $(MAC_DIR)
 	$(GODOT) --headless --export-release "macOS" $(MAC_APP)
+	@echo "==> Patching version to $(APPLE_VERSION)..."
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@echo "==> Verifying code signature..."
 	codesign -dv --verbose=2 $(MAC_APP)
 	@echo "==> macOS app exported to $(MAC_APP)"
@@ -99,9 +103,9 @@ $(IOS_XCODEPROJ): $(VERSION_FILE)
 ios-archive: $(IOS_XCODEPROJ) ## Build iOS archive
 	@echo "==> Patching Xcode project for automatic signing..."
 	@sed -i '' 's/"Apple Distribution"/"Apple Development"/g' $(IOS_XCODEPROJ)/project.pbxproj
-	@echo "==> Patching version to $(VERSION)..."
-	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(VERSION)" $(IOS_DIR)/$(APP_NAME)/$(APP_NAME)-Info.plist
-	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(VERSION)" $(IOS_DIR)/$(APP_NAME)/$(APP_NAME)-Info.plist
+	@echo "==> Patching version to $(APPLE_VERSION)..."
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(IOS_DIR)/$(APP_NAME)/$(APP_NAME)-Info.plist
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(IOS_DIR)/$(APP_NAME)/$(APP_NAME)-Info.plist
 	@echo "==> Building iOS archive..."
 	xcodebuild -project $(IOS_XCODEPROJ) -scheme $(APP_NAME) \
 		-configuration Release -archivePath $(IOS_ARCHIVE) \

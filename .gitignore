@@ -28,6 +28,7 @@ export/
 
 # Generated version file
 scripts/version.gd
+scripts/version.gd.uid
 
 # Local credentials
 credentials.mk
