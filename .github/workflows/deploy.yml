@@ -31,11 +31,14 @@ jobs:
 
       - name: Export web build
         run: |
+          apt-get update && apt-get install -y make pandoc
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           VERSION=$(git describe --tags --dirty --always)
           make web VERSION="$VERSION"
           cp docs/index.html build/
           cp docs/CNAME build/
+          pandoc docs/privacy.md -s -o build/privacy.html --metadata title="Privacy Policy - KBounce"
+          pandoc docs/privacy-de.md -s -o build/privacy-de.html --metadata title="Datenschutzerklärung - KBounce"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
