@@ -42,16 +42,23 @@ help: ## Show this help
 
 all: mac ios web ## Build all platforms
 
+$(VERSION_FILE): version ;
+
 version:
-	@echo "==> Generating version file ($(VERSION))..."
 	@mkdir -p $(dir $(VERSION_FILE))
-	@echo 'class_name Version' > $(VERSION_FILE)
-	@echo 'const TAG = "$(VERSION)"' >> $(VERSION_FILE)
+	@echo 'class_name Version' > $(VERSION_FILE).tmp
+	@echo 'const TAG = "$(VERSION)"' >> $(VERSION_FILE).tmp
+	@if ! cmp -s $(VERSION_FILE).tmp $(VERSION_FILE); then \
+		echo "==> Updating version file ($(VERSION))..."; \
+		mv $(VERSION_FILE).tmp $(VERSION_FILE); \
+	else \
+		rm $(VERSION_FILE).tmp; \
+	fi
 
 # macOS targets
-mac: version $(MAC_APP) ## Export macOS app
+mac: $(MAC_APP) ## Export macOS app
 
-$(MAC_APP):
+$(MAC_APP): $(VERSION_FILE)
 	@echo "==> Exporting macOS app..."
 	@mkdir -p $(MAC_DIR)
 	$(GODOT) --headless --export-release "macOS" $(MAC_APP)
@@ -81,9 +88,9 @@ mac-transporter: $(MAC_PKG) ## Open PKG in Transporter
 	open -a Transporter $(MAC_PKG)
 
 # iOS targets
-ios: version $(IOS_XCODEPROJ) ## Export iOS Xcode project
+ios: $(IOS_XCODEPROJ) ## Export iOS Xcode project
 
-$(IOS_XCODEPROJ):
+$(IOS_XCODEPROJ): $(VERSION_FILE)
 	@echo "==> Exporting iOS Xcode project..."
 	@mkdir -p $(IOS_DIR)
 	$(GODOT) --headless --export-release "iOS" $(IOS_DIR)/$(APP_NAME)
@@ -92,6 +99,9 @@ $(IOS_XCODEPROJ):
 ios-archive: $(IOS_XCODEPROJ) ## Build iOS archive
 	@echo "==> Patching Xcode project for automatic signing..."
 	@sed -i '' 's/"Apple Distribution"/"Apple Development"/g' $(IOS_XCODEPROJ)/project.pbxproj
+	@echo "==> Patching version to $(VERSION)..."
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(VERSION)" $(IOS_DIR)/$(APP_NAME)/$(APP_NAME)-Info.plist
+	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(VERSION)" $(IOS_DIR)/$(APP_NAME)/$(APP_NAME)-Info.plist
 	@echo "==> Building iOS archive..."
 	xcodebuild -project $(IOS_XCODEPROJ) -scheme $(APP_NAME) \
 		-configuration Release -archivePath $(IOS_ARCHIVE) \
@@ -115,7 +125,7 @@ ios-transporter: ios-ipa ## Open IPA in Transporter
 	open -a Transporter $(IOS_IPA)
 
 # Web target
-web: version ## Export web build
+web: $(VERSION_FILE) ## Export web build
 	@echo "==> Exporting web build..."
 	@mkdir -p $(WEB_DIR)
 	$(GODOT) --headless --export-release "Web" $(WEB_DIR)/kbounce.html
