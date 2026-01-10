@@ -106,6 +106,8 @@ $(IOS_XCODEPROJ):
 	@echo "==> Xcode project exported to $(IOS_XCODEPROJ)"
 
 ios-archive: $(IOS_XCODEPROJ)
+	@echo "==> Patching Xcode project for automatic signing..."
+	@sed -i '' 's/"Apple Distribution"/"Apple Development"/g' $(IOS_XCODEPROJ)/project.pbxproj
 	@echo "==> Building iOS archive..."
 	xcodebuild -project $(IOS_XCODEPROJ) -scheme $(APP_NAME) \
 		-configuration Release -archivePath $(IOS_ARCHIVE) \
