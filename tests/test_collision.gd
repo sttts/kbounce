@@ -222,6 +222,183 @@ func test_trap_ball_has_escape_route():
 
 
 # =============================================================================
+# Tests for wall-to-wall collision helpers
+# =============================================================================
+
+func test_paired_walls_up_down():
+	# UP and DOWN from same origin are paired
+	var result := _are_paired_walls(10, 10, Wall.Direction.UP, 10, 10, Wall.Direction.DOWN)
+	return TestRunner.assert_true(result, "UP/DOWN from same origin should be paired")
+
+
+func test_paired_walls_left_right():
+	# LEFT and RIGHT from same origin are paired
+	var result := _are_paired_walls(10, 10, Wall.Direction.LEFT, 10, 10, Wall.Direction.RIGHT)
+	return TestRunner.assert_true(result, "LEFT/RIGHT from same origin should be paired")
+
+
+func test_not_paired_different_origin():
+	# Same directions but different origins are not paired
+	var result := _are_paired_walls(10, 10, Wall.Direction.UP, 15, 10, Wall.Direction.DOWN)
+	return TestRunner.assert_true(not result, "Different origins should not be paired")
+
+
+func test_not_paired_same_direction():
+	# Same direction walls are not paired
+	var result := _are_paired_walls(10, 10, Wall.Direction.UP, 10, 10, Wall.Direction.UP)
+	return TestRunner.assert_true(not result, "Same direction should not be paired")
+
+
+func test_not_paired_perpendicular():
+	# UP and LEFT are not paired (perpendicular)
+	var result := _are_paired_walls(10, 10, Wall.Direction.UP, 10, 10, Wall.Direction.LEFT)
+	return TestRunner.assert_true(not result, "Perpendicular walls should not be paired")
+
+
+func test_tip_rect_up():
+	var rect := Rect2(5, 3, 1, 5)  # Wall from y=3 to y=8
+	var tip := _get_tip_rect(rect, Wall.Direction.UP)
+	# UP wall tip is at the top (y=3)
+	return TestRunner.assert_approx(tip.position.y, 3.0, 0.01, "Tip Y position") + \
+		   TestRunner.assert_approx(tip.size.y, 0.1, 0.01, "Tip height")
+
+
+func test_tip_rect_down():
+	var rect := Rect2(5, 3, 1, 5)  # Wall from y=3 to y=8
+	var tip := _get_tip_rect(rect, Wall.Direction.DOWN)
+	# DOWN wall tip is at the bottom (y=8 - 0.1)
+	return TestRunner.assert_approx(tip.position.y, 7.9, 0.01, "Tip Y position")
+
+
+func test_tip_rect_left():
+	var rect := Rect2(3, 5, 5, 1)  # Wall from x=3 to x=8
+	var tip := _get_tip_rect(rect, Wall.Direction.LEFT)
+	# LEFT wall tip is at the left (x=3)
+	return TestRunner.assert_approx(tip.position.x, 3.0, 0.01, "Tip X position") + \
+		   TestRunner.assert_approx(tip.size.x, 0.1, 0.01, "Tip width")
+
+
+func test_tip_rect_right():
+	var rect := Rect2(3, 5, 5, 1)  # Wall from x=3 to x=8
+	var tip := _get_tip_rect(rect, Wall.Direction.RIGHT)
+	# RIGHT wall tip is at the right (x=8 - 0.1)
+	return TestRunner.assert_approx(tip.position.x, 7.9, 0.01, "Tip X position")
+
+
+func test_rects_share_tile_overlapping():
+	var rect1 := Rect2(5.0, 5.0, 1.0, 1.0)  # Tile (5,5)
+	var rect2 := Rect2(5.5, 5.5, 1.0, 1.0)  # Overlaps into tile (5,5)
+	return TestRunner.assert_true(_rects_share_tile(rect1, rect2), "Overlapping rects should share tile")
+
+
+func test_rects_share_tile_same_tile():
+	var rect1 := Rect2(5.1, 5.1, 0.3, 0.3)  # Inside tile (5,5)
+	var rect2 := Rect2(5.5, 5.5, 0.3, 0.3)  # Also inside tile (5,5)
+	return TestRunner.assert_true(_rects_share_tile(rect1, rect2), "Rects in same tile should share")
+
+
+func test_rects_share_tile_separate_tiles():
+	# Rects in tiles that don't touch (2 tiles apart)
+	var rect1 := Rect2(5.0, 5.0, 0.8, 0.8)  # Tile (5,5)
+	var rect2 := Rect2(7.0, 5.0, 0.8, 0.8)  # Tile (7,5) - 2 tiles apart
+	return TestRunner.assert_true(not _rects_share_tile(rect1, rect2), "Separate tiles should not share")
+
+
+func test_rects_share_tile_distant():
+	var rect1 := Rect2(5.0, 5.0, 1.0, 1.0)
+	var rect2 := Rect2(10.0, 10.0, 1.0, 1.0)
+	return TestRunner.assert_true(not _rects_share_tile(rect1, rect2), "Distant rects should not share tile")
+
+
+func test_get_tip_tile_up():
+	var rect := Rect2(5.0, 3.0, 1.0, 5.0)  # Wall from (5,3) to (6,8)
+	var tip := _get_tip_tile(rect, Wall.Direction.UP)
+	return TestRunner.assert_eq(tip, Vector2i(5, 3), "UP wall tip tile")
+
+
+func test_get_tip_tile_down():
+	var rect := Rect2(5.0, 3.0, 1.0, 5.0)  # Wall from (5,3) to (6,8)
+	var tip := _get_tip_tile(rect, Wall.Direction.DOWN)
+	return TestRunner.assert_eq(tip, Vector2i(5, 7), "DOWN wall tip tile")
+
+
+func test_get_tip_tile_left():
+	var rect := Rect2(3.0, 5.0, 5.0, 1.0)  # Wall from (3,5) to (8,6)
+	var tip := _get_tip_tile(rect, Wall.Direction.LEFT)
+	return TestRunner.assert_eq(tip, Vector2i(3, 5), "LEFT wall tip tile")
+
+
+func test_get_tip_tile_right():
+	var rect := Rect2(3.0, 5.0, 5.0, 1.0)  # Wall from (3,5) to (8,6)
+	var tip := _get_tip_tile(rect, Wall.Direction.RIGHT)
+	return TestRunner.assert_eq(tip, Vector2i(7, 5), "RIGHT wall tip tile")
+
+
+# =============================================================================
+# Tests for flood fill logic
+# =============================================================================
+
+func test_flood_fill_marks_connected_area():
+	var tiles := _create_empty_tiles()
+	_flood_fill(tiles, 10, 10)
+	# After flood fill, the tile should be TEMP
+	return TestRunner.assert_eq(tiles[10][10], Board.TileType.TEMP, "Start tile should be TEMP")
+
+
+func test_flood_fill_spreads_to_neighbors():
+	var tiles := _create_empty_tiles()
+	_flood_fill(tiles, 10, 10)
+	# Adjacent tiles should also be TEMP
+	return TestRunner.assert_eq(tiles[11][10], Board.TileType.TEMP, "Right neighbor") + \
+		   TestRunner.assert_eq(tiles[9][10], Board.TileType.TEMP, "Left neighbor") + \
+		   TestRunner.assert_eq(tiles[10][11], Board.TileType.TEMP, "Below neighbor") + \
+		   TestRunner.assert_eq(tiles[10][9], Board.TileType.TEMP, "Above neighbor")
+
+
+func test_flood_fill_stops_at_walls():
+	var tiles := _create_empty_tiles()
+	# Create a wall barrier
+	for y in range(1, Board.TILE_NUM_H - 1):
+		tiles[15][y] = Board.TileType.WALL
+	_flood_fill(tiles, 10, 10)
+	# Tiles before wall should be TEMP, tiles after wall should be FREE
+	return TestRunner.assert_eq(tiles[14][10], Board.TileType.TEMP, "Before wall should be TEMP") + \
+		   TestRunner.assert_eq(tiles[16][10], Board.TileType.FREE, "After wall should be FREE")
+
+
+func test_flood_fill_stops_at_borders():
+	var tiles := _create_empty_tiles()
+	_flood_fill(tiles, 1, 1)  # Near corner
+	# Border tiles should remain BORDER
+	return TestRunner.assert_eq(tiles[0][1], Board.TileType.BORDER, "Border should remain BORDER")
+
+
+func test_flood_fill_enclosed_area_stays_free():
+	var tiles := _create_empty_tiles()
+	# Create a box of walls enclosing tile (20, 10)
+	for x in range(18, 23):
+		tiles[x][8] = Board.TileType.WALL   # Top wall
+		tiles[x][12] = Board.TileType.WALL  # Bottom wall
+	for y in range(8, 13):
+		tiles[18][y] = Board.TileType.WALL  # Left wall
+		tiles[22][y] = Board.TileType.WALL  # Right wall
+
+	# Flood fill from outside the box
+	_flood_fill(tiles, 10, 10)
+
+	# Inside the box should still be FREE (not TEMP)
+	return TestRunner.assert_eq(tiles[20][10], Board.TileType.FREE, "Enclosed area should stay FREE")
+
+
+func test_flood_fill_from_wall_does_nothing():
+	var tiles := _create_empty_tiles()
+	tiles[10][10] = Board.TileType.WALL
+	_flood_fill(tiles, 10, 10)
+	# Should remain WALL, not changed
+	return TestRunner.assert_eq(tiles[10][10], Board.TileType.WALL, "Wall tile unchanged")
+
+
+# =============================================================================
 # Helper functions
 # =============================================================================
 
@@ -300,3 +477,86 @@ func _check_trapped(tiles: Array, ball_x: int, ball_y: int, wall_dir: int) -> bo
 			return free < MIN_ESCAPE_SPACE
 
 	return false
+
+
+## Check if two walls are paired (mimics Board._are_paired_walls)
+func _are_paired_walls(x1: int, y1: int, dir1: int, x2: int, y2: int, dir2: int) -> bool:
+	if x1 != x2 or y1 != y2:
+		return false
+	return (dir1 == Wall.Direction.UP and dir2 == Wall.Direction.DOWN) or \
+		   (dir1 == Wall.Direction.DOWN and dir2 == Wall.Direction.UP) or \
+		   (dir1 == Wall.Direction.LEFT and dir2 == Wall.Direction.RIGHT) or \
+		   (dir1 == Wall.Direction.RIGHT and dir2 == Wall.Direction.LEFT)
+
+
+## Get tip rectangle (mimics Board._get_tip_rect)
+func _get_tip_rect(rect: Rect2, direction: int) -> Rect2:
+	const TIP_SIZE := 0.1
+	match direction:
+		Wall.Direction.UP:
+			return Rect2(rect.position.x, rect.position.y, rect.size.x, TIP_SIZE)
+		Wall.Direction.DOWN:
+			return Rect2(rect.position.x, rect.end.y - TIP_SIZE, rect.size.x, TIP_SIZE)
+		Wall.Direction.LEFT:
+			return Rect2(rect.position.x, rect.position.y, TIP_SIZE, rect.size.y)
+		Wall.Direction.RIGHT:
+			return Rect2(rect.end.x - TIP_SIZE, rect.position.y, TIP_SIZE, rect.size.y)
+	return rect
+
+
+## Check if two rects share a tile (mimics Board._rects_share_tile)
+func _rects_share_tile(rect1: Rect2, rect2: Rect2) -> bool:
+	var r1_x1 := int(rect1.position.x)
+	var r1_y1 := int(rect1.position.y)
+	var r1_x2 := int(ceil(rect1.end.x - 0.001))
+	var r1_y2 := int(ceil(rect1.end.y - 0.001))
+
+	var r2_x1 := int(rect2.position.x)
+	var r2_y1 := int(rect2.position.y)
+	var r2_x2 := int(ceil(rect2.end.x - 0.001))
+	var r2_y2 := int(ceil(rect2.end.y - 0.001))
+
+	var x_overlap := r1_x1 <= r2_x2 and r2_x1 <= r1_x2
+	var y_overlap := r1_y1 <= r2_y2 and r2_y1 <= r1_y2
+	return x_overlap and y_overlap
+
+
+## Get tip tile (mimics Board._get_tip_tile)
+func _get_tip_tile(rect: Rect2, direction: int) -> Vector2i:
+	match direction:
+		Wall.Direction.UP:
+			return Vector2i(int(rect.position.x), int(rect.position.y))
+		Wall.Direction.DOWN:
+			return Vector2i(int(rect.position.x), int(rect.end.y - 0.01))
+		Wall.Direction.LEFT:
+			return Vector2i(int(rect.position.x), int(rect.position.y))
+		Wall.Direction.RIGHT:
+			return Vector2i(int(rect.end.x - 0.01), int(rect.position.y))
+	return Vector2i(-1, -1)
+
+
+## Flood fill (mimics Board._flood_fill)
+func _flood_fill(tiles: Array, start_x: int, start_y: int):
+	if start_x < 0 or start_x >= Board.TILE_NUM_W or start_y < 0 or start_y >= Board.TILE_NUM_H:
+		return
+	if tiles[start_x][start_y] != Board.TileType.FREE:
+		return
+
+	var stack: Array[Vector2i] = [Vector2i(start_x, start_y)]
+
+	while not stack.is_empty():
+		var pos: Vector2i = stack.pop_back()
+		var x: int = pos.x
+		var y: int = pos.y
+
+		if x < 0 or x >= Board.TILE_NUM_W or y < 0 or y >= Board.TILE_NUM_H:
+			continue
+		if tiles[x][y] != Board.TileType.FREE:
+			continue
+
+		tiles[x][y] = Board.TileType.TEMP
+
+		stack.push_back(Vector2i(x, y - 1))
+		stack.push_back(Vector2i(x + 1, y))
+		stack.push_back(Vector2i(x, y + 1))
+		stack.push_back(Vector2i(x - 1, y))
