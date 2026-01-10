@@ -120,7 +120,7 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 	level_label.text = "%d" % (level + 1)
 
 	var score: int = data.get("score", 0)
-	score_label.text = "⭐ " + _format_score(score)
+	score_label.text = _format_score(score)
 
 	# Highlight current user
 	if is_current_user:
