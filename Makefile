@@ -1,16 +1,4 @@
 # KBounce Build Makefile
-#
-# Usage:
-#   make mac          - Export macOS app
-#   make mac-pkg      - Create macOS installer package
-#   make mac-upload   - Upload to Mac App Store
-#   make ios          - Export iOS Xcode project
-#   make ios-archive  - Build iOS archive
-#   make ios-ipa      - Export iOS IPA
-#   make ios-upload   - Upload to iOS App Store
-#   make web          - Export web build
-#   make all          - Build all platforms
-#   make clean        - Remove build artifacts
 
 # Configuration
 GODOT ?= godot
@@ -40,28 +28,20 @@ IOS_IPA := $(IOS_DIR)/$(APP_NAME).ipa
 MAC_APP_IDENTITY := 3rd Party Mac Developer Application: Stefan Schimanski ($(TEAM_ID))
 MAC_INSTALLER_IDENTITY := 3rd Party Mac Developer Installer: Stefan Schimanski ($(TEAM_ID))
 
-# App Store Connect credentials (use app-specific password stored in keychain)
-# Store with: xcrun notarytool store-credentials "AC_PASSWORD" --apple-id "your@email.com" --team-id "TEAM_ID"
-ASC_CREDENTIALS := AC_PASSWORD
+# App Store Connect API credentials (loaded from credentials.mk)
+# Create credentials.mk with:
+#   API_KEY_ID := your_key_id
+#   API_ISSUER_ID := your_issuer_id
+# Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
+-include credentials.mk
 
-.PHONY: all mac mac-pkg mac-upload ios ios-archive ios-ipa ios-upload web clean help version
+.PHONY: all mac mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs
 
-help:
-	@echo "KBounce Build Targets:"
-	@echo "  make mac          - Export macOS app"
-	@echo "  make mac-pkg      - Create macOS installer package (.pkg)"
-	@echo "  make mac-upload   - Upload to Mac App Store Connect"
-	@echo "  make ios          - Export iOS Xcode project"
-	@echo "  make ios-archive  - Build iOS archive"
-	@echo "  make ios-ipa      - Export iOS IPA"
-	@echo "  make ios-upload   - Upload to iOS App Store Connect"
-	@echo "  make web          - Export web build"
-	@echo "  make all          - Build all platforms"
-	@echo "  make clean        - Remove build artifacts"
+help: ## Show this help
+	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-all: mac ios web
+all: mac ios web ## Build all platforms
 
-# Version file generation (always regenerated)
 version:
 	@echo "==> Generating version file ($(VERSION))..."
 	@mkdir -p $(dir $(VERSION_FILE))
@@ -69,7 +49,7 @@ version:
 	@echo 'const TAG = "$(VERSION)"' >> $(VERSION_FILE)
 
 # macOS targets
-mac: version $(MAC_APP)
+mac: version $(MAC_APP) ## Export macOS app
 
 $(MAC_APP):
 	@echo "==> Exporting macOS app..."
@@ -79,7 +59,7 @@ $(MAC_APP):
 	codesign -dv --verbose=2 $(MAC_APP)
 	@echo "==> macOS app exported to $(MAC_APP)"
 
-mac-pkg: $(MAC_PKG)
+mac-pkg: $(MAC_PKG) ## Create macOS installer package (.pkg)
 
 $(MAC_PKG): $(MAC_APP)
 	@echo "==> Creating macOS installer package..."
@@ -88,16 +68,20 @@ $(MAC_PKG): $(MAC_APP)
 		--sign "$(MAC_INSTALLER_IDENTITY)" \
 		$(MAC_PKG)
 	@echo "==> Validating package..."
-	xcrun altool --validate-app -f $(MAC_PKG) -t macos --apiKey $(ASC_CREDENTIALS) || true
+	xcrun altool --validate-app -f $(MAC_PKG) -t macos --apiKey $(API_KEY_ID) --apiIssuer $(API_ISSUER_ID) || true
 	@echo "==> macOS package created: $(MAC_PKG)"
 
-mac-upload: $(MAC_PKG)
+mac-upload: $(MAC_PKG) ## Upload to Mac App Store Connect
 	@echo "==> Uploading to Mac App Store Connect..."
-	xcrun altool --upload-app -f $(MAC_PKG) -t macos --apiKey $(ASC_CREDENTIALS)
+	xcrun altool --upload-app -f $(MAC_PKG) -t macos --apiKey $(API_KEY_ID) --apiIssuer $(API_ISSUER_ID)
 	@echo "==> Upload complete!"
 
+mac-transporter: $(MAC_PKG) ## Open PKG in Transporter
+	@echo "==> Opening PKG in Transporter..."
+	open -a Transporter $(MAC_PKG)
+
 # iOS targets
-ios: version $(IOS_XCODEPROJ)
+ios: version $(IOS_XCODEPROJ) ## Export iOS Xcode project
 
 $(IOS_XCODEPROJ):
 	@echo "==> Exporting iOS Xcode project..."
@@ -105,7 +89,7 @@ $(IOS_XCODEPROJ):
 	$(GODOT) --headless --export-release "iOS" $(IOS_DIR)/$(APP_NAME)
 	@echo "==> Xcode project exported to $(IOS_XCODEPROJ)"
 
-ios-archive: $(IOS_XCODEPROJ)
+ios-archive: $(IOS_XCODEPROJ) ## Build iOS archive
 	@echo "==> Patching Xcode project for automatic signing..."
 	@sed -i '' 's/"Apple Distribution"/"Apple Development"/g' $(IOS_XCODEPROJ)/project.pbxproj
 	@echo "==> Building iOS archive..."
@@ -114,27 +98,31 @@ ios-archive: $(IOS_XCODEPROJ)
 		-allowProvisioningUpdates archive
 	@echo "==> Archive created: $(IOS_ARCHIVE)"
 
-ios-ipa: ios-archive
+ios-ipa: ios-archive ## Export iOS IPA
 	@echo "==> Exporting IPA..."
 	xcodebuild -exportArchive -archivePath $(IOS_ARCHIVE) \
 		-exportOptionsPlist export_options.plist \
 		-exportPath $(IOS_DIR) -allowProvisioningUpdates
 	@echo "==> IPA exported to $(IOS_DIR)"
 
-ios-upload: ios-ipa
+ios-upload: ios-ipa ## Upload to iOS App Store Connect
 	@echo "==> Uploading to iOS App Store Connect..."
-	xcrun altool --upload-app -f $(IOS_IPA) -t ios --apiKey $(ASC_CREDENTIALS)
+	xcrun altool --upload-app -f $(IOS_IPA) -t ios --apiKey $(API_KEY_ID) --apiIssuer $(API_ISSUER_ID)
 	@echo "==> Upload complete!"
 
+ios-transporter: ios-ipa ## Open IPA in Transporter
+	@echo "==> Opening IPA in Transporter..."
+	open -a Transporter $(IOS_IPA)
+
 # Web target
-web: version
+web: version ## Export web build
 	@echo "==> Exporting web build..."
 	@mkdir -p $(WEB_DIR)
 	$(GODOT) --headless --export-release "Web" $(WEB_DIR)/kbounce.html
 	@echo "==> Web build exported to $(WEB_DIR)/"
 
 # Clean
-clean:
+clean: ## Remove build artifacts
 	@echo "==> Cleaning build artifacts..."
 	rm -rf $(MAC_DIR)
 	rm -rf $(IOS_DIR)
@@ -143,13 +131,13 @@ clean:
 	@echo "==> Clean complete"
 
 # Utility targets
-verify-mac:
+verify-mac: ## Verify macOS app signature
 	@echo "==> Verifying macOS app signature..."
 	codesign -dv --verbose=4 $(MAC_APP)
 	@echo "==> Checking entitlements..."
 	codesign -d --entitlements - $(MAC_APP)
 
-check-certs:
+check-certs: ## List available signing identities
 	@echo "==> Available signing identities:"
 	security find-identity -v -p codesigning
 	@echo ""

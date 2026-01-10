@@ -29,6 +29,9 @@ export/
 # Generated version file
 scripts/version.gd
 
+# Local credentials
+credentials.mk
+
 # OS-specific
 .DS_Store
 Thumbs.db
