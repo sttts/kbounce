@@ -33,6 +33,9 @@ scripts/version.gd.uid
 # Local credentials
 credentials.mk
 
+# Provisioning profiles
+provisioning/
+
 # OS-specific
 .DS_Store
 Thumbs.db
