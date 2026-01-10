@@ -19,6 +19,7 @@ func _init():
 
 	# Run all test suites
 	_run_test_suite(preload("res://tests/test_collision.gd").new())
+	_run_test_suite(preload("res://tests/test_wall_ball.gd").new())
 
 	# Print summary
 	print("\n========================================")
