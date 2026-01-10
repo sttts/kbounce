@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=22 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/stop.svg" id="icon_stop"]
@@ -20,26 +20,66 @@
 [ext_resource type="Texture2D" path="res://assets/icons/share.svg" id="icon_share"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
-bg_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
+bg_color = Color(1, 1, 1, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.6)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.15)
+shadow_size = 20
+shadow_offset = Vector2(0, 8)
 content_margin_left = 40.0
 content_margin_top = 30.0
 content_margin_right = 40.0
 content_margin_bottom = 30.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_impressum"]
-bg_color = Color(1, 1, 1, 1)
-corner_radius_top_left = 16
-corner_radius_top_right = 16
-corner_radius_bottom_right = 16
-corner_radius_bottom_left = 16
+bg_color = Color(1, 1, 1, 0.97)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.6)
+corner_radius_top_left = 24
+corner_radius_top_right = 24
+corner_radius_bottom_right = 24
+corner_radius_bottom_left = 24
+shadow_color = Color(0, 0, 0, 0.15)
+shadow_size = 20
+shadow_offset = Vector2(0, 8)
 content_margin_left = 40.0
 content_margin_top = 30.0
 content_margin_right = 40.0
 content_margin_bottom = 30.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_red"]
+bg_color = Color(0.86, 0.15, 0.15, 1)
+border_width_top = 2
+border_color = Color(1, 0.5, 0.5, 0.6)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.6, 0.1, 0.1, 0.3)
+shadow_size = 6
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_red_hover"]
+bg_color = Color(0.92, 0.2, 0.2, 1)
+border_width_top = 2
+border_color = Color(1, 0.6, 0.6, 0.7)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0.6, 0.1, 0.1, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -386,7 +426,11 @@ my score"
 [node name="NewGameButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
 custom_minimum_size = Vector2(200, 48)
 layout_mode = 2
-icon = ExtResource("icon_play_green")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_red_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_red")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_red")
+icon = ExtResource("icon_play")
 icon_alignment = 1
 expand_icon = true
 
