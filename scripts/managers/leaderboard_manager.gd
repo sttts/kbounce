@@ -256,7 +256,7 @@ func should_refresh_token() -> bool:
 
 ## Capture screenshot from viewport for later submission
 ## Crop margin to exclude UI buttons on the right (in logical pixels)
-const SCREENSHOT_RIGHT_CROP_LOGICAL := 48
+const SCREENSHOT_RIGHT_CROP_LOGICAL := 60
 
 func capture_screenshot(viewport: Viewport):
 	# Capture immediately (synchronous) to avoid overlays appearing
