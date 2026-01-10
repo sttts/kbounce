@@ -200,10 +200,10 @@ func _start_pulse_animation():
 	_edit_stylebox.border_width_right = 3
 	_edit_stylebox.border_width_bottom = 3
 	_edit_stylebox.border_color = Color(1.0, 0.8, 0.0)  # Gold border
-	_edit_stylebox.corner_radius_left = 4
-	_edit_stylebox.corner_radius_top = 4
-	_edit_stylebox.corner_radius_right = 4
-	_edit_stylebox.corner_radius_bottom = 4
+	_edit_stylebox.corner_radius_top_left = 4
+	_edit_stylebox.corner_radius_top_right = 4
+	_edit_stylebox.corner_radius_bottom_left = 4
+	_edit_stylebox.corner_radius_bottom_right = 4
 	name_edit.add_theme_stylebox_override("normal", _edit_stylebox)
 
 	# Wait a frame for the stylebox to be applied
