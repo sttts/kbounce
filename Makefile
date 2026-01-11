@@ -10,6 +10,7 @@
 # Configuration
 APP_NAME := KBounce
 BUNDLE_ID := app.kbounce
+GODOT ?= godot
 
 # Version: use git describe, allow override via VERSION env var for CI
 # CI usage: make web VERSION=${{ github.ref_name }}
