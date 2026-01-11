@@ -49,6 +49,9 @@ var _user_entry: Node = null
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
 
+## Debug mode click counter
+var _debug_click_count := 0
+
 
 func _ready():
 	# Connect to GameManager signals
@@ -92,6 +95,8 @@ func _ready():
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
 	help_version_label.text = Version.TAG
+	help_version_label.mouse_filter = Control.MOUSE_FILTER_STOP
+	help_version_label.gui_input.connect(_on_version_label_input)
 
 	# Hide fullscreen button on native mobile (always fullscreen) and iOS web (unsupported)
 	var is_native_mobile := OS.has_feature("mobile")
@@ -230,6 +235,17 @@ func _on_help_close_pressed():
 	# Resume game if it was paused by opening help
 	if GameManager.state == GameManager.GameState.PAUSED:
 		GameManager.set_paused(false)
+
+
+func _on_version_label_input(event: InputEvent):
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_debug_click_count += 1
+		if _debug_click_count >= 5:
+			_debug_click_count = 0
+			var game = get_tree().get_first_node_in_group("game")
+			if game and game.has_method("_setup_debug_ui"):
+				game._setup_debug_ui()
+				help_version_label.text = Version.TAG + " [DEBUG]"
 
 
 func _on_fullscreen_button_pressed():

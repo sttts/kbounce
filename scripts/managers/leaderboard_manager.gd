@@ -354,6 +354,10 @@ func submit_score(score: int, level: int):
 	if score <= 0:
 		return
 
+	if GameManager.debug_cheated:
+		print("[API] Score not submitted: debug cheats used")
+		return
+
 	if not is_token_valid():
 		score_failed.emit("No valid game token")
 		return

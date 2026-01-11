@@ -71,6 +71,10 @@ func _ready():
 	# Show demo balls on start screen
 	_start_demo()
 
+	# Debug UI (only in editor)
+	if OS.has_feature("editor"):
+		_setup_debug_ui()
+
 
 func _notification(what):
 	if what == NOTIFICATION_WM_SIZE_CHANGED:
@@ -302,3 +306,73 @@ func _start_level():
 	board.ball_velocity = GameManager.ball_velocity
 	board.wall_velocity = GameManager.wall_velocity
 	board.new_level(GameManager.level)
+
+
+## Debug UI active flag
+var _debug_ui_active := false
+
+## Setup debug UI (editor or hidden activation)
+func _setup_debug_ui():
+	if _debug_ui_active:
+		return
+	_debug_ui_active = true
+
+	var top_right := hud.get_node("TopRightButtons")
+
+	# Style with no padding
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.2, 0.2, 0.2)
+	style.set_content_margin_all(0)
+	style.set_corner_radius_all(2)
+
+	var style_hover := StyleBoxFlat.new()
+	style_hover.bg_color = Color(0.3, 0.3, 0.3)
+	style_hover.set_content_margin_all(0)
+	style_hover.set_corner_radius_all(2)
+
+	var buttons := [
+		["+10", func():
+			GameManager.debug_cheated = true
+			GameManager.add_score(10)],
+		["+100", func():
+			GameManager.debug_cheated = true
+			GameManager.add_score(100)],
+		["+1 ball", func():
+			GameManager.debug_cheated = true
+			board.add_ball()
+			GameManager.level += 1
+			GameManager.lives += 1
+			GameManager.level_changed.emit(GameManager.level)
+			GameManager.lives_changed.emit(GameManager.lives)],
+		["+10 ball", func():
+			GameManager.debug_cheated = true
+			for i in 10:
+				board.add_ball()
+			GameManager.level += 10
+			GameManager.lives += 10
+			GameManager.level_changed.emit(GameManager.level)
+			GameManager.lives_changed.emit(GameManager.lives)],
+		["die", func():
+			GameManager.debug_cheated = true
+			GameManager.lose_life()],
+		["game over", func():
+			GameManager.debug_cheated = true
+			GameManager.lives = 1
+			GameManager.lose_life()],
+		["timeout", func():
+			GameManager.debug_cheated = true
+			GameManager.time = 2
+			GameManager.time_changed.emit(GameManager.time)],
+	]
+
+	for btn_data in buttons:
+		var btn := Button.new()
+		btn.text = btn_data[0]
+		btn.custom_minimum_size = Vector2(54, 27)
+		btn.add_theme_font_size_override("font_size", 10)
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_stylebox_override("hover", style_hover)
+		btn.add_theme_stylebox_override("pressed", style)
+		btn.add_theme_stylebox_override("focus", style)
+		btn.pressed.connect(btn_data[1])
+		top_right.add_child(btn)

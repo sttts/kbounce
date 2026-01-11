@@ -214,6 +214,35 @@ func new_level(level: int):
 	balls_changed.emit(target_ball_count)
 
 	# Reset walls
+
+
+## Add a ball to the board (for debug)
+func add_ball():
+	var ball: Ball = _ball_scene.instantiate()
+	ball.board = self
+	balls.append(ball)
+	add_child(ball)
+
+	ball.resize(tile_size)
+
+	# Random position in center area
+	var rand_x := 4 + randi() % (TILE_NUM_W - 8)
+	var rand_y := 4 + randi() % (TILE_NUM_H - 8)
+	ball.set_relative_pos(rand_x, rand_y)
+
+	# Random direction
+	var dir_x := (randi() % 2) * 2 - 1
+	var dir_y := (randi() % 2) * 2 - 1
+	ball.velocity = Vector2(dir_x * ball_velocity, dir_y * ball_velocity)
+
+	ball.set_random_frame()
+	ball.update_visuals()
+	ball.visible = true
+
+	balls_changed.emit(balls.size())
+
+
+## Reset walls
 	for wall in walls:
 		wall.wall_velocity = wall_velocity
 		wall.stop()
@@ -298,7 +327,7 @@ func tick():
 				if t > max_time:
 					max_time = t
 			var avg := total / _tick_times.size()
-			print("Tick stats: avg=%.2f ms, max=%.2f ms, count=%d" % [avg, max_time, _tick_times.size()])
+			print("Tick stats: avg=%.2f ms, max=%.2f ms, tps=%d" % [avg, max_time, _tick_times.size() / 5])
 			_tick_times.clear()
 		_last_stats_time = now
 

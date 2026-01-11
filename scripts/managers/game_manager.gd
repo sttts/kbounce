@@ -65,6 +65,9 @@ var _game_over_flow_id: int = 0
 ## When splash started (for 2-second minimum)
 var _splash_start_time: int = 0
 
+## Debug cheating flag (prevents score submission)
+var debug_cheated := false
+
 
 ## Start a new game
 func new_game():
@@ -73,6 +76,7 @@ func new_game():
 	lives = level + 1  # Lives = balls = level + 1
 	time = GAME_TIME_PER_LEVEL
 	filled = 0
+	debug_cheated = false
 
 	score_changed.emit(score)
 	level_changed.emit(level)
