@@ -1,11 +1,15 @@
 # KBounce Build Makefile
+#
+# Required environment variables (set in .env, run: source .env):
+#   GODOT - Path to Godot executable
+#   TEAM_ID - Apple Developer Team ID
+#   MAC_APP_IDENTITY - Apple Distribution signing identity
+#   MAC_DEV_IDENTITY - Apple Development signing identity
+#   MAC_INSTALLER_IDENTITY - Mac installer signing identity
 
 # Configuration
-GODOT ?= godot
 APP_NAME := KBounce
 BUNDLE_ID := app.kbounce
-TEAM_ID := QUY34Y5C3U
-PERSONAL_ID := CR5QELQ9YC
 
 # Version: use git describe, allow override via VERSION env var for CI
 # CI usage: make web VERSION=${{ github.ref_name }}
@@ -26,10 +30,7 @@ IOS_XCODEPROJ := $(IOS_DIR)/$(APP_NAME).xcodeproj
 IOS_ARCHIVE := $(IOS_DIR)/$(APP_NAME).xcarchive
 IOS_IPA := $(IOS_DIR)/$(APP_NAME).ipa
 
-# Signing identities (adjust these to match your certificates)
-MAC_APP_IDENTITY := Apple Distribution: Stefan Schimanski ($(TEAM_ID))
-MAC_DEV_IDENTITY := Apple Development: Stefan Schimanski ($(PERSONAL_ID))
-MAC_INSTALLER_IDENTITY := 3rd Party Mac Developer Installer: Stefan Schimanski ($(TEAM_ID))
+# Provisioning
 MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 
 # App Store Connect API credentials (loaded from credentials.mk)
@@ -39,7 +40,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -131,6 +132,13 @@ $(IOS_XCODEPROJ): $(VERSION_FILE)
 	@mkdir -p $(IOS_DIR)
 	$(GODOT) --headless --export-release "iOS" $(IOS_DIR)/$(APP_NAME)
 	@echo "==> Xcode project exported to $(IOS_XCODEPROJ)"
+
+ios-dev: $(IOS_XCODEPROJ) ## Patch iOS project for simulator on Apple Silicon
+	@echo "==> Patching Xcode project for simulator on Apple Silicon..."
+	@perl -i -pe 's/ARCHS = "arm64";/ARCHS = "arm64 x86_64";/' $(IOS_XCODEPROJ)/project.pbxproj
+	@perl -i -pe 's/(ARCHS = "arm64 x86_64";)/$$1\n\t\t\t\t"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;\n\t\t\t\tSUPPORTED_PLATFORMS = "iphoneos iphonesimulator";/' $(IOS_XCODEPROJ)/project.pbxproj
+	@echo "==> iOS project patched. Open $(IOS_XCODEPROJ) in Xcode and run on simulator."
+	@echo "==> NOTE: In Xcode, go to Product > Destination > Destination Architectures > Show Both"
 
 ios-archive: $(IOS_XCODEPROJ) ## Build iOS archive
 	@echo "==> Patching Xcode project for automatic signing..."
