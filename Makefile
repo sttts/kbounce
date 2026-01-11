@@ -40,7 +40,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -133,12 +133,18 @@ $(IOS_XCODEPROJ): $(VERSION_FILE)
 	$(GODOT) --headless --export-release "iOS" $(IOS_DIR)/$(APP_NAME)
 	@echo "==> Xcode project exported to $(IOS_XCODEPROJ)"
 
-ios-dev: $(IOS_XCODEPROJ) ## Patch iOS project for simulator on Apple Silicon
-	@echo "==> Patching Xcode project for simulator on Apple Silicon..."
+ios-dev: $(IOS_XCODEPROJ) ## Patch iOS project for real device development
+	@echo "==> Patching Xcode project for device development..."
+	@sed -i '' 's/"Apple Distribution"/"Apple Development"/g' $(IOS_XCODEPROJ)/project.pbxproj
+	@echo "==> iOS project patched. Open $(IOS_XCODEPROJ) in Xcode."
+
+ios-sim: $(IOS_XCODEPROJ) ## Patch iOS project for simulator (x86_64 via Rosetta)
+	@echo "==> Patching Xcode project for simulator..."
+	@sed -i '' 's/"Apple Distribution"/"Apple Development"/g' $(IOS_XCODEPROJ)/project.pbxproj
 	@perl -i -pe 's/ARCHS = "arm64";/ARCHS = "arm64 x86_64";/' $(IOS_XCODEPROJ)/project.pbxproj
 	@perl -i -pe 's/(ARCHS = "arm64 x86_64";)/$$1\n\t\t\t\t"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = arm64;\n\t\t\t\tSUPPORTED_PLATFORMS = "iphoneos iphonesimulator";/' $(IOS_XCODEPROJ)/project.pbxproj
-	@echo "==> iOS project patched. Open $(IOS_XCODEPROJ) in Xcode and run on simulator."
-	@echo "==> NOTE: In Xcode, go to Product > Destination > Destination Architectures > Show Both"
+	@echo "==> iOS project patched. Open $(IOS_XCODEPROJ) in Xcode."
+	@echo "==> NOTE: Use iOS 18.x runtime (Rosetta) and show both architectures."
 
 ios-archive: $(IOS_XCODEPROJ) ## Build iOS archive
 	@echo "==> Patching Xcode project for automatic signing..."
