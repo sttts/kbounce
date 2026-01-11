@@ -12,10 +12,6 @@ z_index = -10
 
 [node name="Board" parent="." instance=ExtResource("2_board")]
 
-[node name="TickTimer" type="Timer" parent="."]
-wait_time = 0.016
-autostart = false
-
 [node name="TimeTimer" type="Timer" parent="."]
 wait_time = 1.0
 autostart = false

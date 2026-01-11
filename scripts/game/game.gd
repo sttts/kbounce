@@ -5,9 +5,6 @@
 
 extends Node2D
 
-## Game tick interval in seconds (16ms = ~60 FPS, matches GAME_DELAY)
-const GAME_TICK := 0.016
-
 ## Time tick interval (1 second)
 const TIME_TICK := 1.0
 
@@ -19,9 +16,6 @@ const TIME_TICK := 1.0
 
 ## Reference to background sprite
 @onready var background: Sprite2D = $Background
-
-## Game tick timer
-@onready var tick_timer: Timer = $TickTimer
 
 ## Time countdown timer
 @onready var time_timer: Timer = $TimeTimer
@@ -55,10 +49,7 @@ func _ready():
 	board.fill_changed.connect(_on_fill_changed)
 	board.wall_died.connect(_on_wall_died)
 
-	# Setup timers
-	tick_timer.wait_time = GAME_TICK
-	tick_timer.timeout.connect(_on_tick)
-
+	# Setup time timer
 	time_timer.wait_time = TIME_TICK
 	time_timer.timeout.connect(_on_time_tick)
 
@@ -217,16 +208,15 @@ func new_game():
 ## Start demo mode with animated balls
 func _start_demo():
 	board.show_demo(2)
-	tick_timer.start()  # Start timer for animation
 
 
-## Game tick callback
-func _on_tick():
+## Physics process - runs at fixed 60Hz regardless of render fps
+func _physics_process(_delta: float):
 	if GameManager.state == GameManager.GameState.RUNNING:
 		board.tick()
 		AudioManager.tick()
-	elif GameManager.state in [GameManager.GameState.BEFORE_FIRST_GAME, GameManager.GameState.BETWEEN_LEVELS]:
-		# Animate balls (rotation only, no movement)
+	else:
+		# Animate balls in all non-running states (demo, paused, game over, etc.)
 		board.animate_balls()
 
 
@@ -271,23 +261,19 @@ func _on_wall_died():
 func _on_state_changed(state: GameManager.GameState):
 	match state:
 		GameManager.GameState.RUNNING:
-			tick_timer.start()
 			time_timer.start()
 			# Reset swipe state to ignore any ongoing mouse press from button click
 			_swipe_active = false
 			_swipe_start_pos = Vector2.ZERO
 
 		GameManager.GameState.PAUSED, GameManager.GameState.SUSPENDED:
-			tick_timer.stop()
 			time_timer.stop()
 
 		GameManager.GameState.BETWEEN_LEVELS:
-			# Keep tick timer for ball animation, but stop time countdown
 			time_timer.stop()
 			# HUD handles level complete overlay and next_level transition
 
 		GameManager.GameState.GAME_OVER_SPLASH, GameManager.GameState.GAME_OVER_LEADERBOARD:
-			tick_timer.stop()
 			time_timer.stop()
 			# HUD handles game over overlays
 

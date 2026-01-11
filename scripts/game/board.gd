@@ -55,6 +55,10 @@ var _wall_scene: PackedScene
 var _tick_times: Array[float] = []
 var _last_stats_time := 0.0
 
+## Draw timing stats
+var _draw_count := 0
+var _draw_times: Array[float] = []
+
 
 func _ready():
 	# Preload scenes
@@ -319,16 +323,36 @@ func tick():
 	# Print stats every 5 seconds
 	var now := Time.get_ticks_msec() / 1000.0
 	if now - _last_stats_time >= 5.0:
+		var fps := Engine.get_frames_per_second()
+
+		# Tick stats
+		var tick_avg := 0.0
+		var tick_max := 0.0
 		if _tick_times.size() > 0:
 			var total := 0.0
-			var max_time := 0.0
 			for t in _tick_times:
 				total += t
-				if t > max_time:
-					max_time = t
-			var avg := total / _tick_times.size()
-			print("Tick stats: avg=%.2f ms, max=%.2f ms, tps=%d" % [avg, max_time, _tick_times.size() / 5])
-			_tick_times.clear()
+				if t > tick_max:
+					tick_max = t
+			tick_avg = total / _tick_times.size()
+
+		# Draw stats
+		var draw_avg := 0.0
+		var draw_max := 0.0
+		if _draw_times.size() > 0:
+			var total := 0.0
+			for t in _draw_times:
+				total += t
+				if t > draw_max:
+					draw_max = t
+			draw_avg = total / _draw_times.size()
+
+		print("Stats: fps=%d | tick: avg=%.2f ms, max=%.2f ms, %d/s | draw: avg=%.2f ms, max=%.2f ms, %d/s" % [
+			fps, tick_avg, tick_max, _tick_times.size() / 5, draw_avg, draw_max, _draw_count / 5])
+
+		_tick_times.clear()
+		_draw_times.clear()
+		_draw_count = 0
 		_last_stats_time = now
 
 
@@ -799,6 +823,8 @@ func _would_ball_be_trapped(ball: Ball, wall: Wall) -> bool:
 
 ## Custom drawing for the board tiles
 func _draw():
+	var start := Time.get_ticks_usec()
+
 	var grid_tile := ThemeManager.get_texture("grid_tile")
 	var wall_tile := ThemeManager.get_texture("wall_tile")
 
@@ -815,3 +841,8 @@ func _draw():
 				TileType.BORDER, TileType.WALL:
 					if wall_tile:
 						draw_texture_rect(wall_tile, dest_rect, false)
+
+	var elapsed := (Time.get_ticks_usec() - start) / 1000.0
+	_draw_count += 1
+	_draw_times.append(elapsed)
+	print("Board._draw: %.2f ms" % elapsed)
