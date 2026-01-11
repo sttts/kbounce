@@ -59,6 +59,10 @@ var _last_stats_time := 0.0
 var _draw_count := 0
 var _draw_times: Array[float] = []
 
+## Spatial grid for ball collision optimization
+const GRID_CELL_SIZE := 4  # Tiles per cell
+var _ball_grid: Array = []  # 2D array of ball lists
+
 
 func _ready():
 	# Preload scenes
@@ -356,8 +360,81 @@ func tick():
 		_last_stats_time = now
 
 
+## Build spatial grid for ball collision optimization
+func _build_ball_grid():
+	var grid_w := (TILE_NUM_W + GRID_CELL_SIZE - 1) / GRID_CELL_SIZE
+	var grid_h := (TILE_NUM_H + GRID_CELL_SIZE - 1) / GRID_CELL_SIZE
+
+	# Initialize or clear grid
+	if _ball_grid.size() != grid_w:
+		_ball_grid.clear()
+		for _x in range(grid_w):
+			var column: Array = []
+			for _y in range(grid_h):
+				column.append([])
+			_ball_grid.append(column)
+	else:
+		for x in range(grid_w):
+			for y in range(grid_h):
+				_ball_grid[x][y].clear()
+
+	# Add balls to grid cells
+	for ball in balls:
+		var rect: Rect2 = ball.next_bounding_rect()
+		var x1 := int(rect.position.x) / GRID_CELL_SIZE
+		var y1 := int(rect.position.y) / GRID_CELL_SIZE
+		var x2 := int(rect.end.x) / GRID_CELL_SIZE
+		var y2 := int(rect.end.y) / GRID_CELL_SIZE
+
+		# Clamp to grid bounds
+		x1 = clampi(x1, 0, grid_w - 1)
+		x2 = clampi(x2, 0, grid_w - 1)
+		y1 = clampi(y1, 0, grid_h - 1)
+		y2 = clampi(y2, 0, grid_h - 1)
+
+		# Add ball to all cells it overlaps
+		for x in range(x1, x2 + 1):
+			for y in range(y1, y2 + 1):
+				_ball_grid[x][y].append(ball)
+
+
+## Get balls in nearby grid cells (for collision checking)
+func _get_nearby_balls(rect: Rect2) -> Array:
+	var grid_w := _ball_grid.size()
+	if grid_w == 0:
+		return balls  # Fallback
+
+	var grid_h: int = _ball_grid[0].size()
+
+	# Get cell range (include adjacent cells for safety)
+	var x1 := int(rect.position.x) / GRID_CELL_SIZE - 1
+	var y1 := int(rect.position.y) / GRID_CELL_SIZE - 1
+	var x2 := int(rect.end.x) / GRID_CELL_SIZE + 1
+	var y2 := int(rect.end.y) / GRID_CELL_SIZE + 1
+
+	x1 = clampi(x1, 0, grid_w - 1)
+	x2 = clampi(x2, 0, grid_w - 1)
+	y1 = clampi(y1, 0, grid_h - 1)
+	y2 = clampi(y2, 0, grid_h - 1)
+
+	# Collect unique balls from cells
+	var nearby: Array = []
+	var seen: Dictionary = {}
+	for x in range(x1, x2 + 1):
+		for y in range(y1, y2 + 1):
+			for ball in _ball_grid[x][y]:
+				if not seen.has(ball):
+					seen[ball] = true
+					nearby.append(ball)
+
+	return nearby
+
+
 ## Check all collisions
 func _check_collisions():
+	# Build spatial grid for ball-ball collision optimization
+	_build_ball_grid()
+
 	# Check wall collisions
 	for wall in walls:
 		if wall.visible:
@@ -451,7 +528,9 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 	if type & Collision.Type.BALL:
 		# Use inner_rect if provided (for walls, only inner area triggers death)
 		var check_rect := inner_rect if inner_rect.has_area() else rect
-		for ball in balls:
+		# Use spatial grid for ball-ball checks, all balls for wall-ball checks
+		var balls_to_check := _get_nearby_balls(check_rect) if object is Ball else balls
+		for ball in balls_to_check:
 			if ball != object:
 				var ball_next: Rect2 = ball.next_bounding_rect()
 				if check_rect.intersects(ball_next):
