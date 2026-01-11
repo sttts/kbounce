@@ -222,16 +222,39 @@ func _get_logs() -> String:
 		var result = JavaScriptBridge.eval("window._godotLogs ? window._godotLogs.join('\\n') : ''")
 		return str(result) if result else ""
 
-	# On other platforms, try to read Godot's log file
-	var log_path := "user://logs/godot.log"
-	if FileAccess.file_exists(log_path):
-		var file := FileAccess.open(log_path, FileAccess.READ)
-		if file:
-			var content := file.get_as_text()
-			# Return last 50KB to avoid huge files
-			if content.length() > 50000:
-				content = "...[truncated]...\n" + content.substr(content.length() - 50000)
-			return content
+	# On other platforms, try to read Godot's log files
+	# Godot uses timestamped files (godot2024-01-01T12.00.00.log), find the latest
+	var logs_dir := "user://logs"
+	var dir := DirAccess.open(logs_dir)
+	if not dir:
+		return ""
+
+	var latest_file := ""
+	var latest_time := 0
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while file_name != "":
+		if file_name.begins_with("godot") and file_name.ends_with(".log"):
+			var path := logs_dir.path_join(file_name)
+			# Skip empty files
+			var file := FileAccess.open(path, FileAccess.READ)
+			if file and file.get_length() > 0:
+				var modified := FileAccess.get_modified_time(path)
+				if modified > latest_time:
+					latest_time = modified
+					latest_file = path
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	if latest_file.is_empty():
+		return ""
+
+	var file := FileAccess.open(latest_file, FileAccess.READ)
+	if file:
+		var content := file.get_as_text()
+		# Return last 50KB to avoid huge files
+		if content.length() > 50000:
+			content = "...[truncated]...\n" + content.substr(content.length() - 50000)
+		return content
 	return ""
 
 

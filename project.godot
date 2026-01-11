@@ -52,6 +52,10 @@ pause={
 ]
 }
 
+[debug]
+
+file_logging/enable_file_logging=true
+
 [rendering]
 
 renderer/rendering_method="mobile"
