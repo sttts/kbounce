@@ -40,7 +40,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons iphone-screenshots ipad-screenshots
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons iphone-screenshots ipad-screenshots mac-screenshots
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -243,6 +243,18 @@ ipad-screenshots: ## Resize screenshots for iPad App Store (2732x2048)
 		i=$$((i+1)); \
 	done
 	@echo "==> Screenshots resized to $(IPAD_SCREENSHOT_SIZE)"
+
+MAC_SCREENSHOT_SIZE := 2880x1800
+
+mac-screenshots: ## Resize screenshots for Mac App Store (2880x1800, crops 64px menu)
+	@echo "==> Resizing Mac screenshots..."
+	@mkdir -p $(EXPORT_DIR)/screenshots/mac/output
+	@i=1; for f in $(EXPORT_DIR)/screenshots/mac/input/*.png; do \
+		magick "$$f" -crop +0+64 -resize $(MAC_SCREENSHOT_SIZE)! -alpha off $(EXPORT_DIR)/screenshots/mac/output/screenshot-$$i.png; \
+		echo "  $$f -> screenshot-$$i.png"; \
+		i=$$((i+1)); \
+	done
+	@echo "==> Screenshots resized to $(MAC_SCREENSHOT_SIZE)"
 
 # Utility targets
 verify-mac: ## Verify macOS app signature
