@@ -44,6 +44,7 @@ var _user_entry: Node = null
 @onready var help_overlay: Control = $HelpOverlay
 @onready var help_close_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/CloseButton
 @onready var help_version_label: Label = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/VersionLabel
+@onready var report_bug_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/ReportBugButton
 @onready var share_logs_button: Button = $HelpOverlay/ShareLogsButton
 @onready var fullscreen_button: Button = $TopRightButtons/FullscreenButton
 
@@ -99,6 +100,10 @@ func _ready():
 	help_version_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	help_version_label.gui_input.connect(_on_version_label_input)
 	share_logs_button.pressed.connect(_on_share_logs_pressed)
+
+	# Report bug button (hide on native mobile)
+	report_bug_button.visible = not OS.has_feature("mobile")
+	report_bug_button.pressed.connect(_on_report_bug_pressed)
 
 	# Hide fullscreen button on native mobile (always fullscreen) and iOS web (unsupported)
 	var is_native_mobile := OS.has_feature("mobile")
@@ -252,6 +257,10 @@ func _on_version_label_input(event: InputEvent):
 
 func _on_share_logs_pressed():
 	ShareManager.share_logs()
+
+
+func _on_report_bug_pressed():
+	OS.shell_open("https://github.com/sttts/kbounce/issues")
 
 
 func _on_fullscreen_button_pressed():

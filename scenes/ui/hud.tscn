@@ -610,9 +610,13 @@ text = "kbounce.app"
 uri = "https://kbounce.app"
 
 [node name="CloseButton" type="Button" parent="ImpressumOverlay/CenterContainer/Panel/VBox"]
-custom_minimum_size = Vector2(120, 40)
+custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
 size_flags_horizontal = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_red_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_red")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_red")
 text = "Close"
 
 [node name="HelpOverlay" type="Control" parent="."]
@@ -693,14 +697,25 @@ autowrap_mode = 3
 
 [node name="BottomRow" type="HBoxContainer" parent="HelpOverlay/CenterContainer/Panel/VBox"]
 layout_mode = 2
+theme_override_constants/separation = 8
 
 [node name="LeftSpacer" type="Control" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
-custom_minimum_size = Vector2(120, 40)
+[node name="ReportBugButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
+custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
+text = "Report
+Bug"
+
+[node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
+custom_minimum_size = Vector2(120, 48)
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_red")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_red_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_red")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_red")
 text = "Close"
 
 [node name="VersionLabel" type="Label" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
