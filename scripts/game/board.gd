@@ -51,6 +51,10 @@ var wall_velocity := 0.125
 var _ball_scene: PackedScene
 var _wall_scene: PackedScene
 
+## Tick timing stats
+var _tick_times: Array[float] = []
+var _last_stats_time := 0.0
+
 
 func _ready():
 	# Preload scenes
@@ -261,6 +265,8 @@ func build_wall(pos: Vector2, vertical: bool):
 
 ## Game tick - called once per frame
 func tick():
+	var start := Time.get_ticks_usec()
+
 	# Check collisions first
 	_check_collisions()
 
@@ -277,6 +283,24 @@ func tick():
 	for wall in walls:
 		if wall.visible:
 			wall.update_visuals()
+
+	# Record timing
+	_tick_times.append((Time.get_ticks_usec() - start) / 1000.0)
+
+	# Print stats every 5 seconds
+	var now := Time.get_ticks_msec() / 1000.0
+	if now - _last_stats_time >= 5.0:
+		if _tick_times.size() > 0:
+			var total := 0.0
+			var max_time := 0.0
+			for t in _tick_times:
+				total += t
+				if t > max_time:
+					max_time = t
+			var avg := total / _tick_times.size()
+			print("Tick stats: avg=%.2f ms, max=%.2f ms, count=%d" % [avg, max_time, _tick_times.size()])
+			_tick_times.clear()
+		_last_stats_time = now
 
 
 ## Check all collisions
