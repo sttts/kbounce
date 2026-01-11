@@ -11,6 +11,33 @@ signal share_completed(success: bool)
 signal show_notification(message: String)
 
 
+func _ready():
+	# On web, hook into console.log to capture logs
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("""
+			window._godotLogs = [];
+			const maxLogs = 1000;
+			const originalLog = console.log;
+			const originalWarn = console.warn;
+			const originalError = console.error;
+			console.log = function(...args) {
+				window._godotLogs.push(args.join(' '));
+				if (window._godotLogs.length > maxLogs) window._godotLogs.shift();
+				originalLog.apply(console, args);
+			};
+			console.warn = function(...args) {
+				window._godotLogs.push('[WARN] ' + args.join(' '));
+				if (window._godotLogs.length > maxLogs) window._godotLogs.shift();
+				originalWarn.apply(console, args);
+			};
+			console.error = function(...args) {
+				window._godotLogs.push('[ERROR] ' + args.join(' '));
+				if (window._godotLogs.length > maxLogs) window._godotLogs.shift();
+				originalError.apply(console, args);
+			};
+		""")
+
+
 func share_score(score: int, level: int, screenshot: Image = null):
 	var balls := level + 1
 	var text := "I scored %s points with %d balls in KBounce! Can you beat my score?\n\nPlay now: https://kbounce.app" % [_format_score(score), balls]
@@ -190,7 +217,12 @@ func share_logs():
 
 
 func _get_logs() -> String:
-	# Try to read Godot's log file
+	# On web, get captured console logs
+	if OS.has_feature("web"):
+		var result = JavaScriptBridge.eval("window._godotLogs ? window._godotLogs.join('\\n') : ''")
+		return str(result) if result else ""
+
+	# On other platforms, try to read Godot's log file
 	var log_path := "user://logs/godot.log"
 	if FileAccess.file_exists(log_path):
 		var file := FileAccess.open(log_path, FileAccess.READ)
@@ -206,41 +238,18 @@ func _get_logs() -> String:
 func _share_logs_web(logs: String):
 	var escaped := logs.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "")
 	var js_code := """
-	(async function() {
-		try {
-			const logs = '%s';
-			const blob = new Blob([logs], {type: 'text/plain'});
-			const file = new File([blob], 'kbounce-logs.txt', {type: 'text/plain'});
-
-			if (navigator.canShare && navigator.canShare({files: [file]})) {
-				await navigator.share({
-					title: 'KBounce Logs',
-					files: [file]
-				});
-				return 'success';
-			} else if (navigator.share) {
-				await navigator.share({
-					title: 'KBounce Logs',
-					text: logs.substring(0, 1000) + '...[truncated for sharing]'
-				});
-				return 'success';
-			} else {
-				return 'no_api';
-			}
-		} catch (e) {
-			if (e.name === 'AbortError') {
-				return 'cancelled';
-			}
-			return 'error:' + e.message;
+	(function() {
+		const logs = '%s';
+		if (navigator.share) {
+			navigator.share({ text: logs });
+			return 'success';
 		}
+		return 'no_api';
 	})();
 	""" % escaped
 
-	var result = JavaScriptBridge.eval(js_code)
-	if str(result) == "no_api":
-		DisplayServer.clipboard_set(logs)
-		show_notification.emit("Logs copied to clipboard")
-	share_completed.emit(str(result) == "success")
+	JavaScriptBridge.eval(js_code)
+	share_completed.emit(true)
 
 
 func _share_logs_mobile(logs: String):

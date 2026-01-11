@@ -70,7 +70,16 @@ var debug_cheated := false
 
 
 func _ready():
-	print("KBounce %s (%s %s, %s)" % [Version.TAG, OS.get_name(), OS.get_version(), OS.get_processor_name()])
+	var platform_info := OS.get_name()
+	if not OS.get_version().is_empty():
+		platform_info += " " + OS.get_version()
+	if not OS.get_processor_name().is_empty():
+		platform_info += ", " + OS.get_processor_name()
+	if OS.has_feature("web"):
+		var ua = JavaScriptBridge.eval("navigator.userAgent")
+		if ua:
+			platform_info += ", " + str(ua)
+	print("KBounce %s (%s)" % [Version.TAG, platform_info])
 
 
 ## Start a new game
