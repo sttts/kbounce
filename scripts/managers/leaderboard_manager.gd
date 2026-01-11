@@ -108,6 +108,15 @@ func _ready():
 	_load_identity()
 
 
+## Get standard HTTP headers with User-Agent
+func _get_headers(content_type: bool = true) -> PackedStringArray:
+	var headers := PackedStringArray()
+	headers.append("User-Agent: KBounce/%s (%s)" % [Version.TAG, OS.get_name()])
+	if content_type:
+		headers.append("Content-Type: application/json")
+	return headers
+
+
 ## Load user identity from config file, or create new one
 func _load_identity():
 	var config := ConfigFile.new()
@@ -180,11 +189,10 @@ func update_nickname(new_nickname: String):
 	}
 
 	var body := JSON.stringify(data)
-	var headers := ["Content-Type: application/json"]
 	var url := API_URL + "/score/" + _current_score_id
 	_request_start_times["nickname"] = Time.get_ticks_msec()
 	print("[API] PATCH /score/%s" % _current_score_id)
-	var err := _http_nickname.request(url, headers, HTTPClient.METHOD_PATCH, body)
+	var err := _http_nickname.request(url, _get_headers(), HTTPClient.METHOD_PATCH, body)
 
 	if err != OK:
 		nickname_updated.emit(false, "HTTP request failed")
@@ -261,10 +269,9 @@ func request_game_token():
 		_http_token.request_completed.connect(_on_token_request_completed)
 
 	var body := JSON.stringify({"user_id": user_id})
-	var headers := ["Content-Type: application/json"]
 	_request_start_times["token"] = Time.get_ticks_msec()
 	print("[API] POST /token")
-	var err := _http_token.request(API_URL + "/token", headers, HTTPClient.METHOD_POST, body)
+	var err := _http_token.request(API_URL + "/token", _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
 		token_failed.emit("HTTP request failed: %d" % err)
@@ -395,10 +402,9 @@ func submit_score(score: int, level: int):
 	_game_token = ""
 
 	var body := JSON.stringify(data)
-	var headers := ["Content-Type: application/json"]
 	_request_start_times["score"] = Time.get_ticks_msec()
 	print("[API] POST /score (%dKB)" % [body.length() / 1024])
-	var err := _http_score.request(API_URL + "/score", headers, HTTPClient.METHOD_POST, body)
+	var err := _http_score.request(API_URL + "/score", _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
 		score_failed.emit("HTTP request failed: %d" % err)
@@ -470,7 +476,7 @@ func load_leaderboard(mode: String = "around_user"):
 	var url := API_URL + "/leaderboard?user_id=" + user_id.uri_encode() + "&mode=" + mode
 	_request_start_times["leaderboard"] = Time.get_ticks_msec()
 	print("[API] GET /leaderboard")
-	var err := _http_leaderboard.request(url)
+	var err := _http_leaderboard.request(url, _get_headers(false))
 
 	if err != OK:
 		leaderboard_failed.emit("HTTP request failed: %d" % err)
@@ -520,10 +526,9 @@ func report_score(score_id: String):
 		"score_id": score_id,
 		"user_id": user_id
 	})
-	var headers := ["Content-Type: application/json"]
 	_request_start_times["report"] = Time.get_ticks_msec()
 	print("[API] POST /report")
-	var err := _http_report.request(API_URL + "/report", headers, HTTPClient.METHOD_POST, body)
+	var err := _http_report.request(API_URL + "/report", _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
 		report_failed.emit("HTTP request failed: %d" % err)

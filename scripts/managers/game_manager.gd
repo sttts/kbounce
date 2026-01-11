@@ -70,7 +70,7 @@ var debug_cheated := false
 
 
 func _ready():
-	print("KBounce %s" % Version.TAG)
+	print("KBounce %s (%s %s, %s)" % [Version.TAG, OS.get_name(), OS.get_version(), OS.get_processor_name()])
 
 
 ## Start a new game
