@@ -450,6 +450,7 @@ var _nickname_rejected: bool = false
 func _on_game_over_for_leaderboard():
 	# Capture flow ID for validating API responses
 	_pending_flow_id = GameManager.get_game_over_flow_id()
+	print("[HUD] game_over_for_leaderboard flow_id=%d token_valid=%s" % [_pending_flow_id, LeaderboardManager.is_token_valid()])
 
 	# Reset nickname rejection state
 	_nickname_rejected = false
@@ -513,6 +514,7 @@ func _on_nickname_updated(success: bool, error: String):
 
 
 func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_entries: Array):
+	print("[HUD] leaderboard_loaded is_game_over=%s state=%s" % [GameManager.is_game_over(), GameManager.state])
 	# Only handle during game over (either sub-state)
 	if not GameManager.is_game_over():
 		return

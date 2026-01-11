@@ -209,19 +209,25 @@ func get_game_over_flow_id() -> int:
 
 ## Called when API response is ready (HUD passes flow_id to validate)
 func on_api_ready(flow_id: int):
+	print("[GM] on_api_ready flow_id=%d expected=%d state=%s" % [flow_id, _game_over_flow_id, state])
 	# Ignore stale responses from previous game overs
 	if flow_id != _game_over_flow_id:
+		print("[GM] on_api_ready: flow_id mismatch, ignoring")
 		return
 	if state != GameState.GAME_OVER_SPLASH:
+		print("[GM] on_api_ready: not in GAME_OVER_SPLASH, ignoring")
 		return
 	# Calculate remaining splash time (minimum 2 seconds)
 	var elapsed := Time.get_ticks_msec() - _splash_start_time
 	var remaining := 2000 - elapsed
+	print("[GM] on_api_ready: elapsed=%d remaining=%d" % [elapsed, remaining])
 	if remaining > 0:
 		await get_tree().create_timer(remaining / 1000.0).timeout
 		# Recheck state after wait (user may have started new game)
 		if state != GameState.GAME_OVER_SPLASH:
+			print("[GM] on_api_ready: state changed during wait, now %s" % state)
 			return
+	print("[GM] on_api_ready: transitioning to GAME_OVER_LEADERBOARD")
 	_change_state(GameState.GAME_OVER_LEADERBOARD)
 
 
