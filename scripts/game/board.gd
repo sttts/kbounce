@@ -387,9 +387,9 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 				elif object is Wall and rect.intersects(ball_next):
 					# Ball hit wall tip (not inner rect) - check if ball would be trapped
 					if _would_ball_be_trapped(ball, object as Wall):
-						# Ball would be trapped - wall should materialize early
+						# Ball would be trapped - wall dies
 						var hit := Collision.Hit.new()
-						hit.type = Collision.Type.TILE
+						hit.type = Collision.Type.BALL
 						result.append(hit)
 
 	return result
