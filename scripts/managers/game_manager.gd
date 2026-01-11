@@ -69,6 +69,10 @@ var _splash_start_time: int = 0
 var debug_cheated := false
 
 
+func _ready():
+	print("KBounce %s" % Version.TAG)
+
+
 ## Start a new game
 func new_game():
 	score = 0
