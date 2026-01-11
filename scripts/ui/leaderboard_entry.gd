@@ -150,6 +150,7 @@ func setup(data: Dictionary, is_current_user: bool, editable: bool = false):
 		name_label.visible = false
 		name_edit.visible = true
 		name_edit.text = nickname
+		name_edit.grab_focus()
 	else:
 		name_label.visible = true
 		name_edit.visible = false
