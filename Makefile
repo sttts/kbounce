@@ -40,7 +40,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons ios-screenshots
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -219,6 +219,19 @@ icons: ## Generate iOS icons and macOS icns from grey source
 	@iconutil -c icns icon.iconset -o icon.icns
 	@rm -rf icon.iconset
 	@echo "==> Icons generated"
+
+# Screenshot processing
+IOS_SCREENSHOT_SIZE := 2778x1284
+
+ios-screenshots: ## Resize screenshots for iOS App Store (2778x1284)
+	@echo "==> Resizing iOS screenshots..."
+	@mkdir -p $(EXPORT_DIR)/screenshots/ios/output
+	@i=1; for f in $(EXPORT_DIR)/screenshots/ios/input/*.png; do \
+		magick "$$f" -resize $(IOS_SCREENSHOT_SIZE)! -alpha off $(EXPORT_DIR)/screenshots/ios/output/screenshot-$$i.png; \
+		echo "  $$f -> screenshot-$$i.png"; \
+		i=$$((i+1)); \
+	done
+	@echo "==> Screenshots resized to $(IOS_SCREENSHOT_SIZE)"
 
 # Utility targets
 verify-mac: ## Verify macOS app signature
