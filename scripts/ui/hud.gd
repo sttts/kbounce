@@ -42,8 +42,9 @@ var _user_entry: Node = null
 @onready var impressum_close_button: Button = $ImpressumOverlay/CenterContainer/Panel/VBox/CloseButton
 @onready var help_button: Button = $TopRightButtons/HelpButton
 @onready var help_overlay: Control = $HelpOverlay
-@onready var help_close_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/CloseButton
-@onready var help_version_label: Label = $HelpOverlay/CenterContainer/Panel/VBox/VersionLabel
+@onready var help_close_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/CloseButton
+@onready var help_version_label: Label = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/VersionLabel
+@onready var share_logs_button: Button = $HelpOverlay/ShareLogsButton
 @onready var fullscreen_button: Button = $TopRightButtons/FullscreenButton
 
 var _screenshot_popup: Control = null
@@ -97,6 +98,7 @@ func _ready():
 	help_version_label.text = Version.TAG
 	help_version_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	help_version_label.gui_input.connect(_on_version_label_input)
+	share_logs_button.pressed.connect(_on_share_logs_pressed)
 
 	# Hide fullscreen button on native mobile (always fullscreen) and iOS web (unsupported)
 	var is_native_mobile := OS.has_feature("mobile")
@@ -246,6 +248,10 @@ func _on_version_label_input(event: InputEvent):
 			if game and game.has_method("_setup_debug_ui"):
 				game._setup_debug_ui()
 				help_version_label.text = Version.TAG + " [DEBUG]"
+
+
+func _on_share_logs_pressed():
+	ShareManager.share_logs()
 
 
 func _on_fullscreen_button_pressed():

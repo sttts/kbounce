@@ -81,6 +81,13 @@ shadow_color = Color(0.6, 0.1, 0.1, 0.4)
 shadow_size = 8
 shadow_offset = Vector2(0, 4)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_share_logs"]
+bg_color = Color(1, 1, 1, 0.2)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
 [node name="HUD" type="Control"]
 layout_mode = 3
 anchors_preset = 15
@@ -684,14 +691,48 @@ Copyright (c) 2014-present Godot Engine contributors.
 License: MIT (godotengine.org/license)"
 autowrap_mode = 3
 
-[node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox"]
+[node name="BottomRow" type="HBoxContainer" parent="HelpOverlay/CenterContainer/Panel/VBox"]
+layout_mode = 2
+
+[node name="LeftSpacer" type="Control" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
 custom_minimum_size = Vector2(120, 40)
 layout_mode = 2
-size_flags_horizontal = 4
 text = "Close"
 
-[node name="VersionLabel" type="Label" parent="HelpOverlay/CenterContainer/Panel/VBox"]
+[node name="VersionLabel" type="Label" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
 theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
 theme_override_font_sizes/font_size = 10
 horizontal_alignment = 2
+vertical_alignment = 1
+
+[node name="ShareLogsButton" type="Button" parent="HelpOverlay"]
+layout_mode = 1
+anchors_preset = 2
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 0.0
+anchor_bottom = 1.0
+offset_left = 50.0
+offset_top = -75.0
+offset_right = 110.0
+offset_bottom = -50.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0, 0, 0, 0.5)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_normal_color = Color(0, 0, 0, 0.5)
+theme_override_colors/icon_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_pressed_color = Color(0, 0, 0, 0.5)
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_share_logs")
+theme_override_styles/hover = SubResource("StyleBoxFlat_share_logs")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_share_logs")
+icon = ExtResource("icon_share")
+text = "Logs"
+expand_icon = true

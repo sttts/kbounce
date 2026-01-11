@@ -172,3 +172,119 @@ func _format_score(score: int) -> String:
 		result = s[i] + result
 		count += 1
 	return result
+
+
+func share_logs():
+	var logs := _get_logs()
+	if logs.is_empty():
+		show_notification.emit("No logs available")
+		share_completed.emit(false)
+		return
+
+	if OS.has_feature("web"):
+		_share_logs_web(logs)
+	elif OS.has_feature("ios") or OS.has_feature("android"):
+		_share_logs_mobile(logs)
+	else:
+		_share_logs_desktop(logs)
+
+
+func _get_logs() -> String:
+	# Try to read Godot's log file
+	var log_path := "user://logs/godot.log"
+	if FileAccess.file_exists(log_path):
+		var file := FileAccess.open(log_path, FileAccess.READ)
+		if file:
+			var content := file.get_as_text()
+			# Return last 50KB to avoid huge files
+			if content.length() > 50000:
+				content = "...[truncated]...\n" + content.substr(content.length() - 50000)
+			return content
+	return ""
+
+
+func _share_logs_web(logs: String):
+	var escaped := logs.replace("\\", "\\\\").replace("'", "\\'").replace("\n", "\\n").replace("\r", "")
+	var js_code := """
+	(async function() {
+		try {
+			const logs = '%s';
+			const blob = new Blob([logs], {type: 'text/plain'});
+			const file = new File([blob], 'kbounce-logs.txt', {type: 'text/plain'});
+
+			if (navigator.canShare && navigator.canShare({files: [file]})) {
+				await navigator.share({
+					title: 'KBounce Logs',
+					files: [file]
+				});
+				return 'success';
+			} else if (navigator.share) {
+				await navigator.share({
+					title: 'KBounce Logs',
+					text: logs.substring(0, 1000) + '...[truncated for sharing]'
+				});
+				return 'success';
+			} else {
+				return 'no_api';
+			}
+		} catch (e) {
+			if (e.name === 'AbortError') {
+				return 'cancelled';
+			}
+			return 'error:' + e.message;
+		}
+	})();
+	""" % escaped
+
+	var result = JavaScriptBridge.eval(js_code)
+	if str(result) == "no_api":
+		DisplayServer.clipboard_set(logs)
+		show_notification.emit("Logs copied to clipboard")
+	share_completed.emit(str(result) == "success")
+
+
+func _share_logs_mobile(logs: String):
+	# Save logs to file for sharing
+	var file := FileAccess.open("user://kbounce-logs.txt", FileAccess.WRITE)
+	if file:
+		file.store_string(logs)
+		file.close()
+
+	if Engine.has_singleton("SharePlugin"):
+		var share_plugin = Engine.get_singleton("SharePlugin")
+		var share_data := {
+			"title": "KBounce Logs",
+			"subject": "KBounce Debug Logs",
+			"content": "KBounce debug logs attached",
+			"file_path": OS.get_user_data_dir().path_join("kbounce-logs.txt"),
+			"mime_type": "text/plain"
+		}
+		share_plugin.share(share_data)
+		share_completed.emit(true)
+	else:
+		DisplayServer.clipboard_set(logs)
+		show_notification.emit("Logs copied to clipboard")
+		share_completed.emit(true)
+
+
+func _share_logs_desktop(logs: String):
+	var downloads_path := _get_downloads_path()
+	var saved_path := ""
+
+	if not downloads_path.is_empty():
+		var timestamp := Time.get_datetime_string_from_system().replace(":", "-").replace("T", "_")
+		var filename := "kbounce-logs-%s.txt" % timestamp
+		saved_path = downloads_path.path_join(filename)
+		var file := FileAccess.open(saved_path, FileAccess.WRITE)
+		if file:
+			file.store_string(logs)
+			file.close()
+
+	DisplayServer.clipboard_set(logs)
+
+	if not saved_path.is_empty():
+		show_notification.emit("Logs saved to %s\nAlso copied to clipboard" % saved_path)
+	else:
+		show_notification.emit("Logs copied to clipboard")
+
+	share_completed.emit(true)
