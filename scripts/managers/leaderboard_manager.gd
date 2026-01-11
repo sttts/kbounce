@@ -100,6 +100,9 @@ var _http_nickname: HTTPRequest = null
 var _http_leaderboard: HTTPRequest = null
 var _http_report: HTTPRequest = null
 
+## Request start times for duration tracking
+var _request_start_times: Dictionary = {}
+
 
 func _ready():
 	_load_identity()
@@ -179,6 +182,8 @@ func update_nickname(new_nickname: String):
 	var body := JSON.stringify(data)
 	var headers := ["Content-Type: application/json"]
 	var url := API_URL + "/score/" + _current_score_id
+	_request_start_times["nickname"] = Time.get_ticks_msec()
+	print("[API] PATCH /score/%s" % _current_score_id)
 	var err := _http_nickname.request(url, headers, HTTPClient.METHOD_PATCH, body)
 
 	if err != OK:
@@ -186,6 +191,8 @@ func update_nickname(new_nickname: String):
 
 
 func _on_nickname_update_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("nickname", 0))
+	print("----> PATCH /score rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		nickname_updated.emit(false, "Request failed")
 		return
@@ -255,6 +262,8 @@ func request_game_token():
 
 	var body := JSON.stringify({"user_id": user_id})
 	var headers := ["Content-Type: application/json"]
+	_request_start_times["token"] = Time.get_ticks_msec()
+	print("[API] POST /token")
 	var err := _http_token.request(API_URL + "/token", headers, HTTPClient.METHOD_POST, body)
 
 	if err != OK:
@@ -262,6 +271,8 @@ func request_game_token():
 
 
 func _on_token_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("token", 0))
+	print("----> POST /token rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		token_failed.emit("Request failed: %d" % result)
 		return
@@ -381,6 +392,8 @@ func submit_score(score: int, level: int):
 
 	var body := JSON.stringify(data)
 	var headers := ["Content-Type: application/json"]
+	_request_start_times["score"] = Time.get_ticks_msec()
+	print("[API] POST /score (%dKB)" % [body.length() / 1024])
 	var err := _http_score.request(API_URL + "/score", headers, HTTPClient.METHOD_POST, body)
 
 	if err != OK:
@@ -388,6 +401,8 @@ func submit_score(score: int, level: int):
 
 
 func _on_score_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("score", 0))
+	print("----> POST /score rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		score_failed.emit("Request failed: %d" % result)
 		return
@@ -445,6 +460,8 @@ func load_leaderboard(mode: String = "around_user"):
 		_http_leaderboard.request_completed.connect(_on_leaderboard_request_completed)
 
 	var url := API_URL + "/leaderboard?user_id=" + user_id.uri_encode() + "&mode=" + mode
+	_request_start_times["leaderboard"] = Time.get_ticks_msec()
+	print("[API] GET /leaderboard")
 	var err := _http_leaderboard.request(url)
 
 	if err != OK:
@@ -452,6 +469,8 @@ func load_leaderboard(mode: String = "around_user"):
 
 
 func _on_leaderboard_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("leaderboard", 0))
+	print("----> GET /leaderboard rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		leaderboard_failed.emit("Request failed: %d" % result)
 		return
@@ -494,6 +513,8 @@ func report_score(score_id: String):
 		"user_id": user_id
 	})
 	var headers := ["Content-Type: application/json"]
+	_request_start_times["report"] = Time.get_ticks_msec()
+	print("[API] POST /report")
 	var err := _http_report.request(API_URL + "/report", headers, HTTPClient.METHOD_POST, body)
 
 	if err != OK:
@@ -501,6 +522,8 @@ func report_score(score_id: String):
 
 
 func _on_report_request_completed(result: int, response_code: int, headers: PackedStringArray, _body: PackedByteArray):
+	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("report", 0))
+	print("----> POST /report rc=%d dur=%dms" % [response_code, duration])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		report_failed.emit("Request failed: %d" % result)
 		return
