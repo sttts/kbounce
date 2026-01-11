@@ -40,7 +40,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-archive ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -151,6 +151,10 @@ ios-archive: $(IOS_XCODEPROJ) ## Build iOS archive
 		-configuration Release -archivePath $(IOS_ARCHIVE) \
 		-allowProvisioningUpdates archive
 	@echo "==> Archive created: $(IOS_ARCHIVE)"
+
+ios-xcode: ios-archive ## Build archive and open in Xcode
+	@echo "==> Opening archive in Xcode..."
+	open $(IOS_ARCHIVE)
 
 ios-ipa: ios-archive ## Export iOS IPA
 	@echo "==> Exporting IPA..."
