@@ -560,27 +560,18 @@ func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_ent
 			last_rank = entries[entries.size() - 1].get("rank", 0) + 1
 		combined_entries.append({"is_user_entry": true, "rank": last_rank})
 
-	# Calculate which entries to show (max 9, centered on user)
+	# Calculate which entries to show (max 9, with at most 3 above user for keyboard visibility)
+	const MAX_ABOVE := 3  # Keep user entry lower so keyboard doesn't cover it
 	var start_idx := 0
 	var end_idx := combined_entries.size()
 
-	if combined_entries.size() > MAX_VISIBLE:
-		if user_position == -1:
-			# No user entry, just show first 9
-			end_idx = MAX_VISIBLE
-		else:
-			# Center around user position
-			var half := MAX_VISIBLE / 2
-			start_idx = user_position - half
-			end_idx = start_idx + MAX_VISIBLE
-
-			# Clamp to valid range
-			if start_idx < 0:
-				start_idx = 0
-				end_idx = MAX_VISIBLE
-			elif end_idx > combined_entries.size():
-				end_idx = combined_entries.size()
-				start_idx = end_idx - MAX_VISIBLE
+	if user_position != -1:
+		# Position user with at most MAX_ABOVE entries above (rest below)
+		start_idx = maxi(0, user_position - MAX_ABOVE)
+		end_idx = mini(start_idx + MAX_VISIBLE, combined_entries.size())
+	elif combined_entries.size() > MAX_VISIBLE:
+		# No user entry, just show first 9
+		end_idx = MAX_VISIBLE
 
 	# Create visible entries
 	for i in range(start_idx, end_idx):
