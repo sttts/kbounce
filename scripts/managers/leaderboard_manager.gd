@@ -354,10 +354,6 @@ func submit_score(score: int, level: int):
 	if score <= 0:
 		return
 
-	if GameManager.debug_cheated:
-		print("[API] Score not submitted: debug cheats used")
-		return
-
 	if not is_token_valid():
 		score_failed.emit("No valid game token")
 		return
@@ -378,6 +374,10 @@ func submit_score(score: int, level: int):
 		"os_version": OS.get_version(),
 		"app_version": ProjectSettings.get_setting("application/config/version", "unknown")
 	}
+
+	# Dry-run mode for debug cheats (API processes but doesn't persist)
+	if GameManager.debug_cheated:
+		data["dry_run"] = true
 
 	# Add screenshot if available (already resized to 50%)
 	if pending_screenshot != null:
@@ -431,7 +431,11 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var update_token: String = json.get("update_token", "")
 	var rank: int = json.get("rank", 0)
 	var stored: bool = json.get("stored", false)
+	var dry_run: bool = json.get("dry_run", false)
 	var entries: Array = json.get("entries", [])
+
+	if dry_run:
+		print("      dry_run=true (score not persisted)")
 
 	# Store for later nickname updates
 	_current_score_id = score_id

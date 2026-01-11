@@ -359,6 +359,10 @@ func _setup_debug_ui():
 			GameManager.debug_cheated = true
 			GameManager.lives = 1
 			GameManager.lose_life()],
+		["next lvl", func():
+			GameManager.debug_cheated = true
+			GameManager.filled = 75
+			GameManager.level_complete()],
 		["timeout", func():
 			GameManager.debug_cheated = true
 			GameManager.time = 2
