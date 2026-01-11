@@ -359,6 +359,7 @@ func capture_screenshot(viewport: Viewport):
 ## Submit score to leaderboard (can be called without nickname - update later via PATCH)
 func submit_score(score: int, level: int):
 	if score <= 0:
+		# Score of 0 shouldn't be submitted (handled by GameManager skipping leaderboard)
 		return
 
 	if not is_token_valid():

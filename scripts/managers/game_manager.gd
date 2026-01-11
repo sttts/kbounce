@@ -209,6 +209,13 @@ func is_game_over() -> bool:
 
 ## Start the game over flow
 func start_game_over():
+	# Skip leaderboard for score = 0 (died on first level without points)
+	if score <= 0:
+		_change_state(GameState.GAME_OVER_SPLASH)
+		await get_tree().create_timer(2.0).timeout
+		_change_state(GameState.BEFORE_FIRST_GAME)
+		return
+
 	_game_over_flow_id += 1
 	_splash_start_time = Time.get_ticks_msec()
 	_change_state(GameState.GAME_OVER_SPLASH)
