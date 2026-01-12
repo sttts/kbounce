@@ -388,8 +388,182 @@ func test_flood_fill_from_wall_does_nothing():
 
 
 # =============================================================================
+# Tests for penetration-based edge detection (_get_crossing_normal logic)
+# =============================================================================
+
+func test_crossing_vertical_edge_from_left():
+	# Ball corner crosses into tile from the left (X boundary)
+	# pen_x small, pen_y large -> vertical edge hit
+	var curr_pos := Vector2(10.01, 5.5)  # In tile (10, 5)
+	var next_pos := Vector2(9.9, 5.6)    # In tile (9, 5) - crossed X boundary
+	var next_tile := Vector2i(9, 5)
+	var normal := _get_crossing_normal(curr_pos, next_pos, next_tile, 1, 1)
+	# Should be vertical edge (X only), not corner
+	return TestRunner.assert_eq(normal.x, 1.0, "X normal") + \
+		   TestRunner.assert_eq(normal.y, 0.0, "Y normal (not corner)")
+
+
+func test_crossing_horizontal_edge_from_top():
+	# Ball corner crosses into tile from above (Y boundary)
+	# pen_y small, pen_x large -> horizontal edge hit
+	var curr_pos := Vector2(5.5, 10.01)  # In tile (5, 10)
+	var next_pos := Vector2(5.6, 9.9)    # In tile (5, 9) - crossed Y boundary
+	var next_tile := Vector2i(5, 9)
+	var normal := _get_crossing_normal(curr_pos, next_pos, next_tile, 1, 1)
+	# Should be horizontal edge (Y only), not corner
+	return TestRunner.assert_eq(normal.x, 0.0, "X normal (not corner)") + \
+		   TestRunner.assert_eq(normal.y, 1.0, "Y normal")
+
+
+func test_crossing_true_corner():
+	# Ball corner crosses diagonally with equal penetration
+	# pen_x ≈ pen_y -> corner hit
+	var curr_pos := Vector2(10.01, 10.01)  # In tile (10, 10)
+	var next_pos := Vector2(9.9, 9.9)      # In tile (9, 9) - crossed both
+	var next_tile := Vector2i(9, 9)
+	var normal := _get_crossing_normal(curr_pos, next_pos, next_tile, 1, 1)
+	# Should be corner (both X and Y)
+	return TestRunner.assert_eq(normal.x, 1.0, "X normal (corner)") + \
+		   TestRunner.assert_eq(normal.y, 1.0, "Y normal (corner)")
+
+
+func test_crossing_lr_corner_vertical_edge():
+	# LR corner (nx=-1, ny=-1) hitting right edge of a tile
+	var curr_pos := Vector2(4.99, 5.5)   # In tile (4, 5)
+	var next_pos := Vector2(5.1, 5.6)    # In tile (5, 5) - crossed into tile 5
+	var next_tile := Vector2i(5, 5)
+	var normal := _get_crossing_normal(curr_pos, next_pos, next_tile, -1, -1)
+	# pen_x = |5.1 - 5| = 0.1 (small), pen_y = |5.6 - 5| = 0.6 (large)
+	# Should be vertical edge
+	return TestRunner.assert_eq(normal.x, -1.0, "X normal") + \
+		   TestRunner.assert_eq(normal.y, 0.0, "Y normal (not corner)")
+
+
+func test_crossing_ll_corner_horizontal_edge():
+	# LL corner (nx=1, ny=-1) hitting bottom edge of a tile
+	var curr_pos := Vector2(5.5, 4.99)   # In tile (5, 4)
+	var next_pos := Vector2(5.4, 5.1)    # In tile (5, 5) - crossed into tile row 5
+	var next_tile := Vector2i(5, 5)
+	var normal := _get_crossing_normal(curr_pos, next_pos, next_tile, 1, -1)
+	# pen_x = |5.4 - 6| = 0.6 (large), pen_y = |5.1 - 5| = 0.1 (small)
+	# Should be horizontal edge
+	return TestRunner.assert_eq(normal.x, 0.0, "X normal (not corner)") + \
+		   TestRunner.assert_eq(normal.y, -1.0, "Y normal")
+
+
+# =============================================================================
+# Tests for two-corner edge detection patterns
+# =============================================================================
+
+func test_two_corners_top_edge():
+	# UL and UR both hit -> top edge, not corner
+	var ul_hit := true
+	var ur_hit := true
+	var ll_hit := false
+	var lr_hit := false
+	var raw_normal := Vector2(1, 2)  # Sum of UL(1,1) + UR(-1,1) with some corner contrib
+	var adjusted := _adjust_normal_for_edge_pattern(ul_hit, ur_hit, ll_hit, lr_hit, raw_normal)
+	return TestRunner.assert_eq(adjusted.x, 0.0, "X normal (top edge)") + \
+		   TestRunner.assert_eq(adjusted.y, 2.0, "Y normal")
+
+
+func test_two_corners_bottom_edge():
+	# LL and LR both hit -> bottom edge
+	var ul_hit := false
+	var ur_hit := false
+	var ll_hit := true
+	var lr_hit := true
+	var raw_normal := Vector2(-1, -2)
+	var adjusted := _adjust_normal_for_edge_pattern(ul_hit, ur_hit, ll_hit, lr_hit, raw_normal)
+	return TestRunner.assert_eq(adjusted.x, 0.0, "X normal (bottom edge)") + \
+		   TestRunner.assert_eq(adjusted.y, -2.0, "Y normal")
+
+
+func test_two_corners_left_edge():
+	# UL and LL both hit -> left edge
+	var ul_hit := true
+	var ur_hit := false
+	var ll_hit := true
+	var lr_hit := false
+	var raw_normal := Vector2(2, 1)
+	var adjusted := _adjust_normal_for_edge_pattern(ul_hit, ur_hit, ll_hit, lr_hit, raw_normal)
+	return TestRunner.assert_eq(adjusted.x, 2.0, "X normal") + \
+		   TestRunner.assert_eq(adjusted.y, 0.0, "Y normal (left edge)")
+
+
+func test_two_corners_right_edge():
+	# UR and LR both hit -> right edge
+	var ul_hit := false
+	var ur_hit := true
+	var ll_hit := false
+	var lr_hit := true
+	var raw_normal := Vector2(-2, -1)
+	var adjusted := _adjust_normal_for_edge_pattern(ul_hit, ur_hit, ll_hit, lr_hit, raw_normal)
+	return TestRunner.assert_eq(adjusted.x, -2.0, "X normal") + \
+		   TestRunner.assert_eq(adjusted.y, 0.0, "Y normal (right edge)")
+
+
+func test_single_corner_no_adjustment():
+	# Only one corner hit -> no adjustment, use raw normal
+	var ul_hit := false
+	var ur_hit := false
+	var ll_hit := false
+	var lr_hit := true
+	var raw_normal := Vector2(-1, -1)
+	var adjusted := _adjust_normal_for_edge_pattern(ul_hit, ur_hit, ll_hit, lr_hit, raw_normal)
+	return TestRunner.assert_eq(adjusted, raw_normal, "Single corner unchanged")
+
+
+func test_three_corners_no_adjustment():
+	# Three corners hit -> complex case, no simple edge adjustment
+	var ul_hit := true
+	var ur_hit := true
+	var ll_hit := true
+	var lr_hit := false
+	var raw_normal := Vector2(1, 1)
+	var adjusted := _adjust_normal_for_edge_pattern(ul_hit, ur_hit, ll_hit, lr_hit, raw_normal)
+	return TestRunner.assert_eq(adjusted, raw_normal, "Three corners unchanged")
+
+
+# =============================================================================
 # Helper functions
 # =============================================================================
+
+## Mimic _get_crossing_normal from board.gd
+func _get_crossing_normal(curr_pos: Vector2, next_pos: Vector2, next_tile: Vector2i, nx: int, ny: int) -> Vector2:
+	var tile_edge_x: float = next_tile.x if nx < 0 else next_tile.x + 1
+	var tile_edge_y: float = next_tile.y if ny < 0 else next_tile.y + 1
+
+	var penetration_x: float = absf(next_pos.x - tile_edge_x)
+	var penetration_y: float = absf(next_pos.y - tile_edge_y)
+
+	const CORNER_EPSILON := 0.5
+	var penetration_ratio: float = penetration_x / penetration_y if penetration_y > 0.001 else 999.0
+	if penetration_ratio < 0.001:
+		penetration_ratio = 1.0 / 999.0
+
+	var is_corner := penetration_ratio > (1.0 / (1.0 + CORNER_EPSILON)) and penetration_ratio < (1.0 + CORNER_EPSILON)
+
+	if is_corner:
+		return Vector2(nx, ny)
+	elif penetration_x < penetration_y:
+		return Vector2(nx, 0)
+	else:
+		return Vector2(0, ny)
+
+
+## Mimic edge pattern adjustment from _check_ball_collision_tiles
+func _adjust_normal_for_edge_pattern(ul_hit: bool, ur_hit: bool, ll_hit: bool, lr_hit: bool, raw_normal: Vector2) -> Vector2:
+	if (ul_hit and ur_hit) and not (ll_hit or lr_hit):
+		return Vector2(0, 2)  # Top edge
+	elif (ll_hit and lr_hit) and not (ul_hit or ur_hit):
+		return Vector2(0, -2)  # Bottom edge
+	elif (ul_hit and ll_hit) and not (ur_hit or lr_hit):
+		return Vector2(2, 0)  # Left edge
+	elif (ur_hit and lr_hit) and not (ul_hit or ll_hit):
+		return Vector2(-2, 0)  # Right edge
+	else:
+		return raw_normal
 
 ## Apply reflection logic (mimics Ball.collide + go_forward)
 func _apply_reflection(velocity: Vector2, normal: Vector2) -> Vector2:

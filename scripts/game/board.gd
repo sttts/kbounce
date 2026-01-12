@@ -250,6 +250,13 @@ func add_ball():
 	balls_changed.emit(balls.size())
 
 
+## Reverse all ball velocities (invert time for debugging)
+func reverse_balls():
+	for ball in balls:
+		ball.velocity = -ball.velocity
+	print("REVERSED all %d balls" % balls.size())
+
+
 ## Reset walls
 	for wall in walls:
 		wall.wall_velocity = wall_velocity
@@ -467,9 +474,9 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 						var hit := Collision.Hit.new()
 						hit.type = Collision.Type.TILE
 						result.append(hit)
-		else:
-			# For non-walls (balls), check all corners
-			result.append_array(_check_collision_tiles(rect, -1))
+		elif object is Ball:
+			# For balls, check all corners with velocity for edge detection
+			result.append_array(_check_ball_collision_tiles(object))
 
 	# Check wall collisions (wall vs wall)
 	if type & Collision.Type.WALL and object is Wall:
@@ -575,23 +582,29 @@ func _check_collision_tiles(rect: Rect2, wall_dir: int = -1) -> Array:
 	var lr: int = TileType.FREE
 	var ll: int = TileType.FREE
 
+	# Corner tile coordinates for debug
+	var ul_tile := Vector2i(int(check_rect.position.x + D), int(check_rect.position.y + D))
+	var ur_tile := Vector2i(int(check_rect.end.x - D), int(check_rect.position.y + D))
+	var lr_tile := Vector2i(int(check_rect.end.x - D), int(check_rect.end.y - D))
+	var ll_tile := Vector2i(int(check_rect.position.x + D), int(check_rect.end.y - D))
+
 	if check_ul:
-		ul = tiles[int(check_rect.position.x + D)][int(check_rect.position.y + D)]
+		ul = tiles[ul_tile.x][ul_tile.y]
 		if ul != TileType.FREE:
 			normal += Vector2(1, 1)
 
 	if check_ur:
-		ur = tiles[int(check_rect.end.x - D)][int(check_rect.position.y + D)]
+		ur = tiles[ur_tile.x][ur_tile.y]
 		if ur != TileType.FREE:
 			normal += Vector2(-1, 1)
 
 	if check_lr:
-		lr = tiles[int(check_rect.end.x - D)][int(check_rect.end.y - D)]
+		lr = tiles[lr_tile.x][lr_tile.y]
 		if lr != TileType.FREE:
 			normal += Vector2(-1, -1)
 
 	if check_ll:
-		ll = tiles[int(check_rect.position.x + D)][int(check_rect.end.y - D)]
+		ll = tiles[ll_tile.x][ll_tile.y]
 		if ll != TileType.FREE:
 			normal += Vector2(1, -1)
 
@@ -603,6 +616,124 @@ func _check_collision_tiles(rect: Rect2, wall_dir: int = -1) -> Array:
 		result.append(hit)
 
 	return result
+
+
+## Check ball collision against tiles, detecting which edge was actually crossed
+func _check_ball_collision_tiles(ball: Ball) -> Array:
+	var current_rect := ball.ball_bounding_rect()
+	var next_rect := ball.next_bounding_rect()
+
+	const D := 0.01
+	var normal := Vector2.ZERO
+
+	# Check each corner: did it cross into a wall tile?
+	# For each corner, determine if X boundary, Y boundary, or both were crossed
+	var corners_hit := []
+
+	# Upper-left corner
+	var ul_curr_pos := Vector2(current_rect.position.x + D, current_rect.position.y + D)
+	var ul_next_pos := Vector2(next_rect.position.x + D, next_rect.position.y + D)
+	var ul_next := Vector2i(int(ul_next_pos.x), int(ul_next_pos.y))
+	if ul_next.x >= 0 and ul_next.x < TILE_NUM_W and ul_next.y >= 0 and ul_next.y < TILE_NUM_H:
+		if tiles[ul_next.x][ul_next.y] != TileType.FREE:
+			normal += _get_crossing_normal(ul_curr_pos, ul_next_pos, ul_next, 1, 1)
+			corners_hit.append("UL@%s" % ul_next)
+
+	# Upper-right corner
+	var ur_curr_pos := Vector2(current_rect.end.x - D, current_rect.position.y + D)
+	var ur_next_pos := Vector2(next_rect.end.x - D, next_rect.position.y + D)
+	var ur_next := Vector2i(int(ur_next_pos.x), int(ur_next_pos.y))
+	if ur_next.x >= 0 and ur_next.x < TILE_NUM_W and ur_next.y >= 0 and ur_next.y < TILE_NUM_H:
+		if tiles[ur_next.x][ur_next.y] != TileType.FREE:
+			normal += _get_crossing_normal(ur_curr_pos, ur_next_pos, ur_next, -1, 1)
+			corners_hit.append("UR@%s" % ur_next)
+
+	# Lower-right corner
+	var lr_curr_pos := Vector2(current_rect.end.x - D, current_rect.end.y - D)
+	var lr_next_pos := Vector2(next_rect.end.x - D, next_rect.end.y - D)
+	var lr_next := Vector2i(int(lr_next_pos.x), int(lr_next_pos.y))
+	if lr_next.x >= 0 and lr_next.x < TILE_NUM_W and lr_next.y >= 0 and lr_next.y < TILE_NUM_H:
+		if tiles[lr_next.x][lr_next.y] != TileType.FREE:
+			normal += _get_crossing_normal(lr_curr_pos, lr_next_pos, lr_next, -1, -1)
+			corners_hit.append("LR@%s" % lr_next)
+
+	# Lower-left corner
+	var ll_curr_pos := Vector2(current_rect.position.x + D, current_rect.end.y - D)
+	var ll_next_pos := Vector2(next_rect.position.x + D, next_rect.end.y - D)
+	var ll_next := Vector2i(int(ll_next_pos.x), int(ll_next_pos.y))
+	if ll_next.x >= 0 and ll_next.x < TILE_NUM_W and ll_next.y >= 0 and ll_next.y < TILE_NUM_H:
+		if tiles[ll_next.x][ll_next.y] != TileType.FREE:
+			normal += _get_crossing_normal(ll_curr_pos, ll_next_pos, ll_next, 1, -1)
+			corners_hit.append("LL@%s" % ll_next)
+
+	var result: Array = []
+	if not corners_hit.is_empty():
+		# Check which corners hit to determine edge vs corner collision
+		var ul_hit: bool = tiles[ul_next.x][ul_next.y] != TileType.FREE if ul_next.x >= 0 and ul_next.x < TILE_NUM_W and ul_next.y >= 0 and ul_next.y < TILE_NUM_H else false
+		var ur_hit: bool = tiles[ur_next.x][ur_next.y] != TileType.FREE if ur_next.x >= 0 and ur_next.x < TILE_NUM_W and ur_next.y >= 0 and ur_next.y < TILE_NUM_H else false
+		var ll_hit: bool = tiles[ll_next.x][ll_next.y] != TileType.FREE if ll_next.x >= 0 and ll_next.x < TILE_NUM_W and ll_next.y >= 0 and ll_next.y < TILE_NUM_H else false
+		var lr_hit: bool = tiles[lr_next.x][lr_next.y] != TileType.FREE if lr_next.x >= 0 and lr_next.x < TILE_NUM_W and lr_next.y >= 0 and lr_next.y < TILE_NUM_H else false
+
+		# Override normal based on corner hit patterns
+		# Two corners on same edge = edge collision, not corner
+		var adjusted_normal := normal
+		if (ul_hit and ur_hit) and not (ll_hit or lr_hit):
+			# Top edge hit
+			adjusted_normal = Vector2(0, 2)
+		elif (ll_hit and lr_hit) and not (ul_hit or ur_hit):
+			# Bottom edge hit
+			adjusted_normal = Vector2(0, -2)
+		elif (ul_hit and ll_hit) and not (ur_hit or lr_hit):
+			# Left edge hit
+			adjusted_normal = Vector2(2, 0)
+		elif (ur_hit and lr_hit) and not (ul_hit or ll_hit):
+			# Right edge hit
+			adjusted_normal = Vector2(-2, 0)
+
+		var hit := Collision.Hit.new()
+		hit.type = Collision.Type.TILE
+		hit.normal = adjusted_normal
+		result.append(hit)
+
+	return result
+
+
+## Get normal based on which tile boundary was crossed
+## curr_pos: corner's current position (float)
+## next_pos: corner's next position (float)
+## next_tile: the tile the corner moved into
+## nx, ny: the default normal direction for this corner
+func _get_crossing_normal(curr_pos: Vector2, next_pos: Vector2, next_tile: Vector2i, nx: int, ny: int) -> Vector2:
+	# Calculate distance from next position to tile edges
+	# For nx=1 (left-side corner), the relevant X edge is at next_tile.x + 1 (right edge of tile to left)
+	# For nx=-1 (right-side corner), the relevant X edge is at next_tile.x (left edge of tile to right)
+	var tile_edge_x: float = next_tile.x if nx < 0 else next_tile.x + 1
+	var tile_edge_y: float = next_tile.y if ny < 0 else next_tile.y + 1
+
+	# How far did we penetrate past each edge?
+	var penetration_x: float = absf(next_pos.x - tile_edge_x)
+	var penetration_y: float = absf(next_pos.y - tile_edge_y)
+
+	# If penetrations are similar (within epsilon), it's a corner hit
+	const CORNER_EPSILON := 0.5  # Threshold for "close enough" to be a corner
+	var penetration_ratio: float = penetration_x / penetration_y if penetration_y > 0.001 else 999.0
+	if penetration_ratio < 0.001:
+		penetration_ratio = 1.0 / 999.0
+
+	# If ratio is close to 1, both edges were hit nearly simultaneously
+	var is_corner := penetration_ratio > (1.0 / (1.0 + CORNER_EPSILON)) and penetration_ratio < (1.0 + CORNER_EPSILON)
+
+	# Use penetration ratio to determine if it's a corner or edge hit
+	# Penetration ratio close to 1 means both edges hit simultaneously (corner)
+	if is_corner:
+		# True corner hit - penetrations are similar
+		return Vector2(nx, ny)
+	elif penetration_x < penetration_y:
+		# Less X penetration = hit vertical edge first
+		return Vector2(nx, 0)
+	else:
+		# Less Y penetration = hit horizontal edge first
+		return Vector2(0, ny)
 
 
 ## Check if two walls are a paired set (UP/DOWN or LEFT/RIGHT from same origin)

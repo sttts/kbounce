@@ -110,6 +110,11 @@ func _unhandled_input(event):
 		GameManager.set_paused(true)
 		return
 
+	# Handle reverse balls (editor only)
+	if OS.has_feature("editor") and event is InputEventKey and event.pressed and event.keycode == KEY_R:
+		board.reverse_balls()
+		return
+
 	# Handle wall direction toggle (right click)
 	if event.is_action_pressed("toggle_direction"):
 		vertical_wall = not vertical_wall
@@ -353,6 +358,12 @@ func _setup_debug_ui():
 			GameManager.debug_cheated = true
 			GameManager.time = 2
 			GameManager.time_changed.emit(GameManager.time)],
+		["+60s", func():
+			GameManager.time += 60
+			GameManager.time_changed.emit(GameManager.time)],
+		["+1 life", func():
+			GameManager.lives += 1
+			GameManager.lives_changed.emit(GameManager.lives)],
 	]
 
 	for btn_data in buttons:
