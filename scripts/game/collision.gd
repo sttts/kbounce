@@ -37,72 +37,32 @@ class Hit:
 
 ## Calculate normal vector for collision response
 ##
-## Uses the 2014 KBounce approach: test each axis independently.
-## - Would moving only X cause collision? -> reflect X
-## - Would moving only Y cause collision? -> reflect Y
-## - Only if neither, but diagonal would -> reflect both (corner)
-##
-## current_rect: object's current position (before movement)
-## velocity: movement vector
-## obstacle: the obstacle rectangle
-static func calculate_normal_with_velocity(current_rect: Rect2, velocity: Vector2, obstacle: Rect2) -> Vector2:
-	var normal := Vector2.ZERO
-
-	# Test X-only movement
-	var rect_x := Rect2(current_rect.position + Vector2(velocity.x, 0), current_rect.size)
-	var collide_x := rect_x.intersects(obstacle)
-
-	# Test Y-only movement
-	var rect_y := Rect2(current_rect.position + Vector2(0, velocity.y), current_rect.size)
-	var collide_y := rect_y.intersects(obstacle)
-
-	if collide_x:
-		# Hit vertical edge - normal points opposite to velocity
-		if velocity.x < 0:
-			normal.x = 1.0   # Moving left, normal points right
-		elif velocity.x > 0:
-			normal.x = -1.0  # Moving right, normal points left
-
-	if collide_y:
-		# Hit horizontal edge - normal points opposite to velocity
-		if velocity.y < 0:
-			normal.y = 1.0   # Moving up, normal points down
-		elif velocity.y > 0:
-			normal.y = -1.0  # Moving down, normal points up
-
-	# Corner case: neither axis alone collides, but diagonal does
-	if not collide_x and not collide_y:
-		var rect_xy := Rect2(current_rect.position + velocity, current_rect.size)
-		if rect_xy.intersects(obstacle):
-			if velocity.x < 0:
-				normal.x = 1.0
-			elif velocity.x > 0:
-				normal.x = -1.0
-			if velocity.y < 0:
-				normal.y = 1.0
-			elif velocity.y > 0:
-				normal.y = -1.0
-
-	return normal
-
-
-## Legacy function for compatibility - uses intersection geometry
+## This is a simple function that generates a vector perpendicular to the
+## surface of rect2 at the point where rect1 intersects it.
+## Note: vectors may have different lengths (not normalized)
 static func calculate_normal(rect1: Rect2, rect2: Rect2) -> Vector2:
 	var normal := Vector2.ZERO
+
+	# Calculate intersection
 	var intersection := rect1.intersection(rect2)
 	if intersection.size == Vector2.ZERO:
 		return normal
 
+	# Determine which edges are colliding based on intersection position
+	# relative to the center of rect2
 	var center2 := rect2.get_center()
 	var int_center := intersection.get_center()
 
+	# Horizontal component
 	if int_center.x < center2.x:
-		normal.x = -1.0
+		normal.x = -1.0  # Hit from left
 	elif int_center.x > center2.x:
-		normal.x = 1.0
+		normal.x = 1.0   # Hit from right
+
+	# Vertical component
 	if int_center.y < center2.y:
-		normal.y = -1.0
+		normal.y = -1.0  # Hit from top
 	elif int_center.y > center2.y:
-		normal.y = 1.0
+		normal.y = 1.0   # Hit from bottom
 
 	return normal

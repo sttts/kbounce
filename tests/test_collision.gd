@@ -9,93 +9,82 @@ const TestRunner = preload("res://tests/test_runner.gd")
 
 
 # =============================================================================
-# Tests for Collision.calculate_normal_with_velocity
+# Tests for Collision.calculate_normal (intersection geometry based)
 # =============================================================================
 
-func test_normal_ball_moving_right_hits_wall():
-	# Ball about to hit wall on right - ball end.x almost touches wall start.x
-	var ball := Rect2(5.0, 5.0, 0.8, 0.8)  # Ball from (5,5) to (5.8,5.8)
-	var velocity := Vector2(0.125, 0)
-	var wall := Rect2(5.8, 5.0, 1.0, 1.0)  # Wall starts where ball ends
+func test_normal_ball_hits_wall_from_left():
+	# Ball overlapping wall from the left side
+	var ball := Rect2(5.0, 5.0, 1.0, 1.0)  # Ball from (5,5) to (6,6)
+	var wall := Rect2(5.5, 5.0, 2.0, 1.0)  # Wall from (5.5,5) to (7.5,6)
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
-	# Moving X causes collision, should reflect X (normal points left)
-	return TestRunner.assert_eq(normal.x, -1.0, "X normal") + \
-		   TestRunner.assert_eq(normal.y, 0.0, "Y normal")
+	# Intersection center (5.5-6, 5-6) is left of wall center (6.5, 5.5)
+	return TestRunner.assert_eq(normal.x, -1.0, "X normal (hit from left)")
 
 
-func test_normal_ball_moving_left_hits_wall():
-	# Ball about to hit wall on left
-	var ball := Rect2(5.0, 5.0, 0.8, 0.8)  # Ball from (5,5) to (5.8,5.8)
-	var velocity := Vector2(-0.125, 0)
-	var wall := Rect2(4.0, 5.0, 1.0, 1.0)  # Wall ends at x=5 where ball starts
+func test_normal_ball_hits_wall_from_right():
+	# Ball overlapping wall from the right side
+	var ball := Rect2(6.5, 5.0, 1.0, 1.0)  # Ball from (6.5,5) to (7.5,6)
+	var wall := Rect2(5.0, 5.0, 2.0, 1.0)  # Wall from (5,5) to (7,6)
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
-	# Moving X causes collision, should reflect X (normal points right)
-	return TestRunner.assert_eq(normal.x, 1.0, "X normal") + \
-		   TestRunner.assert_eq(normal.y, 0.0, "Y normal")
+	# Intersection center is right of wall center
+	return TestRunner.assert_eq(normal.x, 1.0, "X normal (hit from right)")
 
 
-func test_normal_ball_moving_down_hits_wall():
-	# Ball about to hit wall below
-	var ball := Rect2(5.0, 5.0, 0.8, 0.8)  # Ball from (5,5) to (5.8,5.8)
-	var velocity := Vector2(0, 0.125)
-	var wall := Rect2(5.0, 5.8, 1.0, 1.0)  # Wall starts where ball ends in Y
+func test_normal_ball_hits_wall_from_top():
+	# Ball overlapping wall from the top
+	var ball := Rect2(5.0, 5.0, 1.0, 1.0)  # Ball from (5,5) to (6,6)
+	var wall := Rect2(5.0, 5.5, 1.0, 2.0)  # Wall from (5,5.5) to (6,7.5)
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
-	# Moving Y causes collision, should reflect Y (normal points up)
-	return TestRunner.assert_eq(normal.x, 0.0, "X normal") + \
-		   TestRunner.assert_eq(normal.y, -1.0, "Y normal")
+	# Intersection center is above wall center
+	return TestRunner.assert_eq(normal.y, -1.0, "Y normal (hit from top)")
 
 
-func test_normal_ball_moving_up_hits_wall():
-	# Ball about to hit wall above
-	var ball := Rect2(5.0, 5.0, 0.8, 0.8)
-	var velocity := Vector2(0, -0.125)
-	var wall := Rect2(5.0, 4.0, 1.0, 1.0)  # Wall ends at y=5 where ball starts
+func test_normal_ball_hits_wall_from_bottom():
+	# Ball overlapping wall from the bottom
+	var ball := Rect2(5.0, 6.5, 1.0, 1.0)  # Ball from (5,6.5) to (6,7.5)
+	var wall := Rect2(5.0, 5.0, 1.0, 2.0)  # Wall from (5,5) to (6,7)
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
-	# Moving Y causes collision, should reflect Y (normal points down)
-	return TestRunner.assert_eq(normal.x, 0.0, "X normal") + \
-		   TestRunner.assert_eq(normal.y, 1.0, "Y normal")
+	# Intersection center is below wall center
+	return TestRunner.assert_eq(normal.y, 1.0, "Y normal (hit from bottom)")
 
 
-func test_normal_ball_diagonal_hits_corner():
-	# Ball moving diagonally, both axes would cause collision
-	var ball := Rect2(5.0, 5.0, 0.8, 0.8)
-	var velocity := Vector2(0.125, 0.125)
-	var wall := Rect2(5.8, 5.8, 1.0, 1.0)  # Corner exactly at ball's corner
+func test_normal_ball_hits_corner():
+	# Ball hitting corner - intersection in corner quadrant
+	var ball := Rect2(5.0, 5.0, 1.0, 1.0)  # Ball from (5,5) to (6,6)
+	var wall := Rect2(5.5, 5.5, 2.0, 2.0)  # Wall from (5.5,5.5) to (7.5,7.5)
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
-	# Both X and Y movement cause collision
-	return TestRunner.assert_eq(normal.x, -1.0, "X normal") + \
-		   TestRunner.assert_eq(normal.y, -1.0, "Y normal")
+	# Intersection center is top-left of wall center
+	return TestRunner.assert_eq(normal.x, -1.0, "X normal (corner)") + \
+		   TestRunner.assert_eq(normal.y, -1.0, "Y normal (corner)")
 
 
-func test_normal_ball_diagonal_hits_vertical_edge():
-	# Ball moving diagonally but wall spans Y range - only X causes new collision
-	var ball := Rect2(5.0, 5.0, 0.8, 0.8)
-	var velocity := Vector2(0.125, 0.125)
-	var wall := Rect2(5.8, 4.5, 1.0, 2.0)  # Wall spans y=4.5 to 6.5, overlaps ball's Y
+func test_normal_ball_centered_on_wall():
+	# Ball centered on wall - intersection center equals wall center
+	var ball := Rect2(5.5, 5.5, 1.0, 1.0)  # Ball from (5.5,5.5) to (6.5,6.5)
+	var wall := Rect2(5.0, 5.0, 2.0, 2.0)  # Wall from (5,5) to (7,7), center at (6,6)
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
-	# Only X movement causes collision (Y already overlaps)
-	return TestRunner.assert_eq(normal.x, -1.0, "X normal")
+	# Intersection center equals wall center, no clear direction
+	return TestRunner.assert_eq(normal, Vector2.ZERO, "Centered normal")
 
 
 func test_normal_no_collision():
 	# Ball not colliding with wall
-	var ball := Rect2(5, 5, 0.8, 0.8)
-	var velocity := Vector2(0.125, 0)
-	var wall := Rect2(10, 10, 1, 1)  # Far away
+	var ball := Rect2(5.0, 5.0, 1.0, 1.0)
+	var wall := Rect2(10.0, 10.0, 1.0, 1.0)  # Far away
 
-	var normal := Collision.calculate_normal_with_velocity(ball, velocity, wall)
+	var normal := Collision.calculate_normal(ball, wall)
 
 	# No collision, normal should be zero
 	return TestRunner.assert_eq(normal, Vector2.ZERO, "No collision normal")

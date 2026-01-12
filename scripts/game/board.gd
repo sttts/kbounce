@@ -467,9 +467,9 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 						var hit := Collision.Hit.new()
 						hit.type = Collision.Type.TILE
 						result.append(hit)
-		elif object is Ball:
-			# For balls, use 2014 KBounce approach: test axes independently
-			result.append_array(_check_ball_tile_collision(object))
+		else:
+			# For non-walls (balls), check all corners
+			result.append_array(_check_collision_tiles(rect, -1))
 
 	# Check wall collisions (wall vs wall)
 	if type & Collision.Type.WALL and object is Wall:
@@ -507,20 +507,14 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 
 	# Check ball vs wall collisions (for ball reflection off growing walls)
 	if type & Collision.Type.WALL and object is Ball:
-		var ball := object as Ball
-		var current_rect := ball.ball_bounding_rect()
-		var velocity := ball.velocity
-
 		for wall in walls:
 			if wall.visible:
 				var wall_rect: Rect2 = wall.next_bounding_rect()
 				if rect.intersects(wall_rect):
-					# Use 2014 approach: test axes independently
 					var hit := Collision.Hit.new()
 					hit.type = Collision.Type.WALL
 					hit.bounding_rect = wall_rect
-					hit.normal = Collision.calculate_normal_with_velocity(
-						current_rect, velocity, wall_rect)
+					hit.normal = Collision.calculate_normal(rect, wall_rect)
 					hit.source = wall
 					result.append(hit)
 
@@ -549,67 +543,6 @@ func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = R
 						result.append(hit)
 
 	return result
-
-
-## Check ball collision against tiles using 2014 KBounce approach
-## Tests each axis independently to determine correct reflection
-func _check_ball_tile_collision(ball: Ball) -> Array:
-	var current_rect := ball.ball_bounding_rect()
-	var velocity := ball.velocity
-
-	# Small epsilon to avoid edge-case collisions
-	const D := 0.01
-
-	var reflect_x := false
-	var reflect_y := false
-
-	# Test X-only movement
-	var rect_x := Rect2(current_rect.position + Vector2(velocity.x, 0), current_rect.size)
-	if _rect_hits_tile(rect_x, D):
-		reflect_x = true
-
-	# Test Y-only movement
-	var rect_y := Rect2(current_rect.position + Vector2(0, velocity.y), current_rect.size)
-	if _rect_hits_tile(rect_y, D):
-		reflect_y = true
-
-	# Corner case: neither axis alone collides, but diagonal does
-	if not reflect_x and not reflect_y:
-		var rect_xy := Rect2(current_rect.position + velocity, current_rect.size)
-		if _rect_hits_tile(rect_xy, D):
-			reflect_x = true
-			reflect_y = true
-
-	# Build normal from reflection flags
-	var result: Array = []
-	if reflect_x or reflect_y:
-		var hit := Collision.Hit.new()
-		hit.type = Collision.Type.TILE
-		# Normal points opposite to velocity (away from obstacle)
-		if reflect_x:
-			hit.normal.x = 1.0 if velocity.x < 0 else -1.0
-		if reflect_y:
-			hit.normal.y = 1.0 if velocity.y < 0 else -1.0
-		result.append(hit)
-
-	return result
-
-
-## Check if a rectangle hits any non-free tile
-func _rect_hits_tile(rect: Rect2, epsilon: float) -> bool:
-	var check_rect := rect
-	check_rect.position.x = clamp(check_rect.position.x, 0, TILE_NUM_W - 1)
-	check_rect.position.y = clamp(check_rect.position.y, 0, TILE_NUM_H - 1)
-	check_rect.end.x = clamp(check_rect.end.x, 0, TILE_NUM_W)
-	check_rect.end.y = clamp(check_rect.end.y, 0, TILE_NUM_H)
-
-	# Check all four corners
-	var ul: int = tiles[int(check_rect.position.x + epsilon)][int(check_rect.position.y + epsilon)]
-	var ur: int = tiles[int(check_rect.end.x - epsilon)][int(check_rect.position.y + epsilon)]
-	var lr: int = tiles[int(check_rect.end.x - epsilon)][int(check_rect.end.y - epsilon)]
-	var ll: int = tiles[int(check_rect.position.x + epsilon)][int(check_rect.end.y - epsilon)]
-
-	return ul != TileType.FREE or ur != TileType.FREE or lr != TileType.FREE or ll != TileType.FREE
 
 
 ## Check collision against tiles
