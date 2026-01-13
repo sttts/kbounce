@@ -47,6 +47,7 @@ var _user_entry: Node = null
 @onready var report_bug_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/ReportBugButton
 @onready var share_logs_button: Button = $HelpOverlay/ShareLogsButton
 @onready var fullscreen_button: Button = $TopRightButtons/FullscreenButton
+@onready var volume_slider: HSlider = $VolumeSlider
 
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
@@ -110,6 +111,10 @@ func _ready():
 	var is_ios_web := OS.has_feature("web") and (OS.has_feature("web_ios") or _is_ios_safari())
 	fullscreen_button.visible = not (is_native_mobile or is_ios_web)
 	fullscreen_button.pressed.connect(_on_fullscreen_button_pressed)
+
+	# Connect volume slider
+	volume_slider.value = AudioManager.get_volume_linear()
+	volume_slider.value_changed.connect(_on_volume_slider_changed)
 
 	# Connect to game's direction signal when game is available
 	await get_tree().process_frame
@@ -288,6 +293,10 @@ func _on_fullscreen_button_pressed():
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		else:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+
+func _on_volume_slider_changed(value: float):
+	AudioManager.set_volume_linear(value)
 
 
 func _on_state_changed(state: GameManager.GameState):
