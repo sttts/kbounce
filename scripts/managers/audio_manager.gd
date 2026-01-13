@@ -11,6 +11,9 @@ const SOUND_DELAY := 4
 ## Maximum concurrent sound players
 const MAX_PLAYERS := 8
 
+## Default volume (30% = -10.46 dB)
+const DEFAULT_VOLUME_DB := -10.46
+
 ## Preloaded sound streams
 var sounds := {}
 
@@ -19,6 +22,9 @@ var players: Array[AudioStreamPlayer] = []
 
 ## Sound delay counters (for throttling)
 var _sound_delays := {}
+
+## Current volume in dB
+var _volume_db: float = DEFAULT_VOLUME_DB
 
 
 func _ready():
@@ -37,6 +43,7 @@ func _ready():
 	# Create pool of audio players
 	for i in range(MAX_PLAYERS):
 		var player := AudioStreamPlayer.new()
+		player.volume_db = _volume_db
 		add_child(player)
 		players.append(player)
 
@@ -87,3 +94,21 @@ func tick():
 func stop_all():
 	for player in players:
 		player.stop()
+
+
+## Set volume from linear value (0.0 to 1.0)
+func set_volume_linear(value: float):
+	value = clampf(value, 0.0, 1.0)
+	if value <= 0.0:
+		_volume_db = -80.0  # Effectively muted
+	else:
+		_volume_db = 20.0 * log(value) / log(10.0)
+	for player in players:
+		player.volume_db = _volume_db
+
+
+## Get volume as linear value (0.0 to 1.0)
+func get_volume_linear() -> float:
+	if _volume_db <= -80.0:
+		return 0.0
+	return pow(10.0, _volume_db / 20.0)
