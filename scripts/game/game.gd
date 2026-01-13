@@ -8,6 +8,11 @@ extends Node2D
 ## Time tick interval (1 second)
 const TIME_TICK := 1.0
 
+## Physics tick rate (ticks per second)
+const PHYSICS_TICK_RATE := 60.0
+## Time per physics tick
+const PHYSICS_TICK_TIME := 1.0 / PHYSICS_TICK_RATE
+
 ## Reference to the game board
 @onready var board: Board = $Board
 
@@ -35,6 +40,9 @@ var vertical_wall := true:
 var _swipe_start_pos := Vector2.ZERO
 var _swipe_active := false
 const SWIPE_THRESHOLD := 20.0  # Pixels to determine swipe direction
+
+## Physics time accumulator for fixed timestep
+var _physics_accumulator := 0.0
 
 
 
@@ -215,11 +223,17 @@ func _start_demo():
 	board.show_demo(2)
 
 
-## Physics process - runs at fixed 60Hz regardless of render fps
-func _physics_process(_delta: float):
+## Physics process - accumulates time and calls tick() to maintain constant physics rate
+func _physics_process(delta: float):
 	if GameManager.state == GameManager.GameState.RUNNING:
-		board.tick()
-		AudioManager.tick()
+		# Accumulate elapsed time
+		_physics_accumulator += delta
+
+		# Run physics ticks to catch up
+		while _physics_accumulator >= PHYSICS_TICK_TIME:
+			board.tick()
+			AudioManager.tick()
+			_physics_accumulator -= PHYSICS_TICK_TIME
 	else:
 		# Animate balls in all non-running states (demo, paused, game over, etc.)
 		board.animate_balls()
@@ -267,6 +281,8 @@ func _on_state_changed(state: GameManager.GameState):
 	match state:
 		GameManager.GameState.RUNNING:
 			time_timer.start()
+			# Reset physics accumulator to avoid burst of ticks
+			_physics_accumulator = 0.0
 			# Reset swipe state to ignore any ongoing mouse press from button click
 			_swipe_active = false
 			_swipe_start_pos = Vector2.ZERO
