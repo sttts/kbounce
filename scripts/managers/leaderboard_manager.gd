@@ -28,9 +28,9 @@ signal report_failed(error: String)
 ## Emitted when rate limited (retry_after in seconds)
 signal rate_limited(retry_after: int)
 
-## API base URL (from generated Config class)
+## API base URL (from BuildInfo with dev defaults)
 var API_URL: String:
-	get: return Config.LEADERBOARD_API_URL
+	get: return BuildInfo.leaderboard_api_url
 
 ## Config file path for user identity
 const CONFIG_PATH := "user://leaderboard.cfg"
@@ -112,7 +112,7 @@ func _ready():
 ## Get standard HTTP headers with User-Agent
 func _get_headers(content_type: bool = true) -> PackedStringArray:
 	var headers := PackedStringArray()
-	headers.append("User-Agent: KBounce/%s (%s)" % [Version.TAG, OS.get_name()])
+	headers.append("User-Agent: KBounce/%s (%s)" % [BuildInfo.version_tag, OS.get_name()])
 	if content_type:
 		headers.append("Content-Type: application/json")
 	return headers

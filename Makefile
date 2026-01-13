@@ -1,12 +1,16 @@
 # KBounce Build Makefile
 #
-# Required environment variables (set in .env, run: source .env):
+# The project works out of the box with dev defaults from BuildInfo autoload.
+# These env vars generate override files for release builds:
+#   LEADERBOARD_API_URL - Leaderboard API base URL (optional, overrides default)
+#   VERSION - Version tag (optional, defaults to git describe)
+#
+# Required for Apple builds:
 #   GODOT - Path to Godot executable
 #   TEAM_ID - Apple Developer Team ID
 #   MAC_APP_IDENTITY - Apple Distribution signing identity
 #   MAC_DEV_IDENTITY - Apple Development signing identity
 #   MAC_INSTALLER_IDENTITY - Mac installer signing identity
-#   LEADERBOARD_API_URL - Leaderboard API base URL
 
 # Configuration
 APP_NAME := KBounce

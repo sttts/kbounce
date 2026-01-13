@@ -26,11 +26,11 @@ mono_crash.*.json
 build/
 export/
 
-# Generated version and config files
+# Generated version and config override files (BuildInfo has defaults)
 scripts/version.gd
 scripts/version.gd.uid
-scripts/resources/config.gd
-scripts/resources/config.gd.uid
+scripts/config.gd
+scripts/config.gd.uid
 
 # Local credentials
 credentials.mk

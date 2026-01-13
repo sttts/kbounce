@@ -20,6 +20,7 @@ config/icon="res://icon.icns"
 
 [autoload]
 
+BuildInfo="*res://scripts/build_info.gd"
 ShareManager="*res://scripts/managers/share_manager.gd"
 GameManager="*res://scripts/managers/game_manager.gd"
 AudioManager="*res://scripts/managers/audio_manager.gd"

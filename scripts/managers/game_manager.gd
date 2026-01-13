@@ -79,7 +79,7 @@ func _ready():
 		var ua = JavaScriptBridge.eval("navigator.userAgent")
 		if ua:
 			platform_info += ", " + str(ua)
-	print("KBounce %s (%s)" % [Version.TAG, platform_info])
+	print("KBounce %s (%s)" % [BuildInfo.version_tag, platform_info])
 
 
 ## Start a new game
