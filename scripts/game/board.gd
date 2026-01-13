@@ -63,6 +63,9 @@ var _draw_times: Array[float] = []
 const GRID_CELL_SIZE := 4  # Tiles per cell
 var _ball_grid: Array = []  # 2D array of ball lists
 
+## Whether to use JS physics (for determinism)
+var _use_js_physics := true
+
 
 func _ready():
 	# Preload scenes
@@ -71,6 +74,57 @@ func _ready():
 
 	_init_walls()
 	clear()
+
+	# Check if JS physics is available
+	if _use_js_physics and not PhysicsManager.is_ready():
+		push_warning("Board: JS physics not ready, falling back to GDScript physics")
+		_use_js_physics = false
+
+
+## Initialize JS physics state (call after clear() and before adding balls)
+func _init_js_physics():
+	if not _use_js_physics:
+		return
+	PhysicsManager.init()
+
+
+## Sync a ball to JS physics (call after setting position/velocity)
+func _sync_ball_to_js(ball: Ball, ball_id: int):
+	if not _use_js_physics:
+		return
+	# Ball positions are stored in relative_pos, velocity in velocity
+	var id := PhysicsManager.add_ball(
+		ball.relative_pos.x, ball.relative_pos.y,
+		ball.velocity.x, ball.velocity.y)
+	if id != ball_id:
+		push_warning("Board: JS ball ID mismatch: expected %d, got %d" % [ball_id, id])
+
+
+## Sync ball position from JS physics (call after tick)
+func _sync_ball_from_js(ball: Ball, ball_id: int):
+	if not _use_js_physics:
+		return
+	var state := PhysicsManager.get_ball(ball_id)
+	if state.is_empty():
+		return
+	ball.velocity = Vector2(state.get("vx", 0), state.get("vy", 0))
+	ball.set_relative_pos(state.get("x", 0), state.get("y", 0))
+
+
+## Sync tile to JS physics
+func _sync_tile_to_js(x: int, y: int):
+	if not _use_js_physics:
+		return
+	PhysicsManager.set_tile(x, y, tiles[x][y])
+
+
+## Sync all tiles to JS physics
+func _sync_tiles_to_js():
+	if not _use_js_physics:
+		return
+	for x in range(TILE_NUM_W):
+		for y in range(TILE_NUM_H):
+			PhysicsManager.set_tile(x, y, tiles[x][y])
 
 
 ## Show demo balls (animated but not moving) for start screen
@@ -184,6 +238,7 @@ func resize(_size: Vector2i) -> Vector2i:
 ## Start a new level with specified number of balls
 func new_level(level: int):
 	clear()
+	_init_js_physics()
 	fill_changed.emit(filled_percent)
 
 	# Level determines ball count: level 1 = 2 balls, level 2 = 3 balls, etc.
@@ -202,7 +257,8 @@ func new_level(level: int):
 		add_child(ball)
 
 	# Position and initialize balls
-	for ball in balls:
+	for i in range(balls.size()):
+		var ball: Ball = balls[i]
 		ball.resize(tile_size)
 
 		# Random position in center area (avoiding borders)
@@ -218,6 +274,9 @@ func new_level(level: int):
 		ball.set_random_frame()
 		ball.update_visuals()  # Set initial screen position
 		ball.visible = true
+
+		# Sync to JS physics
+		_sync_ball_to_js(ball, i)
 
 	balls_changed.emit(target_ball_count)
 
@@ -311,6 +370,71 @@ func build_wall(pos: Vector2, vertical: bool):
 func tick():
 	var start := Time.get_ticks_usec()
 
+	if _use_js_physics:
+		_tick_with_js_physics()
+	else:
+		_tick_with_gdscript_physics()
+
+	# Record timing and print stats
+	_tick_times.append((Time.get_ticks_usec() - start) / 1000.0)
+	_print_stats()
+
+
+## Tick using JS physics for balls (deterministic)
+func _tick_with_js_physics():
+	# Check wall collisions (walls remain in GDScript)
+	for wall in walls:
+		if wall.visible:
+			var rect: Rect2 = wall.next_bounding_rect()
+			var inner_rect: Rect2 = wall.inner_bounding_rect()
+			var collision: Array = check_collision(wall, rect, Collision.Type.ALL, inner_rect)
+			wall.collide(collision)
+
+	# Check ball vs wall collisions (before JS tick, so balls reflect off walls)
+	for i in range(balls.size()):
+		var ball: Ball = balls[i]
+		var rect: Rect2 = ball.next_bounding_rect()
+
+		# Check ball vs growing walls only (tile collision is handled by JS)
+		for wall in walls:
+			if wall.visible:
+				var wall_rect: Rect2 = wall.next_bounding_rect()
+				if rect.intersects(wall_rect):
+					var hit := Collision.Hit.new()
+					hit.type = Collision.Type.WALL
+					hit.bounding_rect = wall_rect
+					hit.normal = Collision.calculate_normal(rect, wall_rect)
+					hit.source = wall
+					ball.collide([hit])
+
+					# Also apply to JS physics
+					PhysicsManager.apply_ball_collision(i, hit.normal)
+
+	# Run JS physics tick (handles ball vs tile collisions)
+	var js_collisions := PhysicsManager.tick()
+
+	# Process JS collision results for sound effects
+	for i in range(balls.size()):
+		if i < js_collisions.size() and js_collisions[i].get("hit", false):
+			var hit := Collision.Hit.new()
+			hit.type = Collision.Type.TILE
+			hit.normal = js_collisions[i].get("normal", Vector2.ZERO)
+			balls[i].collide([hit])
+
+	# Sync ball positions from JS and update visuals
+	for i in range(balls.size()):
+		_sync_ball_from_js(balls[i], i)
+		balls[i].update_visuals()
+
+	# Move and update walls
+	for wall in walls:
+		if wall.visible:
+			wall.go_forward()
+			wall.update_visuals()
+
+
+## Tick using original GDScript physics
+func _tick_with_gdscript_physics():
 	# Check collisions first
 	_check_collisions()
 
@@ -328,43 +452,45 @@ func tick():
 		if wall.visible:
 			wall.update_visuals()
 
-	# Record timing
-	_tick_times.append((Time.get_ticks_usec() - start) / 1000.0)
 
-	# Print stats every 5 seconds
+## Print performance stats (called from tick)
+func _print_stats():
 	var now := Time.get_ticks_msec() / 1000.0
-	if now - _last_stats_time >= 5.0:
-		var fps := Engine.get_frames_per_second()
+	if now - _last_stats_time < 5.0:
+		return
 
-		# Tick stats
-		var tick_avg := 0.0
-		var tick_max := 0.0
-		if _tick_times.size() > 0:
-			var total := 0.0
-			for t in _tick_times:
-				total += t
-				if t > tick_max:
-					tick_max = t
-			tick_avg = total / _tick_times.size()
+	var fps := Engine.get_frames_per_second()
 
-		# Draw stats
-		var draw_avg := 0.0
-		var draw_max := 0.0
-		if _draw_times.size() > 0:
-			var total := 0.0
-			for t in _draw_times:
-				total += t
-				if t > draw_max:
-					draw_max = t
-			draw_avg = total / _draw_times.size()
+	# Tick stats
+	var tick_avg := 0.0
+	var tick_max := 0.0
+	if _tick_times.size() > 0:
+		var total := 0.0
+		for t in _tick_times:
+			total += t
+			if t > tick_max:
+				tick_max = t
+		tick_avg = total / _tick_times.size()
 
-		print("Stats: fps=%d | tick: avg=%.2f ms, max=%.2f ms, %d/s | draw: avg=%.2f ms, max=%.2f ms, %d/s" % [
-			fps, tick_avg, tick_max, _tick_times.size() / 5, draw_avg, draw_max, _draw_count / 5])
+	# Draw stats
+	var draw_avg := 0.0
+	var draw_max := 0.0
+	if _draw_times.size() > 0:
+		var total := 0.0
+		for t in _draw_times:
+			total += t
+			if t > draw_max:
+				draw_max = t
+		draw_avg = total / _draw_times.size()
 
-		_tick_times.clear()
-		_draw_times.clear()
-		_draw_count = 0
-		_last_stats_time = now
+	var physics_mode := "JS" if _use_js_physics else "GDScript"
+	print("Stats [%s]: fps=%d | tick: avg=%.2f ms, max=%.2f ms, %d/s | draw: avg=%.2f ms, max=%.2f ms, %d/s" % [
+		physics_mode, fps, tick_avg, tick_max, _tick_times.size() / 5, draw_avg, draw_max, _draw_count / 5])
+
+	_tick_times.clear()
+	_draw_times.clear()
+	_draw_count = 0
+	_last_stats_time = now
 
 
 ## Build spatial grid for ball collision optimization
@@ -882,6 +1008,10 @@ func _on_wall_finished(x1: int, y1: int, x2: int, y2: int, wall: Wall):
 
 	filled_percent = filled_count * 100 / ((TILE_NUM_W - 2) * (TILE_NUM_H - 2))
 	fill_changed.emit(filled_percent)
+
+	# Sync tiles to JS physics
+	_sync_tiles_to_js()
+
 	queue_redraw()
 
 
