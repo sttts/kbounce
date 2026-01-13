@@ -26,9 +26,11 @@ mono_crash.*.json
 build/
 export/
 
-# Generated version file
+# Generated version and config files
 scripts/version.gd
 scripts/version.gd.uid
+scripts/config.gd
+scripts/config.gd.uid
 
 # Local credentials
 credentials.mk

@@ -6,6 +6,7 @@
 #   MAC_APP_IDENTITY - Apple Distribution signing identity
 #   MAC_DEV_IDENTITY - Apple Development signing identity
 #   MAC_INSTALLER_IDENTITY - Mac installer signing identity
+#   LEADERBOARD_API_URL - Leaderboard API base URL
 
 # Configuration
 APP_NAME := KBounce
@@ -17,6 +18,8 @@ GODOT ?= godot
 VERSION ?= $(shell git describe --tags --always 2>/dev/null || echo "dev")
 APPLE_VERSION := $(patsubst v%,%,$(VERSION))
 VERSION_FILE := scripts/version.gd
+CONFIG_FILE := scripts/config.gd
+EXPORT_PRESETS := export_presets.cfg
 
 # Directories
 EXPORT_DIR := ../export
@@ -41,7 +44,7 @@ MAC_PROVISIONING_PROFILE := provisioning/mac.provisionprofile
 # Place .p8 key in ~/.private_keys/AuthKey_<API_KEY_ID>.p8
 -include credentials.mk
 
-.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version verify-mac check-certs icons iphone-screenshots ipad-screenshots mac-screenshots
+.PHONY: all test mac mac-dev mac-pkg mac-upload mac-transporter ios ios-dev ios-sim ios-archive ios-xcode ios-ipa ios-upload ios-transporter web clean help version config export-presets verify-mac check-certs icons iphone-screenshots ipad-screenshots mac-screenshots
 
 help: ## Show this help
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -64,10 +67,34 @@ version:
 		rm $(VERSION_FILE).tmp; \
 	fi
 
+$(CONFIG_FILE): config ;
+
+config:
+	@mkdir -p $(dir $(CONFIG_FILE))
+	@echo 'class_name Config' > $(CONFIG_FILE).tmp
+	@echo 'const LEADERBOARD_API_URL = "$(LEADERBOARD_API_URL)"' >> $(CONFIG_FILE).tmp
+	@if ! cmp -s $(CONFIG_FILE).tmp $(CONFIG_FILE); then \
+		echo "==> Updating config file..."; \
+		mv $(CONFIG_FILE).tmp $(CONFIG_FILE); \
+	else \
+		rm $(CONFIG_FILE).tmp; \
+	fi
+
+$(EXPORT_PRESETS): export-presets ;
+
+export-presets:
+	@envsubst < $(EXPORT_PRESETS).template > $(EXPORT_PRESETS).tmp
+	@if ! cmp -s $(EXPORT_PRESETS).tmp $(EXPORT_PRESETS); then \
+		echo "==> Updating export presets..."; \
+		mv $(EXPORT_PRESETS).tmp $(EXPORT_PRESETS); \
+	else \
+		rm $(EXPORT_PRESETS).tmp; \
+	fi
+
 # macOS targets
 mac: $(MAC_APP) ## Export macOS app
 
-$(MAC_APP): $(VERSION_FILE)
+$(MAC_APP): $(VERSION_FILE) $(CONFIG_FILE) $(EXPORT_PRESETS)
 	@echo "==> Exporting macOS app..."
 	@mkdir -p $(MAC_DIR)
 	$(GODOT) --headless --export-release "macOS" $(MAC_APP)
@@ -89,7 +116,7 @@ $(MAC_APP): $(VERSION_FILE)
 	codesign -dv --verbose=2 $(MAC_APP)
 	@echo "==> macOS app exported to $(MAC_APP)"
 
-mac-dev: $(VERSION_FILE) ## Export macOS app for local development
+mac-dev: $(VERSION_FILE) $(CONFIG_FILE) $(EXPORT_PRESETS) ## Export macOS app for local development
 	@echo "==> Exporting macOS dev app..."
 	@mkdir -p $(MAC_DIR)
 	@rm -rf $(MAC_APP)
@@ -128,7 +155,7 @@ mac-transporter: $(MAC_PKG) ## Open PKG in Transporter
 # iOS targets
 ios: $(IOS_XCODEPROJ) ## Export iOS Xcode project
 
-$(IOS_XCODEPROJ): $(VERSION_FILE)
+$(IOS_XCODEPROJ): $(VERSION_FILE) $(CONFIG_FILE) $(EXPORT_PRESETS)
 	@echo "==> Exporting iOS Xcode project..."
 	@mkdir -p $(IOS_DIR)
 	$(GODOT) --headless --export-release "iOS" $(IOS_DIR)/$(APP_NAME)
@@ -180,7 +207,7 @@ ios-transporter: ios-ipa ## Open IPA in Transporter
 	open -a Transporter $(IOS_IPA)
 
 # Web target
-web: $(VERSION_FILE) ## Export web build
+web: $(VERSION_FILE) $(CONFIG_FILE) ## Export web build
 	@echo "==> Exporting web build..."
 	@mkdir -p $(WEB_DIR)
 	$(GODOT) --headless --export-release "Web" $(WEB_DIR)/kbounce.html
@@ -192,7 +219,7 @@ clean: ## Remove build artifacts
 	rm -rf $(MAC_DIR)
 	rm -rf $(IOS_DIR)
 	rm -rf $(WEB_DIR)/*.html $(WEB_DIR)/*.js $(WEB_DIR)/*.wasm $(WEB_DIR)/*.pck
-	rm -f $(VERSION_FILE)
+	rm -f $(VERSION_FILE) $(CONFIG_FILE)
 	@echo "==> Clean complete"
 
 # Icon generation

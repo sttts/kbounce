@@ -28,8 +28,9 @@ signal report_failed(error: String)
 ## Emitted when rate limited (retry_after in seconds)
 signal rate_limited(retry_after: int)
 
-## API base URL
-const API_URL := "https://api.kbounce.workers.dev"
+## API base URL (from generated Config class)
+var API_URL: String:
+	get: return Config.LEADERBOARD_API_URL
 
 ## Config file path for user identity
 const CONFIG_PATH := "user://leaderboard.cfg"

@@ -48,11 +48,13 @@ jobs:
           apt-get update && apt-get install -y make pandoc
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           VERSION=$(git describe --tags --dirty --always)
-          make web VERSION="$VERSION"
+          make web VERSION="$VERSION" LEADERBOARD_API_URL="$LEADERBOARD_API_URL"
           cp docs/index.html build/
           cp docs/CNAME build/
           pandoc docs/privacy.md -s -o build/privacy.html --metadata title="Privacy Policy - KBounce"
           pandoc docs/privacy-de.md -s -o build/privacy-de.html --metadata title="Datenschutzerklärung - KBounce"
+        env:
+          LEADERBOARD_API_URL: ${{ secrets.LEADERBOARD_API_URL }}
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
