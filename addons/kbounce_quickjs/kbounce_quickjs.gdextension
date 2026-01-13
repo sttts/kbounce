@@ -1,0 +1,15 @@
+[configuration]
+entry_symbol = "kbounce_quickjs_library_init"
+compatibility_minimum = "4.3"
+
+[libraries]
+macos.debug = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.macos.release.dylib"
+macos.release = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.macos.release.dylib"
+ios.debug = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.ios.release.dylib"
+ios.release = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.ios.release.dylib"
+windows.debug.x86_64 = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.windows.release.x86_64.dll"
+windows.release.x86_64 = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.windows.release.x86_64.dll"
+android.debug.arm64 = "res://addons/kbounce_quickjs/bin/libkbounce_quickjs.android.release.arm64.so"
+android.release.arm64 = "res://addons/kbounce_quickjs/bin/libkbounce_quickjs.android.release.arm64.so"
+web.debug.wasm32 = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.web.release.wasm32.wasm"
+web.release.wasm32 = "res://addons/kbounce_quickjs/bin/kbounce_quickjs.web.release.wasm32.wasm"
