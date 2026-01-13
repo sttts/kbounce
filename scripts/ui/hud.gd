@@ -97,7 +97,7 @@ func _ready():
 	# Connect help buttons
 	help_button.pressed.connect(_on_help_button_pressed)
 	help_close_button.pressed.connect(_on_help_close_pressed)
-	help_version_label.text = Version.TAG
+	help_version_label.text = BuildInfo.version_tag
 	help_version_label.mouse_filter = Control.MOUSE_FILTER_STOP
 	help_version_label.gui_input.connect(_on_version_label_input)
 	share_logs_button.pressed.connect(_on_share_logs_pressed)
@@ -257,7 +257,7 @@ func _on_version_label_input(event: InputEvent):
 			var game = get_tree().get_first_node_in_group("game")
 			if game and game.has_method("_setup_debug_ui"):
 				game._setup_debug_ui()
-				help_version_label.text = Version.TAG + " [DEBUG]"
+				help_version_label.text = BuildInfo.version_tag + " [DEBUG]"
 
 
 func _on_share_logs_pressed():
