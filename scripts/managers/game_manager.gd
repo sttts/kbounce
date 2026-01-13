@@ -152,6 +152,9 @@ func level_complete():
 	# Stop game immediately (no more ball movement, collisions, or time updates)
 	_change_state(GameState.BETWEEN_LEVELS)
 
+	# Record level completion for replay
+	ReplayManager.record_level_complete(filled, time, lives, score)
+
 	# Wait 1 second for walls to finish building animation before showing overlay
 	await get_tree().create_timer(1.0).timeout
 
@@ -209,6 +212,10 @@ func is_game_over() -> bool:
 
 ## Start the game over flow
 func start_game_over():
+	# Record level failure and stop replay
+	ReplayManager.record_level_failed(filled, time, lives, score)
+	ReplayManager.stop_game(score, level)
+
 	# Skip leaderboard for score = 0 (died on first level without points)
 	if score <= 0:
 		_change_state(GameState.GAME_OVER_SPLASH)

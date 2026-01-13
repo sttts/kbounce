@@ -26,6 +26,7 @@ AudioManager="*res://scripts/managers/audio_manager.gd"
 ThemeManager="*res://scripts/managers/theme_manager.gd"
 LeaderboardManager="*res://scripts/managers/leaderboard_manager.gd"
 PhysicsManager="*res://scripts/managers/physics_manager.gd"
+ReplayManager="*res://scripts/managers/replay_manager.gd"
 
 [display]
 

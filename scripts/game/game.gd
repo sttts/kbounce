@@ -215,6 +215,7 @@ func _update_cursor():
 func new_game():
 	# Request game token for leaderboard submission
 	LeaderboardManager.request_game_token()
+	ReplayManager.start_game()
 	GameManager.new_game()
 
 
@@ -233,6 +234,7 @@ func _physics_process(delta: float):
 		while _physics_accumulator >= PHYSICS_TICK_TIME:
 			board.tick()
 			AudioManager.tick()
+			ReplayManager.tick(board)
 			_physics_accumulator -= PHYSICS_TICK_TIME
 	else:
 		# Animate balls in all non-running states (demo, paused, game over, etc.)

@@ -241,6 +241,10 @@ func new_level(level: int):
 	_init_js_physics()
 	fill_changed.emit(filled_percent)
 
+	# Generate seed for deterministic ball placement
+	var level_seed := randi()
+	seed(level_seed)
+
 	# Level determines ball count: level 1 = 2 balls, level 2 = 3 balls, etc.
 	var target_ball_count := level + 1
 
@@ -257,6 +261,7 @@ func new_level(level: int):
 		add_child(ball)
 
 	# Position and initialize balls
+	var ball_states: Array = []
 	for i in range(balls.size()):
 		var ball: Ball = balls[i]
 		ball.resize(tile_size)
@@ -277,6 +282,20 @@ func new_level(level: int):
 
 		# Sync to JS physics
 		_sync_ball_to_js(ball, i)
+
+		# Record initial ball state for replay
+		ball_states.append({
+			"x": ball.relative_pos.x,
+			"y": ball.relative_pos.y,
+			"vx": ball.velocity.x,
+			"vy": ball.velocity.y
+		})
+
+	# Re-randomize seed so future randi() calls aren't predictable
+	randomize()
+
+	# Record level start for replay
+	ReplayManager.start_level(level, level_seed, ball_states)
 
 	balls_changed.emit(target_ball_count)
 
@@ -352,6 +371,9 @@ func build_wall(pos: Vector2, vertical: bool):
 			if tile_x >= int(wall_rect.position.x) and tile_x < int(ceil(wall_rect.end.x)) and \
 			   tile_y >= int(wall_rect.position.y) and tile_y < int(ceil(wall_rect.end.y)):
 				return
+
+	# Record wall placement for replay
+	ReplayManager.record_wall(tile_x, tile_y, vertical)
 
 	# Start building walls in available slots
 	if vertical:
@@ -943,6 +965,7 @@ func get_board_rect() -> Rect2:
 
 ## Handle wall death (hit by ball)
 func _on_wall_died():
+	ReplayManager.record_wall_killed()
 	wall_died.emit()
 
 
