@@ -1,10 +1,10 @@
 // physics.js - KBounce deterministic physics engine
-// Version: 1 (increment when physics behavior changes)
+// Version: 2 (increment when physics behavior changes)
 //
 // SPDX-FileCopyrightText: 2000-2026 Stefan Schimanski <1Stein@gmx.de>
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 
-const VERSION = 1;
+const VERSION = 2;
 
 const BOARD_W = 32, BOARD_H = 20;
 const BALL_SIZE = 0.8;
@@ -14,14 +14,22 @@ const CORNER_EPSILON = 0.5;  // Threshold for corner vs edge hit
 // Tile types (match board.gd TileType enum)
 const FREE = 1, BORDER = 2, WALL = 3;
 
+// Wall directions (match wall.gd Direction enum)
+const DIR_UP = 0, DIR_DOWN = 1, DIR_LEFT = 2, DIR_RIGHT = 3;
+
+// Wall velocity (tiles per tick)
+const WALL_VELOCITY = 0.125;
+
 // Game state
 let tiles = [];
 let balls = [];
+let walls = [];  // Array of wall objects
 
 // Initialize the physics engine
 function init() {
   tiles = [];
   balls = [];
+  walls = [];
   for (let x = 0; x < BOARD_W; x++) {
     tiles[x] = [];
     for (let y = 0; y < BOARD_H; y++) {
@@ -101,6 +109,325 @@ function getBalls() {
 // Get ball count
 function getBallCount() {
   return balls.length;
+}
+
+// Clear all walls
+function clearWalls() {
+  walls = [];
+}
+
+// Add a wall at position with direction
+// Returns wall ID
+function addWall(startX, startY, direction) {
+  const id = walls.length;
+  walls.push({
+    id: id,
+    startX: startX,
+    startY: startY,
+    direction: direction,
+    building: true,
+    // Bounding rect: x, y, w, h (starts as 1x1 tile)
+    x: startX,
+    y: startY,
+    w: 1,
+    h: 1
+  });
+  return id;
+}
+
+// Get wall state
+function getWall(id) {
+  if (id >= 0 && id < walls.length) {
+    const w = walls[id];
+    return {
+      id: w.id,
+      startX: w.startX,
+      startY: w.startY,
+      direction: w.direction,
+      building: w.building,
+      x: w.x, y: w.y, w: w.w, h: w.h
+    };
+  }
+  return null;
+}
+
+// Get all walls state
+function getWalls() {
+  return walls.map(w => ({
+    id: w.id,
+    startX: w.startX,
+    startY: w.startY,
+    direction: w.direction,
+    building: w.building,
+    x: w.x, y: w.y, w: w.w, h: w.h
+  }));
+}
+
+// Get wall count
+function getWallCount() {
+  return walls.length;
+}
+
+// Get wall's next bounding rect (after growth)
+function wallNextRect(wall) {
+  let nx = wall.x, ny = wall.y, nw = wall.w, nh = wall.h;
+  switch (wall.direction) {
+    case DIR_UP:
+      ny -= WALL_VELOCITY;
+      nh += WALL_VELOCITY;
+      break;
+    case DIR_DOWN:
+      nh += WALL_VELOCITY;
+      break;
+    case DIR_LEFT:
+      nx -= WALL_VELOCITY;
+      nw += WALL_VELOCITY;
+      break;
+    case DIR_RIGHT:
+      nw += WALL_VELOCITY;
+      break;
+  }
+  return { x: nx, y: ny, w: nw, h: nh };
+}
+
+// Get wall's inner rect (excludes tip tile, for ball collision)
+function wallInnerRect(wall) {
+  let ix = wall.x, iy = wall.y, iw = wall.w, ih = wall.h;
+  switch (wall.direction) {
+    case DIR_UP:
+      if (ih > 1.0) { iy += 1.0; ih -= 1.0; }
+      else { return null; }
+      break;
+    case DIR_DOWN:
+      if (ih > 1.0) { ih -= 1.0; }
+      else { return null; }
+      break;
+    case DIR_LEFT:
+      if (iw > 1.0) { ix += 1.0; iw -= 1.0; }
+      else { return null; }
+      break;
+    case DIR_RIGHT:
+      if (iw > 1.0) { iw -= 1.0; }
+      else { return null; }
+      break;
+  }
+  return { x: ix, y: iy, w: iw, h: ih };
+}
+
+// Get wall's tip tile coordinates
+function wallTipTile(wall) {
+  const rect = wallNextRect(wall);
+  switch (wall.direction) {
+    case DIR_UP:
+      return { x: Math.floor(rect.x), y: Math.floor(rect.y) };
+    case DIR_DOWN:
+      return { x: Math.floor(rect.x), y: Math.floor(rect.y + rect.h - 0.01) };
+    case DIR_LEFT:
+      return { x: Math.floor(rect.x), y: Math.floor(rect.y) };
+    case DIR_RIGHT:
+      return { x: Math.floor(rect.x + rect.w - 0.01), y: Math.floor(rect.y) };
+  }
+  return { x: -1, y: -1 };
+}
+
+// Get wall's tip rect (small strip at leading edge)
+function wallTipRect(wall) {
+  const rect = wallNextRect(wall);
+  const TIP_SIZE = 0.1;
+  switch (wall.direction) {
+    case DIR_UP:
+      return { x: rect.x, y: rect.y, w: rect.w, h: TIP_SIZE };
+    case DIR_DOWN:
+      return { x: rect.x, y: rect.y + rect.h - TIP_SIZE, w: rect.w, h: TIP_SIZE };
+    case DIR_LEFT:
+      return { x: rect.x, y: rect.y, w: TIP_SIZE, h: rect.h };
+    case DIR_RIGHT:
+      return { x: rect.x + rect.w - TIP_SIZE, y: rect.y, w: TIP_SIZE, h: rect.h };
+  }
+  return rect;
+}
+
+// Check if two walls are paired (same start, opposite directions)
+function arePairedWalls(w1, w2) {
+  if (w1.startX !== w2.startX || w1.startY !== w2.startY) return false;
+  const d1 = w1.direction, d2 = w2.direction;
+  return (d1 === DIR_UP && d2 === DIR_DOWN) ||
+         (d1 === DIR_DOWN && d2 === DIR_UP) ||
+         (d1 === DIR_LEFT && d2 === DIR_RIGHT) ||
+         (d1 === DIR_RIGHT && d2 === DIR_LEFT);
+}
+
+// Check if two rects share any tile
+function rectsShareTile(r1, r2) {
+  const r1x1 = Math.floor(r1.x), r1y1 = Math.floor(r1.y);
+  const r1x2 = Math.ceil(r1.x + r1.w - 0.001), r1y2 = Math.ceil(r1.y + r1.h - 0.001);
+  const r2x1 = Math.floor(r2.x), r2y1 = Math.floor(r2.y);
+  const r2x2 = Math.ceil(r2.x + r2.w - 0.001), r2y2 = Math.ceil(r2.y + r2.h - 0.001);
+  return r1x1 <= r2x2 && r2x1 <= r1x2 && r1y1 <= r2y2 && r2y1 <= r1y2;
+}
+
+// Check if two rects intersect
+function rectsIntersect(r1, r2) {
+  return !(r1.x + r1.w <= r2.x || r1.x >= r2.x + r2.w ||
+           r1.y + r1.h <= r2.y || r1.y >= r2.y + r2.h);
+}
+
+// Extend wall by one tick
+function wallGoForward(wallId) {
+  if (wallId < 0 || wallId >= walls.length) return;
+  const wall = walls[wallId];
+  if (!wall.building) return;
+
+  switch (wall.direction) {
+    case DIR_UP:
+      wall.y -= WALL_VELOCITY;
+      wall.h += WALL_VELOCITY;
+      break;
+    case DIR_DOWN:
+      wall.h += WALL_VELOCITY;
+      break;
+    case DIR_LEFT:
+      wall.x -= WALL_VELOCITY;
+      wall.w += WALL_VELOCITY;
+      break;
+    case DIR_RIGHT:
+      wall.w += WALL_VELOCITY;
+      break;
+  }
+}
+
+// Stop wall (die or finish)
+function wallStop(wallId) {
+  if (wallId < 0 || wallId >= walls.length) return;
+  walls[wallId].building = false;
+}
+
+// Check wall vs tile collision (tip only)
+// Returns: { hit: bool, materialize: bool }
+function checkWallTileCollision(wallId) {
+  if (wallId < 0 || wallId >= walls.length) return { hit: false };
+  const wall = walls[wallId];
+  if (!wall.building) return { hit: false };
+
+  const tipTile = wallTipTile(wall);
+  const startTile = { x: wall.startX, y: wall.startY };
+
+  // Skip if tip is still in start tile
+  if (tipTile.x === startTile.x && tipTile.y === startTile.y) {
+    return { hit: false };
+  }
+
+  if (tipTile.x >= 0 && tipTile.x < BOARD_W && tipTile.y >= 0 && tipTile.y < BOARD_H) {
+    if (tiles[tipTile.x][tipTile.y] !== FREE) {
+      return { hit: true, materialize: true };
+    }
+  }
+
+  return { hit: false };
+}
+
+// Check wall vs wall collision
+// Returns: { hit: bool, otherWallId: int, bothDie: bool }
+function checkWallWallCollision(wallId) {
+  if (wallId < 0 || wallId >= walls.length) return { hit: false };
+  const wall = walls[wallId];
+  if (!wall.building) return { hit: false };
+
+  const myTipTile = wallTipTile(wall);
+  const myTipRect = wallTipRect(wall);
+  const myNextRect = wallNextRect(wall);
+
+  // Skip if tip is still in start tile
+  if (myTipTile.x === wall.startX && myTipTile.y === wall.startY) {
+    return { hit: false };
+  }
+
+  for (let i = 0; i < walls.length; i++) {
+    if (i === wallId) continue;
+    const other = walls[i];
+    if (!other.building) continue;
+
+    // Skip paired walls
+    if (arePairedWalls(wall, other)) continue;
+
+    const otherNextRect = { x: other.x, y: other.y, w: other.w, h: other.h };
+
+    // Check if my tip intersects other wall
+    if (rectsIntersect(myTipRect, otherNextRect)) {
+      const otherTipRect = wallTipRect(other);
+
+      // If tips share a tile, both walls die
+      if (rectsShareTile(myTipRect, otherTipRect)) {
+        return { hit: true, otherWallId: i, bothDie: true };
+      } else {
+        // My tip hits other wall's body - I materialize
+        return { hit: true, otherWallId: i, bothDie: false };
+      }
+    }
+  }
+
+  return { hit: false };
+}
+
+// Check ball vs wall collision
+// Returns: { hit: bool, wallId: int, normal: {x, y}, killsWall: bool }
+function checkBallWallCollision(ballId) {
+  if (ballId < 0 || ballId >= balls.length) return { hit: false };
+  const ball = balls[ballId];
+
+  const ballNextRect = {
+    x: ball.x + ball.vx,
+    y: ball.y + ball.vy,
+    w: BALL_SIZE,
+    h: BALL_SIZE
+  };
+
+  for (let i = 0; i < walls.length; i++) {
+    const wall = walls[i];
+    if (!wall.building) continue;
+
+    const wallRect = { x: wall.x, y: wall.y, w: wall.w, h: wall.h };
+
+    if (rectsIntersect(ballNextRect, wallRect)) {
+      // Calculate collision normal
+      const normal = calculateNormal(
+        ballNextRect.x, ballNextRect.y, ballNextRect.w, ballNextRect.h,
+        wallRect.x, wallRect.y, wallRect.w, wallRect.h
+      );
+
+      // Check if ball hits inner rect (kills wall) or just tip (reflects only)
+      const innerRect = wallInnerRect(wall);
+      const killsWall = innerRect && rectsIntersect(ballNextRect, innerRect);
+
+      return { hit: true, wallId: i, normal: normal, killsWall: killsWall };
+    }
+  }
+
+  return { hit: false };
+}
+
+// Materialize wall into tiles (when finished)
+// Returns tile bounds: { x1, y1, x2, y2 }
+function wallMaterialize(wallId, skipStartTile = false) {
+  if (wallId < 0 || wallId >= walls.length) return null;
+  const wall = walls[wallId];
+
+  const x1 = Math.floor(wall.x);
+  const y1 = Math.floor(wall.y);
+  const x2 = Math.ceil(wall.x + wall.w);
+  const y2 = Math.ceil(wall.y + wall.h);
+
+  for (let x = x1; x < x2; x++) {
+    for (let y = y1; y < y2; y++) {
+      if (x >= 0 && x < BOARD_W && y >= 0 && y < BOARD_H) {
+        // Skip start tile if paired wall still building
+        if (skipStartTile && x === wall.startX && y === wall.startY) continue;
+        tiles[x][y] = WALL;
+      }
+    }
+  }
+
+  return { x1, y1, x2, y2 };
 }
 
 // Port of _get_crossing_normal from board.gd
@@ -301,26 +628,134 @@ function tickMovement() {
   }
 }
 
-// Full tick: check collisions, apply, and move
-// Returns array of collision info per ball
-function tick() {
-  const collisions = [];
+// Tick walls: check collisions and grow
+// Returns array of wall events: { wallId, event: 'die'|'finish'|'wall_collision', ... }
+function tickWalls() {
+  const events = [];
 
-  // Check collisions
-  for (let i = 0; i < balls.length; i++) {
-    const result = checkBallCollisionTiles(balls[i]);
-    collisions.push(result);
-    if (result.hit) {
-      applyBallCollision(i, result.normalX, result.normalY);
+  // Check wall collisions first (before growth)
+  for (let i = 0; i < walls.length; i++) {
+    const wall = walls[i];
+    if (!wall.building) continue;
+
+    // Check wall vs tile collision
+    const tileResult = checkWallTileCollision(i);
+    if (tileResult.hit) {
+      // Find paired wall
+      let pairedBuilding = false;
+      for (let j = 0; j < walls.length; j++) {
+        if (j !== i && walls[j].building && arePairedWalls(wall, walls[j])) {
+          pairedBuilding = true;
+          break;
+        }
+      }
+
+      const bounds = wallMaterialize(i, pairedBuilding);
+      wallStop(i);
+      events.push({ wallId: i, event: 'finish', bounds: bounds });
+      continue;
+    }
+
+    // Check wall vs wall collision
+    const wallResult = checkWallWallCollision(i);
+    if (wallResult.hit) {
+      if (wallResult.bothDie) {
+        // Both walls die - find and kill paired walls too
+        wallStop(i);
+        wallStop(wallResult.otherWallId);
+
+        // Kill paired walls
+        for (let j = 0; j < walls.length; j++) {
+          if (walls[j].building) {
+            if (arePairedWalls(wall, walls[j])) wallStop(j);
+            if (arePairedWalls(walls[wallResult.otherWallId], walls[j])) wallStop(j);
+          }
+        }
+
+        events.push({ wallId: i, event: 'wall_collision', otherWallId: wallResult.otherWallId });
+      } else {
+        // I materialize (hit other wall's body)
+        let pairedBuilding = false;
+        for (let j = 0; j < walls.length; j++) {
+          if (j !== i && walls[j].building && arePairedWalls(wall, walls[j])) {
+            pairedBuilding = true;
+            break;
+          }
+        }
+
+        const bounds = wallMaterialize(i, pairedBuilding);
+        wallStop(i);
+        events.push({ wallId: i, event: 'finish', bounds: bounds });
+      }
+      continue;
     }
   }
+
+  // Grow walls that are still building
+  for (let i = 0; i < walls.length; i++) {
+    if (walls[i].building) {
+      wallGoForward(i);
+    }
+  }
+
+  return events;
+}
+
+// Full tick: check collisions, apply, and move
+// Returns { balls: array of ball collision info, walls: array of wall events }
+function tick() {
+  const ballCollisions = [];
+  const wallEvents = [];
+
+  // Check ball vs wall collisions first
+  for (let i = 0; i < balls.length; i++) {
+    const wallResult = checkBallWallCollision(i);
+    if (wallResult.hit) {
+      // Apply reflection
+      applyBallCollision(i, wallResult.normal.x, wallResult.normal.y);
+      ballCollisions.push({
+        hit: true,
+        normalX: wallResult.normal.x,
+        normalY: wallResult.normal.y,
+        hitWall: true,
+        wallId: wallResult.wallId
+      });
+
+      // Kill wall if hit inner area
+      if (wallResult.killsWall) {
+        wallStop(wallResult.wallId);
+
+        // Kill paired wall too
+        const wall = walls[wallResult.wallId];
+        for (let j = 0; j < walls.length; j++) {
+          if (j !== wallResult.wallId && walls[j].building && arePairedWalls(wall, walls[j])) {
+            wallStop(j);
+          }
+        }
+
+        wallEvents.push({ wallId: wallResult.wallId, event: 'die', ballId: i });
+      }
+      continue;
+    }
+
+    // Check ball vs tile collisions
+    const tileResult = checkBallCollisionTiles(balls[i]);
+    ballCollisions.push(tileResult);
+    if (tileResult.hit) {
+      applyBallCollision(i, tileResult.normalX, tileResult.normalY);
+    }
+  }
+
+  // Tick walls (collisions and growth)
+  const wallTickEvents = tickWalls();
+  wallEvents.push(...wallTickEvents);
 
   // Move balls
   for (let i = 0; i < balls.length; i++) {
     moveBall(i);
   }
 
-  return collisions;
+  return { balls: ballCollisions, walls: wallEvents };
 }
 
 // Simulate N ticks and return final state (for testing)
@@ -335,10 +770,16 @@ function simulate(ticks) {
 if (typeof module !== 'undefined') {
   module.exports = {
     VERSION, BOARD_W, BOARD_H, BALL_SIZE, FREE, BORDER, WALL,
+    DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT, WALL_VELOCITY,
     init, getVersion, clearBalls, addBall, setTile, getTile, setTileRect,
     getBall, getBalls, getBallCount,
+    clearWalls, addWall, getWall, getWalls, getWallCount,
+    wallNextRect, wallInnerRect, wallTipTile, wallTipRect,
+    arePairedWalls, rectsShareTile, rectsIntersect,
+    wallGoForward, wallStop, wallMaterialize,
+    checkWallTileCollision, checkWallWallCollision, checkBallWallCollision,
     rectIntersects, calculateNormal,
     tickBall, applyBallCollision, moveBall,
-    tickCollisions, tickMovement, tick, simulate
+    tickCollisions, tickMovement, tickWalls, tick, simulate
   };
 }

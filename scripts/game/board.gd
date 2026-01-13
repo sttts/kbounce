@@ -81,11 +81,15 @@ func _ready():
 		_use_js_physics = false
 
 
+## Mapping from GDScript wall index to JS wall ID
+var _js_wall_ids: Array[int] = [-1, -1, -1, -1]
+
 ## Initialize JS physics state (call after clear() and before adding balls)
 func _init_js_physics():
 	if not _use_js_physics:
 		return
 	PhysicsManager.init()
+	_js_wall_ids = [-1, -1, -1, -1]
 
 
 ## Sync a ball to JS physics (call after setting position/velocity)
@@ -125,6 +129,15 @@ func _sync_tiles_to_js():
 	for x in range(TILE_NUM_W):
 		for y in range(TILE_NUM_H):
 			PhysicsManager.set_tile(x, y, tiles[x][y])
+
+
+## Add a wall to JS physics when it starts building
+func _add_wall_to_js(wall_index: int, start_x: int, start_y: int):
+	if not _use_js_physics:
+		return
+	var wall: Wall = walls[wall_index]
+	var js_id := PhysicsManager.add_wall(start_x, start_y, wall.direction)
+	_js_wall_ids[wall_index] = js_id
 
 
 ## Show demo balls (animated but not moving) for start screen
@@ -379,13 +392,17 @@ func build_wall(pos: Vector2, vertical: bool):
 	if vertical:
 		if not slot1_busy:
 			walls[DIR_UP].build(tile_x, tile_y)
+			_add_wall_to_js(DIR_UP, tile_x, tile_y)
 		if not slot2_busy:
 			walls[DIR_DOWN].build(tile_x, tile_y)
+			_add_wall_to_js(DIR_DOWN, tile_x, tile_y)
 	else:
 		if not slot1_busy:
 			walls[DIR_LEFT].build(tile_x, tile_y)
+			_add_wall_to_js(DIR_LEFT, tile_x, tile_y)
 		if not slot2_busy:
 			walls[DIR_RIGHT].build(tile_x, tile_y)
+			_add_wall_to_js(DIR_RIGHT, tile_x, tile_y)
 
 
 ## Game tick - called once per frame
@@ -402,56 +419,79 @@ func tick():
 	_print_stats()
 
 
-## Tick using JS physics for balls (deterministic)
+## Tick using JS physics for balls and walls (deterministic)
 func _tick_with_js_physics():
-	# Check wall collisions (walls remain in GDScript)
-	for wall in walls:
-		if wall.visible:
-			var rect: Rect2 = wall.next_bounding_rect()
-			var inner_rect: Rect2 = wall.inner_bounding_rect()
-			var collision: Array = check_collision(wall, rect, Collision.Type.ALL, inner_rect)
-			wall.collide(collision)
+	# Run JS physics tick (handles all collisions: ball vs tile, ball vs wall, wall vs tile/wall)
+	var js_result: Dictionary = PhysicsManager.tick()
+	var js_ball_collisions: Array = js_result.get("balls", [])
+	var js_wall_events: Array = js_result.get("walls", [])
 
-	# Check ball vs wall collisions (before JS tick, so balls reflect off walls)
+	# Process ball collision results
 	for i in range(balls.size()):
-		var ball: Ball = balls[i]
-		var rect: Rect2 = ball.next_bounding_rect()
-
-		# Check ball vs growing walls only (tile collision is handled by JS)
-		for wall in walls:
-			if wall.visible:
-				var wall_rect: Rect2 = wall.next_bounding_rect()
-				if rect.intersects(wall_rect):
-					var hit := Collision.Hit.new()
+		if i < js_ball_collisions.size():
+			var collision: Dictionary = js_ball_collisions[i]
+			if collision.get("hit", false):
+				var hit := Collision.Hit.new()
+				if collision.get("hitWall", false):
 					hit.type = Collision.Type.WALL
-					hit.bounding_rect = wall_rect
-					hit.normal = Collision.calculate_normal(rect, wall_rect)
-					hit.source = wall
-					ball.collide([hit])
+				else:
+					hit.type = Collision.Type.TILE
+				hit.normal = collision.get("normal", Vector2.ZERO)
+				balls[i].collide([hit])
 
-					# Also apply to JS physics
-					PhysicsManager.apply_ball_collision(i, hit.normal)
+	# Process wall events from JS
+	for event in js_wall_events:
+		var js_wall_id: int = int(event.get("wallId", -1))
+		var event_type: String = event.get("event", "")
 
-	# Run JS physics tick (handles ball vs tile collisions)
-	var js_collisions := PhysicsManager.tick()
+		# Find the GDScript wall that corresponds to this JS wall ID
+		var gd_wall_index := -1
+		for i in range(4):
+			if _js_wall_ids[i] == js_wall_id:
+				gd_wall_index = i
+				break
 
-	# Process JS collision results for sound effects
-	for i in range(balls.size()):
-		if i < js_collisions.size() and js_collisions[i].get("hit", false):
-			var hit := Collision.Hit.new()
-			hit.type = Collision.Type.TILE
-			hit.normal = js_collisions[i].get("normal", Vector2.ZERO)
-			balls[i].collide([hit])
+		if gd_wall_index < 0:
+			continue
+
+		var wall: Wall = walls[gd_wall_index]
+
+		match event_type:
+			"die":
+				# Wall killed by ball - triggers life loss
+				wall.die()
+				_js_wall_ids[gd_wall_index] = -1
+			"finish":
+				# Wall completed - materialize tiles
+				var bounds: Dictionary = event.get("bounds", {})
+				var x1: int = int(bounds.get("x1", 0))
+				var y1: int = int(bounds.get("y1", 0))
+				var x2: int = int(bounds.get("x2", 0))
+				var y2: int = int(bounds.get("y2", 0))
+				wall._finish()
+				_js_wall_ids[gd_wall_index] = -1
+				# Note: _on_wall_finished will be called by the signal
+			"wall_collision":
+				# Wall killed by another wall - no life loss
+				wall.die_from_wall()
+				_js_wall_ids[gd_wall_index] = -1
 
 	# Sync ball positions from JS and update visuals
 	for i in range(balls.size()):
 		_sync_ball_from_js(balls[i], i)
 		balls[i].update_visuals()
 
-	# Move and update walls
-	for wall in walls:
-		if wall.visible:
-			wall.go_forward()
+	# Update wall visuals (JS handles growth, but GDScript walls need to sync)
+	for i in range(4):
+		var wall: Wall = walls[i]
+		if wall.visible and _js_wall_ids[i] >= 0:
+			# Sync wall rect from JS
+			var js_wall: Dictionary = PhysicsManager.get_wall(_js_wall_ids[i])
+			if not js_wall.is_empty():
+				wall._bounding_rect = Rect2(
+					js_wall.get("x", 0), js_wall.get("y", 0),
+					js_wall.get("w", 1), js_wall.get("h", 1)
+				)
 			wall.update_visuals()
 
 

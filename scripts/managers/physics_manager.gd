@@ -44,6 +44,18 @@ func is_initialized() -> bool:
 	return _initialized
 
 
+## Alias for is_initialized
+func is_ready() -> bool:
+	return _initialized
+
+
+## Re-initialize physics state (call at level start)
+func init():
+	if not _initialized:
+		return
+	_js.eval("init()")
+
+
 ## Get physics version
 func get_version() -> int:
 	return version
@@ -112,6 +124,67 @@ func get_ball_count() -> int:
 	return int(result) if result != null else 0
 
 
+## Clear all walls
+func clear_walls():
+	if not _initialized:
+		return
+	_js.eval("clearWalls()")
+
+
+## Add a wall at position with direction and return its ID
+## Direction: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT
+func add_wall(start_x: int, start_y: int, direction: int) -> int:
+	if not _initialized:
+		return -1
+	var result = _js.eval("addWall(%d, %d, %d)" % [start_x, start_y, direction])
+	return int(result) if result != null else -1
+
+
+## Get wall state
+func get_wall(id: int) -> Dictionary:
+	if not _initialized:
+		return {}
+	var result = _js.eval("getWall(%d)" % id)
+	if result == null or result is bool:
+		return {}
+	return result
+
+
+## Get all walls state
+func get_walls() -> Array:
+	if not _initialized:
+		return []
+	var result = _js.eval("getWalls()")
+	return result if result != null else []
+
+
+## Get wall count
+func get_wall_count() -> int:
+	if not _initialized:
+		return 0
+	var result = _js.eval("getWallCount()")
+	return int(result) if result != null else 0
+
+
+## Stop a wall (called when wall dies or finishes)
+func wall_stop(wall_id: int):
+	if not _initialized:
+		return
+	_js.eval("wallStop(%d)" % wall_id)
+
+
+## Materialize a wall into tiles
+## Returns bounds { x1, y1, x2, y2 } or empty dict on failure
+func wall_materialize(wall_id: int, skip_start_tile: bool = false) -> Dictionary:
+	if not _initialized:
+		return {}
+	var skip_str := "true" if skip_start_tile else "false"
+	var result = _js.eval("wallMaterialize(%d, %s)" % [wall_id, skip_str])
+	if result == null or result is bool:
+		return {}
+	return result
+
+
 ## Check if ball intersects a rect (for wall collision)
 func ball_intersects_rect(ball_id: int, rx: float, ry: float, rw: float, rh: float) -> bool:
 	if not _initialized:
@@ -160,23 +233,31 @@ func move_ball(ball_id: int):
 	_js.eval("moveBall(%d)" % ball_id)
 
 
-## Tick all balls - returns array of collision results
-## Each result: { hit: bool, normal: Vector2 }
-func tick() -> Array:
+## Tick all physics - returns { balls: Array, walls: Array }
+## balls: array of { hit: bool, normal: Vector2, hitWall: bool, wallId: int }
+## walls: array of { wallId: int, event: String, ... }
+func tick() -> Dictionary:
 	if not _initialized:
-		return []
+		return { "balls": [], "walls": [] }
 	var result = _js.eval("tick()")
 	if result == null:
-		return []
+		return { "balls": [], "walls": [] }
 
-	# Convert JS results to GDScript format
-	var collisions: Array = []
-	for r in result:
-		collisions.append({
+	# Convert ball collision results
+	var ball_collisions: Array = []
+	var balls_result = result.get("balls", [])
+	for r in balls_result:
+		ball_collisions.append({
 			"hit": r.get("hit", false),
-			"normal": Vector2(r.get("normalX", 0), r.get("normalY", 0))
+			"normal": Vector2(r.get("normalX", 0), r.get("normalY", 0)),
+			"hitWall": r.get("hitWall", false),
+			"wallId": int(r.get("wallId", -1))
 		})
-	return collisions
+
+	# Wall events are already in right format
+	var wall_events: Array = result.get("walls", [])
+
+	return { "balls": ball_collisions, "walls": wall_events }
 
 
 ## Simulate N ticks (for testing)
