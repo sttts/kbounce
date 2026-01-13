@@ -24,6 +24,7 @@ func _init():
 	_run_test_suite(preload("res://tests/test_build_config.gd").new())
 	_run_test_suite(preload("res://tests/test_leaderboard_window.gd").new())
 	_run_test_suite(preload("res://tests/test_physics_timestep.gd").new())
+	_run_test_suite(preload("res://tests/test_physics_js.gd").new())
 
 	# Print summary
 	print("\n========================================")

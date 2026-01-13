@@ -29,8 +29,8 @@ export/
 # Generated version and config files
 scripts/version.gd
 scripts/version.gd.uid
-scripts/config.gd
-scripts/config.gd.uid
+scripts/resources/config.gd
+scripts/resources/config.gd.uid
 
 # Local credentials
 credentials.mk
