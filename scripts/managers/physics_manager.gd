@@ -8,8 +8,8 @@ extends Node
 ## Physics version from JS engine
 var version: int = 0
 
-## QuickJS instance (null on web)
-var _js: QuickJS
+## QuickJS instance (null on web, Variant to avoid parse error when QuickJS unavailable)
+var _js: Variant = null
 
 ## Whether running on web platform
 var _is_web: bool = false
@@ -63,7 +63,8 @@ func _init_physics_web():
 
 
 func _init_physics_native():
-	_js = QuickJS.new()
+	# Use ClassDB to instantiate QuickJS to avoid parse errors on web
+	_js = ClassDB.instantiate(&"QuickJS")
 
 	# Load physics.js
 	var path := "res://scripts/physics.js"
@@ -83,9 +84,14 @@ func _init_physics_native():
 
 
 ## Evaluate JS code (dispatches to web or native)
+## For web, complex objects are JSON-serialized to work around JavaScriptObject limitations
 func _eval(code: String) -> Variant:
 	if _is_web:
-		return JavaScriptBridge.eval("physics." + code)
+		# Wrap in JSON.stringify for complex returns, parse in GDScript
+		var json_str = JavaScriptBridge.eval("JSON.stringify(physics." + code + ")")
+		if json_str == null:
+			return null
+		return JSON.parse_string(json_str)
 	else:
 		return _js.eval(code)
 
