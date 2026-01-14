@@ -434,6 +434,10 @@ func _tick_physics():
 				# Wall killed by ball - triggers life loss
 				wall.die()
 				_js_wall_ids[gd_wall_index] = -1
+			"die_paired":
+				# Paired wall killed when its partner was hit - no life loss
+				wall.die_from_wall()
+				_js_wall_ids[gd_wall_index] = -1
 			"finish":
 				# Wall completed - materialize tiles
 				var bounds: Dictionary = event.get("bounds", {})

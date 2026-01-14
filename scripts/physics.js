@@ -724,16 +724,16 @@ function tick() {
       // Kill wall if hit inner area
       if (wallResult.killsWall) {
         wallStop(wallResult.wallId);
+        wallEvents.push({ wallId: wallResult.wallId, event: 'die', ballId: i });
 
-        // Kill paired wall too
+        // Kill paired wall too (emits 'die_paired' - no life loss)
         const wall = walls[wallResult.wallId];
         for (let j = 0; j < walls.length; j++) {
           if (j !== wallResult.wallId && walls[j].building && arePairedWalls(wall, walls[j])) {
             wallStop(j);
+            wallEvents.push({ wallId: j, event: 'die_paired' });
           }
         }
-
-        wallEvents.push({ wallId: wallResult.wallId, event: 'die', ballId: i });
       }
       continue;
     }
