@@ -30,9 +30,6 @@ var _tile_size := Vector2i(32, 32)
 ## Size in pixels
 var _size := Vector2i(26, 26)
 
-## Predicted bounding rect for next frame
-var _next_bounding_rect := Rect2()
-
 ## Sound cooldown counter
 var _sound_delay := 0
 
@@ -61,18 +58,12 @@ func _ready():
 ## Set ball position in tile coordinates
 func set_relative_pos(x: float, y: float):
 	relative_pos = Vector2(x, y)
-	_update_next_bounding_rect()
 
 
 ## Get bounding rectangle in tile coordinates
 func ball_bounding_rect() -> Rect2:
 	return Rect2(relative_pos.x, relative_pos.y,
 				 BALL_RELATIVE_SIZE, BALL_RELATIVE_SIZE)
-
-
-## Get predicted bounding rectangle for next frame
-func next_bounding_rect() -> Rect2:
-	return _next_bounding_rect
 
 
 ## Resize ball to match tile size
@@ -114,13 +105,6 @@ func collide(collision: Array):
 			elif h.type == Collision.Type.TILE:
 				AudioManager.play("ball_bounce")
 				_sound_delay = SOUND_DELAY
-
-
-## Update the predicted next bounding rect
-func _update_next_bounding_rect():
-	var next_pos := relative_pos + velocity
-	_next_bounding_rect = Rect2(next_pos.x, next_pos.y,
-								BALL_RELATIVE_SIZE, BALL_RELATIVE_SIZE)
 
 
 ## Update visual representation

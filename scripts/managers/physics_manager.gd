@@ -166,71 +166,11 @@ func get_wall_count() -> int:
 	return int(result) if result != null else 0
 
 
-## Stop a wall (called when wall dies or finishes)
-func wall_stop(wall_id: int):
-	if not _initialized:
-		return
-	_js.eval("wallStop(%d)" % wall_id)
-
-
-## Materialize a wall into tiles
-## Returns bounds { x1, y1, x2, y2 } or empty dict on failure
-func wall_materialize(wall_id: int, skip_start_tile: bool = false) -> Dictionary:
-	if not _initialized:
-		return {}
-	var skip_str := "true" if skip_start_tile else "false"
-	var result = _js.eval("wallMaterialize(%d, %s)" % [wall_id, skip_str])
-	if result == null or result is bool:
-		return {}
-	return result
-
-
-## Check if ball intersects a rect (for wall collision)
-func ball_intersects_rect(ball_id: int, rx: float, ry: float, rw: float, rh: float) -> bool:
-	if not _initialized:
-		return false
-	var result = _js.eval("rectIntersects(%d, %f, %f, %f, %f)" % [ball_id, rx, ry, rw, rh])
-	return result == true
-
-
-## Calculate collision normal between two rects
-func calculate_normal(ax: float, ay: float, aw: float, ah: float,
-					  bx: float, by: float, bw: float, bh: float) -> Vector2:
-	if not _initialized:
-		return Vector2.ZERO
-	var result = _js.eval("calculateNormal(%f, %f, %f, %f, %f, %f, %f, %f)" % [
-		ax, ay, aw, ah, bx, by, bw, bh])
-	if result == null:
-		return Vector2.ZERO
-	return Vector2(result.get("x", 0), result.get("y", 0))
-
-
-## Tick collision detection for a single ball
-## Returns: { hit: bool, normal: Vector2 }
-func tick_ball(ball_id: int) -> Dictionary:
-	if not _initialized:
-		return { "hit": false, "normal": Vector2.ZERO }
-	var result = _js.eval("tickBall(%d)" % ball_id)
-	if result == null:
-		return { "hit": false, "normal": Vector2.ZERO }
-	return {
-		"hit": result.get("hit", false),
-		"normal": Vector2(result.get("normalX", 0), result.get("normalY", 0))
-	}
-
-
-## Apply collision to ball
+## Apply collision to ball (used by tests)
 func apply_ball_collision(ball_id: int, normal: Vector2):
 	if not _initialized:
 		return
 	_js.eval("applyBallCollision(%d, %f, %f)" % [ball_id, normal.x, normal.y])
-
-
-## Move a single ball
-func move_ball(ball_id: int):
-	if not _initialized:
-		return
-	_js.eval("moveBall(%d)" % ball_id)
 
 
 ## Tick all physics - returns { balls: Array, walls: Array }

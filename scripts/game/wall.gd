@@ -37,8 +37,6 @@ var start_y := 0
 ## Current bounding rect in tile coordinates
 var _bounding_rect := Rect2()
 
-## Predicted bounding rect for next frame
-var _next_bounding_rect := Rect2()
 
 ## Current tile size
 var _tile_size := Vector2i(32, 32)
@@ -64,12 +62,7 @@ func build(x: int, y: int):
 	# Initialize bounding rect covering the full starting tile.
 	# Tips are at opposite edges: UP at top (position.y), DOWN at bottom (end.y)
 	# Direction-aware collision checking only looks at the tip.
-	match direction:
-		Direction.UP, Direction.DOWN:
-			_bounding_rect = Rect2(x, y, 1, 1)
-		Direction.LEFT, Direction.RIGHT:
-			_bounding_rect = Rect2(x, y, 1, 1)
-	_next_bounding_rect = _bounding_rect
+	_bounding_rect = Rect2(x, y, 1, 1)
 
 	AudioManager.play("wallstart")
 	update_visuals()
@@ -80,114 +73,9 @@ func bounding_rect() -> Rect2:
 	return _bounding_rect
 
 
-## Get predicted bounding rectangle for collision
-func next_bounding_rect() -> Rect2:
-	return _next_bounding_rect
-
-
-## Get inner bounding rectangle (excludes tip tile) for ball collision
-## Ball only kills wall if it hits inner tiles, not the tip
-func inner_bounding_rect() -> Rect2:
-	var inner := _bounding_rect
-	# Shrink by 1 tile from the leading edge (tip)
-	match direction:
-		Direction.UP:
-			if inner.size.y > 1.0:
-				inner.position.y += 1.0
-				inner.size.y -= 1.0
-			else:
-				return Rect2()  # No inner area yet
-		Direction.DOWN:
-			if inner.size.y > 1.0:
-				inner.size.y -= 1.0
-			else:
-				return Rect2()
-		Direction.LEFT:
-			if inner.size.x > 1.0:
-				inner.position.x += 1.0
-				inner.size.x -= 1.0
-			else:
-				return Rect2()
-		Direction.RIGHT:
-			if inner.size.x > 1.0:
-				inner.size.x -= 1.0
-			else:
-				return Rect2()
-	return inner
-
-
 ## Resize wall to match tile size
 func resize(tile_size: Vector2i):
 	_tile_size = tile_size
-
-
-## Handle collision response
-func collide(collision: Array):
-	if not _building:
-		return
-
-	# Check for WALL and BALL collisions first (they take priority)
-	for hit in collision:
-		var h := hit as Collision.Hit
-		if not h:
-			continue
-
-		if h.type == Collision.Type.BALL:
-			# Wall hit by ball - wall dies
-			die()
-			return
-
-		if h.type == Collision.Type.WALL:
-			# Two walls meet with tips - both walls die
-			# Also kill paired walls (from same click)
-			if h.source and h.source is Wall:
-				h.source.die_from_wall()
-			die_from_wall()
-			return
-
-	# Then check TILE collisions (wall reached edge or another wall's body)
-	for hit in collision:
-		var h := hit as Collision.Hit
-		if not h:
-			continue
-
-		if h.type == Collision.Type.TILE:
-			# Wall reached edge or filled area
-			_finish()
-			return
-
-
-## Perform movement calculation
-func go_forward():
-	if not _building:
-		return
-
-	# Extend wall in its direction
-	match direction:
-		Direction.UP:
-			_bounding_rect.position.y -= wall_velocity
-			_bounding_rect.size.y += wall_velocity
-		Direction.DOWN:
-			_bounding_rect.size.y += wall_velocity
-		Direction.LEFT:
-			_bounding_rect.position.x -= wall_velocity
-			_bounding_rect.size.x += wall_velocity
-		Direction.RIGHT:
-			_bounding_rect.size.x += wall_velocity
-
-	# Calculate next bounding rect for collision detection
-	_next_bounding_rect = _bounding_rect
-	match direction:
-		Direction.UP:
-			_next_bounding_rect.position.y -= wall_velocity
-			_next_bounding_rect.size.y += wall_velocity
-		Direction.DOWN:
-			_next_bounding_rect.size.y += wall_velocity
-		Direction.LEFT:
-			_next_bounding_rect.position.x -= wall_velocity
-			_next_bounding_rect.size.x += wall_velocity
-		Direction.RIGHT:
-			_next_bounding_rect.size.x += wall_velocity
 
 
 ## Update visual representation
