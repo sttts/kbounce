@@ -141,11 +141,6 @@ func stop_game(final_score: int, final_level: int):
 		else:
 			print("[Replay] Failed to save file")
 
-	# Always print to console
-	print("=== REPLAY DATA START ===")
-	print(json)
-	print("=== REPLAY DATA END ===")
-
 
 ## Get replay data (for API submission)
 func get_replay() -> Dictionary:
