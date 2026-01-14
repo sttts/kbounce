@@ -212,7 +212,7 @@ func update_nickname(new_nickname: String):
 	var body := JSON.stringify(data)
 	var url := API_URL + "/score/" + _current_score_id
 	_request_start_times["nickname"] = Time.get_ticks_msec()
-	print("[API] PATCH /score/%s" % _current_score_id)
+	print("[API] PATCH %s" % url)
 	var err := _http_nickname.request(url, _get_headers(), HTTPClient.METHOD_PATCH, body)
 
 	if err != OK:
@@ -223,7 +223,9 @@ func _on_nickname_update_completed(result: int, response_code: int, headers: Pac
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("nickname", 0))
 	print("----> PATCH /score rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
-		nickname_updated.emit(false, "Request failed")
+		var error_msg := "Request failed: %s" % _http_result_to_string(result)
+		print("      ERROR: %s" % error_msg)
+		nickname_updated.emit(false, error_msg)
 		return
 
 	if response_code == 429:
@@ -234,6 +236,7 @@ func _on_nickname_update_completed(result: int, response_code: int, headers: Pac
 
 	if response_code != 200:
 		var error_msg := _parse_error_response(body, response_code)
+		print("      ERROR: %s" % error_msg)
 		nickname_updated.emit(false, error_msg)
 		return
 
@@ -290,9 +293,10 @@ func request_game_token():
 		_http_token.request_completed.connect(_on_token_request_completed)
 
 	var body := JSON.stringify({"user_id": user_id})
+	var url := API_URL + "/token"
 	_request_start_times["token"] = Time.get_ticks_msec()
-	print("[API] POST /token")
-	var err := _http_token.request(API_URL + "/token", _get_headers(), HTTPClient.METHOD_POST, body)
+	print("[API] POST %s" % url)
+	var err := _http_token.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
 		token_failed.emit("HTTP request failed: %d" % err)
@@ -302,7 +306,9 @@ func _on_token_request_completed(result: int, response_code: int, headers: Packe
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("token", 0))
 	print("----> POST /token rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
-		token_failed.emit("Request failed: %d" % result)
+		var error_msg := "Request failed: %s" % _http_result_to_string(result)
+		print("      ERROR: %s" % error_msg)
+		token_failed.emit(error_msg)
 		return
 
 	if response_code == 429:
@@ -312,7 +318,9 @@ func _on_token_request_completed(result: int, response_code: int, headers: Packe
 		return
 
 	if response_code != 200:
-		token_failed.emit("Server error: %d" % response_code)
+		var error_msg := _parse_error_response(body, response_code)
+		print("      ERROR: %s" % error_msg)
+		token_failed.emit(error_msg)
 		return
 
 	var json = JSON.parse_string(body.get_string_from_utf8())
@@ -437,9 +445,10 @@ func submit_score(score: int, level: int):
 	_game_token = ""
 
 	var body := JSON.stringify(data)
+	var url := API_URL + "/score"
 	_request_start_times["score"] = Time.get_ticks_msec()
-	print("[API] POST /score (%dKB)" % [body.length() / 1024])
-	var err := _http_score.request(API_URL + "/score", _get_headers(), HTTPClient.METHOD_POST, body)
+	print("[API] POST %s (%dKB)" % [url, body.length() / 1024])
+	var err := _http_score.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
 		score_failed.emit("HTTP request failed: %d" % err)
@@ -449,7 +458,9 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("score", 0))
 	print("----> POST /score rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
-		score_failed.emit("Request failed: %d" % result)
+		var error_msg := "Request failed: %s" % _http_result_to_string(result)
+		print("      ERROR: %s" % error_msg)
+		score_failed.emit(error_msg)
 		return
 
 	if response_code == 429:
@@ -460,6 +471,7 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 
 	if response_code != 200:
 		var error_msg := _parse_error_response(body, response_code)
+		print("      ERROR: %s" % error_msg)
 		score_failed.emit(error_msg)
 		return
 
@@ -515,7 +527,7 @@ func load_leaderboard(mode: String = "around_user", around_score: int = 0):
 	if around_score > 0:
 		url += "&score=" + str(around_score)
 	_request_start_times["leaderboard"] = Time.get_ticks_msec()
-	print("[API] GET /leaderboard" + (" score=%d" % around_score if around_score > 0 else ""))
+	print("[API] GET %s" % url)
 	var err := _http_leaderboard.request(url, _get_headers(false))
 
 	if err != OK:
@@ -526,7 +538,9 @@ func _on_leaderboard_request_completed(result: int, response_code: int, headers:
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("leaderboard", 0))
 	print("----> GET /leaderboard rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
-		leaderboard_failed.emit("Request failed: %d" % result)
+		var error_msg := "Request failed: %s" % _http_result_to_string(result)
+		print("      ERROR: %s" % error_msg)
+		leaderboard_failed.emit(error_msg)
 		return
 
 	if response_code == 429:
@@ -536,7 +550,9 @@ func _on_leaderboard_request_completed(result: int, response_code: int, headers:
 		return
 
 	if response_code != 200:
-		leaderboard_failed.emit("Server error: %d" % response_code)
+		var error_msg := _parse_error_response(body, response_code)
+		print("      ERROR: %s" % error_msg)
+		leaderboard_failed.emit(error_msg)
 		return
 
 	var json = JSON.parse_string(body.get_string_from_utf8())
@@ -567,19 +583,22 @@ func report_score(score_id: String):
 		"score_id": score_id,
 		"user_id": user_id
 	})
+	var url := API_URL + "/report"
 	_request_start_times["report"] = Time.get_ticks_msec()
-	print("[API] POST /report")
-	var err := _http_report.request(API_URL + "/report", _get_headers(), HTTPClient.METHOD_POST, body)
+	print("[API] POST %s" % url)
+	var err := _http_report.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
 		report_failed.emit("HTTP request failed: %d" % err)
 
 
-func _on_report_request_completed(result: int, response_code: int, headers: PackedStringArray, _body: PackedByteArray):
+func _on_report_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("report", 0))
 	print("----> POST /report rc=%d dur=%dms" % [response_code, duration])
 	if result != HTTPRequest.RESULT_SUCCESS:
-		report_failed.emit("Request failed: %d" % result)
+		var error_msg := "Request failed: %s" % _http_result_to_string(result)
+		print("      ERROR: %s" % error_msg)
+		report_failed.emit(error_msg)
 		return
 
 	if response_code == 429:
@@ -589,7 +608,9 @@ func _on_report_request_completed(result: int, response_code: int, headers: Pack
 		return
 
 	if response_code != 200:
-		report_failed.emit("Server error: %d" % response_code)
+		var error_msg := _parse_error_response(body, response_code)
+		print("      ERROR: %s" % error_msg)
+		report_failed.emit(error_msg)
 		return
 
 	report_submitted.emit()
@@ -615,3 +636,38 @@ func _parse_error_response(body: PackedByteArray, response_code: int) -> String:
 			return "Nickname not allowed"
 		return error
 	return "Server error: %d" % response_code
+
+
+## Convert HTTPRequest.Result to human-readable string
+func _http_result_to_string(result: int) -> String:
+	match result:
+		HTTPRequest.RESULT_SUCCESS:
+			return "Success"
+		HTTPRequest.RESULT_CHUNKED_BODY_SIZE_MISMATCH:
+			return "Chunked body size mismatch"
+		HTTPRequest.RESULT_CANT_CONNECT:
+			return "Can't connect to host"
+		HTTPRequest.RESULT_CANT_RESOLVE:
+			return "Can't resolve hostname"
+		HTTPRequest.RESULT_CONNECTION_ERROR:
+			return "Connection error"
+		HTTPRequest.RESULT_TLS_HANDSHAKE_ERROR:
+			return "TLS handshake error"
+		HTTPRequest.RESULT_NO_RESPONSE:
+			return "No response from server"
+		HTTPRequest.RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+			return "Body size limit exceeded"
+		HTTPRequest.RESULT_BODY_DECOMPRESS_FAILED:
+			return "Body decompress failed"
+		HTTPRequest.RESULT_REQUEST_FAILED:
+			return "Request failed"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_CANT_OPEN:
+			return "Can't open download file"
+		HTTPRequest.RESULT_DOWNLOAD_FILE_WRITE_ERROR:
+			return "Download file write error"
+		HTTPRequest.RESULT_REDIRECT_LIMIT_REACHED:
+			return "Redirect limit reached"
+		HTTPRequest.RESULT_TIMEOUT:
+			return "Request timeout"
+		_:
+			return "Unknown error (%d)" % result
