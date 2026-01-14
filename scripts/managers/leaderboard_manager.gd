@@ -73,6 +73,8 @@ var nickname: String = ""
 var country: String = ""
 ## User's city (from last score submission)
 var city: String = ""
+## Cached lowest score from user's top 10 (to skip replay for low scores)
+var _cached_lowest_score: int = 0
 
 ## Current game token (single-use, expires after 30 min)
 var _game_token: String = ""
@@ -128,6 +130,7 @@ func _load_identity():
 		nickname = config.get_value("identity", "nickname", "")
 		country = config.get_value("identity", "country", "")
 		city = config.get_value("identity", "city", "")
+		_cached_lowest_score = config.get_value("identity", "lowest_score", 0)
 
 	# Generate new UUID if none exists
 	if user_id.is_empty():
@@ -157,7 +160,24 @@ func _save_identity():
 	config.set_value("identity", "nickname", nickname)
 	config.set_value("identity", "country", country)
 	config.set_value("identity", "city", city)
+	config.set_value("identity", "lowest_score", _cached_lowest_score)
 	config.save(CONFIG_PATH)
+
+
+## Update cached lowest score from user's entries
+func _update_cached_lowest_score(user_entries: Array):
+	if user_entries.size() >= 10:
+		# User has 10 scores, cache the lowest
+		var lowest := 999999999
+		for entry in user_entries:
+			var s: int = entry.get("score", 0)
+			if s < lowest:
+				lowest = s
+		_cached_lowest_score = lowest
+		_save_identity()
+	elif user_entries.size() > 0:
+		# Less than 10 scores, any new score will be stored
+		_cached_lowest_score = 0
 
 
 ## Set the user's nickname locally (call update_nickname to sync to server)
@@ -384,10 +404,12 @@ func submit_score(score: int, level: int):
 		"app_version": ProjectSettings.get_setting("application/config/version", "unknown")
 	}
 
-	# Add replay data for server-side verification
-	var replay := ReplayManager.get_replay()
-	if not replay.is_empty():
-		data["replay"] = replay
+	# Add replay data for server-side verification (only if score might be stored)
+	# Skip replay for scores that won't beat user's lowest stored score
+	if _cached_lowest_score == 0 or score > _cached_lowest_score:
+		var replay := ReplayManager.get_replay()
+		if not replay.is_empty():
+			data["replay"] = replay
 
 	# Dry-run mode for debug cheats (API processes but doesn't persist)
 	if GameManager.debug_cheated:
@@ -467,6 +489,7 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 
 	# Emit leaderboard entries (always emit, even if empty, so UI can update)
 	var user_entries: Array = json.get("user_entries", [])
+	_update_cached_lowest_score(user_entries)
 	leaderboard_loaded.emit(entries, rank, user_entries)
 
 
@@ -516,6 +539,7 @@ func _on_leaderboard_request_completed(result: int, response_code: int, headers:
 	var entries: Array = json["entries"]
 	var user_rank: int = json.get("user_rank", 0)
 	var user_entries: Array = json.get("user_entries", [])
+	_update_cached_lowest_score(user_entries)
 
 	leaderboard_loaded.emit(entries, user_rank, user_entries)
 
