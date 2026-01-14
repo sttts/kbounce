@@ -309,6 +309,19 @@ func _on_volume_button_pressed():
 		)
 
 
+func _input(event: InputEvent):
+	if not volume_popup.visible:
+		return
+	if event is InputEventMouseButton and event.pressed:
+		var popup_rect := volume_popup.get_global_rect()
+		var button_rect := volume_button.get_global_rect()
+		var click_pos: Vector2 = (event as InputEventMouseButton).position
+		# Close if click is outside popup and button
+		if not popup_rect.has_point(click_pos) and not button_rect.has_point(click_pos):
+			volume_popup.visible = false
+			get_viewport().set_input_as_handled()
+
+
 func _on_volume_slider_changed(value: float):
 	AudioManager.set_volume_linear(value)
 
