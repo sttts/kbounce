@@ -134,6 +134,9 @@ mac-dev: $(VERSION_FILE) $(CONFIG_FILE) $(EXPORT_PRESETS) ## Export macOS app fo
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $(APPLE_VERSION)" $(MAC_APP)/Contents/Info.plist
 	@echo "==> Re-signing with development identity..."
+	@for dylib in $(MAC_APP)/Contents/Frameworks/*.dylib; do \
+		codesign --force --options runtime --sign "$(MAC_DEV_IDENTITY)" "$$dylib"; \
+	done
 	codesign --force --options runtime --entitlements $(MAC_DIR)/entitlements-dev.plist \
 		--sign "$(MAC_DEV_IDENTITY)" $(MAC_APP)
 	@echo "==> macOS dev app exported to $(MAC_APP)"
