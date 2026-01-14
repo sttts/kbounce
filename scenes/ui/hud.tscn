@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3]
+[gd_scene load_steps=24 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/stop.svg" id="icon_stop"]
@@ -18,6 +18,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/leaderboard.svg" id="icon_leaderboard"]
 [ext_resource type="Texture2D" path="res://assets/icons/help.svg" id="icon_help"]
 [ext_resource type="Texture2D" path="res://assets/icons/share.svg" id="icon_share"]
+[ext_resource type="Texture2D" path="res://assets/icons/settings.svg" id="icon_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_overlay"]
 bg_color = Color(1, 1, 1, 0.97)
@@ -87,6 +88,17 @@ corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_volume_popup"]
+bg_color = Color(0.165, 0.204, 0.255, 0.95)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
 
 [node name="HUD" type="Control"]
 layout_mode = 3
@@ -236,6 +248,12 @@ layout_mode = 2
 icon = ExtResource("icon_pause")
 icon_alignment = 1
 
+[node name="VolumeButton" type="Button" parent="TopRightButtons"]
+custom_minimum_size = Vector2(54, 54)
+layout_mode = 2
+icon = ExtResource("icon_settings")
+icon_alignment = 1
+
 [node name="FullscreenButton" type="Button" parent="TopRightButtons"]
 custom_minimum_size = Vector2(54, 54)
 layout_mode = 2
@@ -248,19 +266,41 @@ layout_mode = 2
 icon = ExtResource("icon_help")
 icon_alignment = 1
 
-[node name="VolumeSlider" type="HSlider" parent="."]
+[node name="VolumePopup" type="PanelContainer" parent="."]
+visible = false
 layout_mode = 1
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
+anchors_preset = 0
+offset_left = 800.0
+offset_top = 225.0
+offset_right = 960.0
+offset_bottom = 275.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_volume_popup")
+
+[node name="VBox" type="VBoxContainer" parent="VolumePopup"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Label" type="Label" parent="VolumePopup/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.8)
+theme_override_font_sizes/font_size = 11
+text = "Volume"
+
+[node name="SliderContainer" type="Control" parent="VolumePopup/VBox"]
+custom_minimum_size = Vector2(120, 20)
+layout_mode = 2
+
+[node name="TriangleBg" type="Polygon2D" parent="VolumePopup/VBox/SliderContainer"]
+color = Color(1, 1, 1, 0.15)
+polygon = PackedVector2Array(0, 18, 120, 2, 120, 18)
+
+[node name="VolumeSlider" type="HSlider" parent="VolumePopup/VBox/SliderContainer"]
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -130.0
-offset_top = -90.0
-offset_right = -5.0
-offset_bottom = -70.0
-grow_horizontal = 0
-grow_vertical = 0
+grow_horizontal = 2
+grow_vertical = 2
 min_value = 0.0
 max_value = 1.0
 step = 0.01

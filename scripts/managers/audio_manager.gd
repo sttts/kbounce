@@ -14,6 +14,9 @@ const MAX_PLAYERS := 8
 ## Default volume (30% = -10.46 dB)
 const DEFAULT_VOLUME_DB := -10.46
 
+## Config file path for volume persistence
+const CONFIG_PATH := "user://audio.cfg"
+
 ## Preloaded sound streams
 var sounds := {}
 
@@ -28,6 +31,8 @@ var _volume_db: float = DEFAULT_VOLUME_DB
 
 
 func _ready():
+	_load_volume()
+
 	# Preload all game sounds
 	sounds = {
 		"ball_bounce": preload("res://assets/sounds/ball-bounce.ogg"),
@@ -105,6 +110,7 @@ func set_volume_linear(value: float):
 		_volume_db = 20.0 * log(value) / log(10.0)
 	for player in players:
 		player.volume_db = _volume_db
+	_save_volume()
 
 
 ## Get volume as linear value (0.0 to 1.0)
@@ -112,3 +118,17 @@ func get_volume_linear() -> float:
 	if _volume_db <= -80.0:
 		return 0.0
 	return pow(10.0, _volume_db / 20.0)
+
+
+## Load volume from config file
+func _load_volume():
+	var config := ConfigFile.new()
+	if config.load(CONFIG_PATH) == OK:
+		_volume_db = config.get_value("audio", "volume_db", DEFAULT_VOLUME_DB)
+
+
+## Save volume to config file
+func _save_volume():
+	var config := ConfigFile.new()
+	config.set_value("audio", "volume_db", _volume_db)
+	config.save(CONFIG_PATH)

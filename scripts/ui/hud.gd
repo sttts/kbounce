@@ -47,7 +47,9 @@ var _user_entry: Node = null
 @onready var report_bug_button: Button = $HelpOverlay/CenterContainer/Panel/VBox/BottomRow/ReportBugButton
 @onready var share_logs_button: Button = $HelpOverlay/ShareLogsButton
 @onready var fullscreen_button: Button = $TopRightButtons/FullscreenButton
-@onready var volume_slider: HSlider = $VolumeSlider
+@onready var volume_button: Button = $TopRightButtons/VolumeButton
+@onready var volume_popup: PanelContainer = $VolumePopup
+@onready var volume_slider: HSlider = $VolumePopup/VBox/SliderContainer/VolumeSlider
 
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
@@ -112,7 +114,8 @@ func _ready():
 	fullscreen_button.visible = not (is_native_mobile or is_ios_web)
 	fullscreen_button.pressed.connect(_on_fullscreen_button_pressed)
 
-	# Connect volume slider
+	# Connect volume button and slider
+	volume_button.pressed.connect(_on_volume_button_pressed)
 	volume_slider.value = AudioManager.get_volume_linear()
 	volume_slider.value_changed.connect(_on_volume_slider_changed)
 
@@ -293,6 +296,17 @@ func _on_fullscreen_button_pressed():
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 		else:
 			DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+
+func _on_volume_button_pressed():
+	volume_popup.visible = not volume_popup.visible
+	if volume_popup.visible:
+		# Position popup to the left of the button
+		var button_rect := volume_button.get_global_rect()
+		volume_popup.global_position = Vector2(
+			button_rect.position.x - volume_popup.size.x - 8,
+			button_rect.position.y + (button_rect.size.y - volume_popup.size.y) / 2
+		)
 
 
 func _on_volume_slider_changed(value: float):
