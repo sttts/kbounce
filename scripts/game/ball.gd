@@ -30,10 +30,6 @@ var _tile_size := Vector2i(32, 32)
 ## Size in pixels
 var _size := Vector2i(26, 26)
 
-## Collision state
-var _reflect_x := false
-var _reflect_y := false
-
 ## Predicted bounding rect for next frame
 var _next_bounding_rect := Rect2()
 
@@ -99,11 +95,8 @@ func set_random_frame():
 		_anim_counter = randi() % (_frame_count * BALL_ANIM_DELAY)
 
 
-## Handle collision response
+## Handle collision response (sound effects only - JS handles physics)
 func collide(collision: Array):
-	_reflect_x = false
-	_reflect_y = false
-
 	# Decrement sound delay
 	if _sound_delay > 0:
 		_sound_delay -= 1
@@ -113,17 +106,6 @@ func collide(collision: Array):
 		if not h:
 			continue
 
-		# Determine reflection based on normal
-		if h.normal.x > 0:
-			_reflect_x = _reflect_x or velocity.x < 0
-		elif h.normal.x < 0:
-			_reflect_x = _reflect_x or velocity.x > 0
-
-		if h.normal.y > 0:
-			_reflect_y = _reflect_y or velocity.y < 0
-		elif h.normal.y < 0:
-			_reflect_y = _reflect_y or velocity.y > 0
-
 		# Play sound if not in cooldown
 		if _sound_delay <= 0:
 			if h.type == Collision.Type.WALL:
@@ -132,21 +114,6 @@ func collide(collision: Array):
 			elif h.type == Collision.Type.TILE:
 				AudioManager.play("ball_bounce")
 				_sound_delay = SOUND_DELAY
-
-
-## Perform movement calculation
-func go_forward():
-	# Apply reflection
-	if _reflect_x:
-		velocity.x *= -1
-	if _reflect_y:
-		velocity.y *= -1
-
-	# Move
-	relative_pos += velocity
-
-	# Update next bounding rect for collision detection
-	_update_next_bounding_rect()
 
 
 ## Update the predicted next bounding rect
