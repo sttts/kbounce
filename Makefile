@@ -55,7 +55,10 @@ help: ## Show this help
 
 all: mac ios web ## Build all platforms
 
-test: ## Run unit tests
+test: ## Run unit tests (JS + Godot)
+	@echo "==> Running JS physics tests..."
+	node scripts/physics.test.js
+	@echo "==> Running Godot tests..."
 	$(GODOT) --headless --script tests/test_runner.gd
 
 $(VERSION_FILE): version ;
