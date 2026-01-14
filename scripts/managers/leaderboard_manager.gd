@@ -383,6 +383,12 @@ func submit_score(score: int, level: int):
 		# Score of 0 shouldn't be submitted (handled by GameManager skipping leaderboard)
 		return
 
+	# Skip /score if this won't beat user's lowest stored score - just load leaderboard
+	if _cached_lowest_score > 0 and score <= _cached_lowest_score:
+		print("[API] Skipping /score (score %d <= cached lowest %d), loading leaderboard" % [score, _cached_lowest_score])
+		load_leaderboard()
+		return
+
 	if not is_token_valid():
 		score_failed.emit("No valid game token")
 		return
