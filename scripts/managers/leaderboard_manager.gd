@@ -386,7 +386,7 @@ func submit_score(score: int, level: int):
 	# Skip /score if this won't beat user's lowest stored score - just load leaderboard
 	if _cached_lowest_score > 0 and score <= _cached_lowest_score:
 		print("[API] Skipping /score (score %d <= cached lowest %d), loading leaderboard" % [score, _cached_lowest_score])
-		load_leaderboard()
+		load_leaderboard("around_user", score)
 		return
 
 	if not is_token_valid():
@@ -501,7 +501,7 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 
 ## Load leaderboard entries
 ## mode: "top" for top 10 global, "around_user" for entries around user's position
-func load_leaderboard(mode: String = "around_user"):
+func load_leaderboard(mode: String = "around_user", around_score: int = 0):
 	if user_id.is_empty():
 		leaderboard_failed.emit("No user identity")
 		return
@@ -512,8 +512,10 @@ func load_leaderboard(mode: String = "around_user"):
 		_http_leaderboard.request_completed.connect(_on_leaderboard_request_completed)
 
 	var url := API_URL + "/leaderboard?user_id=" + user_id.uri_encode() + "&mode=" + mode
+	if around_score > 0:
+		url += "&score=" + str(around_score)
 	_request_start_times["leaderboard"] = Time.get_ticks_msec()
-	print("[API] GET /leaderboard")
+	print("[API] GET /leaderboard" + (" score=%d" % around_score if around_score > 0 else ""))
 	var err := _http_leaderboard.request(url, _get_headers(false))
 
 	if err != OK:
