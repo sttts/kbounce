@@ -384,6 +384,11 @@ func submit_score(score: int, level: int):
 		"app_version": ProjectSettings.get_setting("application/config/version", "unknown")
 	}
 
+	# Add replay data for server-side verification
+	var replay := ReplayManager.get_replay()
+	if not replay.is_empty():
+		data["replay"] = replay
+
 	# Dry-run mode for debug cheats (API processes but doesn't persist)
 	if GameManager.debug_cheated:
 		data["dry_run"] = true
