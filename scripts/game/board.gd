@@ -398,6 +398,7 @@ func _tick_physics():
 
 	# Process ball collision results
 	for i in range(balls.size()):
+		var hits: Array = []
 		if i < js_ball_collisions.size():
 			var collision: Dictionary = js_ball_collisions[i]
 			if collision.get("hit", false):
@@ -407,7 +408,9 @@ func _tick_physics():
 				else:
 					hit.type = Collision.Type.TILE
 				hit.normal = collision.get("normal", Vector2.ZERO)
-				balls[i].collide([hit])
+				hits.append(hit)
+		# Always call collide to decrement sound delay
+		balls[i].collide(hits)
 
 	# Process wall events from JS
 	for event in js_wall_events:
