@@ -59,14 +59,6 @@ var _last_stats_time := 0.0
 var _draw_count := 0
 var _draw_times: Array[float] = []
 
-## Spatial grid for ball collision optimization
-const GRID_CELL_SIZE := 4  # Tiles per cell
-var _ball_grid: Array = []  # 2D array of ball lists
-
-## Whether to use JS physics (for determinism)
-var _use_js_physics := true
-
-
 func _ready():
 	# Preload scenes
 	_ball_scene = preload("res://scenes/game/ball.tscn")
@@ -75,10 +67,9 @@ func _ready():
 	_init_walls()
 	clear()
 
-	# Check if JS physics is available
-	if _use_js_physics and not PhysicsManager.is_ready():
-		push_warning("Board: JS physics not ready, falling back to GDScript physics")
-		_use_js_physics = false
+	# JS physics is required
+	if not PhysicsManager.is_ready():
+		push_error("Board: JS physics not ready - physics will not work!")
 
 
 ## Mapping from GDScript wall index to JS wall ID
@@ -86,17 +77,12 @@ var _js_wall_ids: Array[int] = [-1, -1, -1, -1]
 
 ## Initialize JS physics state (call after clear() and before adding balls)
 func _init_js_physics():
-	if not _use_js_physics:
-		return
 	PhysicsManager.init()
 	_js_wall_ids = [-1, -1, -1, -1]
 
 
 ## Sync a ball to JS physics (call after setting position/velocity)
 func _sync_ball_to_js(ball: Ball, ball_id: int):
-	if not _use_js_physics:
-		return
-	# Ball positions are stored in relative_pos, velocity in velocity
 	var id := PhysicsManager.add_ball(
 		ball.relative_pos.x, ball.relative_pos.y,
 		ball.velocity.x, ball.velocity.y)
@@ -106,8 +92,6 @@ func _sync_ball_to_js(ball: Ball, ball_id: int):
 
 ## Sync ball position from JS physics (call after tick)
 func _sync_ball_from_js(ball: Ball, ball_id: int):
-	if not _use_js_physics:
-		return
 	var state := PhysicsManager.get_ball(ball_id)
 	if state.is_empty():
 		return
@@ -115,17 +99,8 @@ func _sync_ball_from_js(ball: Ball, ball_id: int):
 	ball.set_relative_pos(state.get("x", 0), state.get("y", 0))
 
 
-## Sync tile to JS physics
-func _sync_tile_to_js(x: int, y: int):
-	if not _use_js_physics:
-		return
-	PhysicsManager.set_tile(x, y, tiles[x][y])
-
-
 ## Sync all tiles to JS physics
 func _sync_tiles_to_js():
-	if not _use_js_physics:
-		return
 	for x in range(TILE_NUM_W):
 		for y in range(TILE_NUM_H):
 			PhysicsManager.set_tile(x, y, tiles[x][y])
@@ -133,8 +108,6 @@ func _sync_tiles_to_js():
 
 ## Add a wall to JS physics when it starts building
 func _add_wall_to_js(wall_index: int, start_x: int, start_y: int):
-	if not _use_js_physics:
-		return
 	var wall: Wall = walls[wall_index]
 	var js_id := PhysicsManager.add_wall(start_x, start_y, wall.direction)
 	_js_wall_ids[wall_index] = js_id
@@ -409,18 +382,15 @@ func build_wall(pos: Vector2, vertical: bool):
 func tick():
 	var start := Time.get_ticks_usec()
 
-	if _use_js_physics:
-		_tick_with_js_physics()
-	else:
-		_tick_with_gdscript_physics()
+	_tick_physics()
 
 	# Record timing and print stats
 	_tick_times.append((Time.get_ticks_usec() - start) / 1000.0)
 	_print_stats()
 
 
-## Tick using JS physics for balls and walls (deterministic)
-func _tick_with_js_physics():
+## Tick physics (JS is source of truth)
+func _tick_physics():
 	# Run JS physics tick (handles all collisions: ball vs tile, ball vs wall, wall vs tile/wall)
 	var js_result: Dictionary = PhysicsManager.tick()
 	var js_ball_collisions: Array = js_result.get("balls", [])
@@ -495,26 +465,6 @@ func _tick_with_js_physics():
 			wall.update_visuals()
 
 
-## Tick using original GDScript physics
-func _tick_with_gdscript_physics():
-	# Check collisions first
-	_check_collisions()
-
-	# Move all objects
-	for ball in balls:
-		ball.go_forward()
-	for wall in walls:
-		if wall.visible:
-			wall.go_forward()
-
-	# Update visuals
-	for ball in balls:
-		ball.update_visuals()
-	for wall in walls:
-		if wall.visible:
-			wall.update_visuals()
-
-
 ## Print performance stats (called from tick)
 func _print_stats():
 	var now := Time.get_ticks_msec() / 1000.0
@@ -545,383 +495,13 @@ func _print_stats():
 				draw_max = t
 		draw_avg = total / _draw_times.size()
 
-	var physics_mode := "JS" if _use_js_physics else "GDScript"
-	print("Stats [%s]: fps=%d | tick: avg=%.2f ms, max=%.2f ms, %d/s | draw: avg=%.2f ms, max=%.2f ms, %d/s" % [
-		physics_mode, fps, tick_avg, tick_max, _tick_times.size() / 5, draw_avg, draw_max, _draw_count / 5])
+	print("Stats: fps=%d | tick: avg=%.2f ms, max=%.2f ms, %d/s | draw: avg=%.2f ms, max=%.2f ms, %d/s" % [
+		fps, tick_avg, tick_max, _tick_times.size() / 5, draw_avg, draw_max, _draw_count / 5])
 
 	_tick_times.clear()
 	_draw_times.clear()
 	_draw_count = 0
 	_last_stats_time = now
-
-
-## Build spatial grid for ball collision optimization
-func _build_ball_grid():
-	var grid_w := (TILE_NUM_W + GRID_CELL_SIZE - 1) / GRID_CELL_SIZE
-	var grid_h := (TILE_NUM_H + GRID_CELL_SIZE - 1) / GRID_CELL_SIZE
-
-	# Initialize or clear grid
-	if _ball_grid.size() != grid_w:
-		_ball_grid.clear()
-		for _x in range(grid_w):
-			var column: Array = []
-			for _y in range(grid_h):
-				column.append([])
-			_ball_grid.append(column)
-	else:
-		for x in range(grid_w):
-			for y in range(grid_h):
-				_ball_grid[x][y].clear()
-
-	# Add balls to grid cells
-	for ball in balls:
-		var rect: Rect2 = ball.next_bounding_rect()
-		var x1 := int(rect.position.x) / GRID_CELL_SIZE
-		var y1 := int(rect.position.y) / GRID_CELL_SIZE
-		var x2 := int(rect.end.x) / GRID_CELL_SIZE
-		var y2 := int(rect.end.y) / GRID_CELL_SIZE
-
-		# Clamp to grid bounds
-		x1 = clampi(x1, 0, grid_w - 1)
-		x2 = clampi(x2, 0, grid_w - 1)
-		y1 = clampi(y1, 0, grid_h - 1)
-		y2 = clampi(y2, 0, grid_h - 1)
-
-		# Add ball to all cells it overlaps
-		for x in range(x1, x2 + 1):
-			for y in range(y1, y2 + 1):
-				_ball_grid[x][y].append(ball)
-
-
-## Get balls in nearby grid cells (for collision checking)
-func _get_nearby_balls(rect: Rect2) -> Array:
-	var grid_w := _ball_grid.size()
-	if grid_w == 0:
-		return balls  # Fallback
-
-	var grid_h: int = _ball_grid[0].size()
-
-	# Get cell range (include adjacent cells for safety)
-	var x1 := int(rect.position.x) / GRID_CELL_SIZE - 1
-	var y1 := int(rect.position.y) / GRID_CELL_SIZE - 1
-	var x2 := int(rect.end.x) / GRID_CELL_SIZE + 1
-	var y2 := int(rect.end.y) / GRID_CELL_SIZE + 1
-
-	x1 = clampi(x1, 0, grid_w - 1)
-	x2 = clampi(x2, 0, grid_w - 1)
-	y1 = clampi(y1, 0, grid_h - 1)
-	y2 = clampi(y2, 0, grid_h - 1)
-
-	# Collect unique balls from cells
-	var nearby: Array = []
-	var seen: Dictionary = {}
-	for x in range(x1, x2 + 1):
-		for y in range(y1, y2 + 1):
-			for ball in _ball_grid[x][y]:
-				if not seen.has(ball):
-					seen[ball] = true
-					nearby.append(ball)
-
-	return nearby
-
-
-## Check all collisions
-func _check_collisions():
-	# Build spatial grid for ball-ball collision optimization
-	_build_ball_grid()
-
-	# Check wall collisions
-	for wall in walls:
-		if wall.visible:
-			var rect: Rect2 = wall.next_bounding_rect()
-			var inner_rect: Rect2 = wall.inner_bounding_rect()
-			var collision: Array = check_collision(wall, rect, Collision.Type.ALL, inner_rect)
-			wall.collide(collision)
-
-	# Check ball collisions
-	for ball in balls:
-		var rect: Rect2 = ball.next_bounding_rect()
-		var collision: Array = check_collision(ball, rect, Collision.Type.ALL)
-		ball.collide(collision)
-
-
-## Check collision for an object against other objects
-## inner_rect: optional rect for ball collision checks (for walls, excludes tip)
-func check_collision(object: Node, rect: Rect2, type: int, inner_rect: Rect2 = Rect2()) -> Array:
-	var result: Array = []
-
-	# Check tile collisions
-	if type & Collision.Type.TILE:
-		if object is Wall:
-			# For walls, only check the tip tile (skip if still in start tile)
-			var tip_tile := _get_tip_tile(rect, object.direction)
-			var start_tile := Vector2i(object.start_x, object.start_y)
-			if tip_tile != start_tile:  # Tip has left starting tile
-				if tip_tile.x >= 0 and tip_tile.x < TILE_NUM_W and tip_tile.y >= 0 and tip_tile.y < TILE_NUM_H:
-					if tiles[tip_tile.x][tip_tile.y] != TileType.FREE:
-						var hit := Collision.Hit.new()
-						hit.type = Collision.Type.TILE
-						result.append(hit)
-		elif object is Ball:
-			# For balls, check all corners with velocity for edge detection
-			result.append_array(_check_ball_collision_tiles(object))
-
-	# Check wall collisions (wall vs wall)
-	if type & Collision.Type.WALL and object is Wall:
-		var my_tip_tile := _get_tip_tile(rect, object.direction)
-		var my_tip_rect := _get_tip_rect(rect, object.direction)
-		var my_start := Vector2i(object.start_x, object.start_y)
-
-		# Skip if my tip is still in start tile
-		if my_tip_tile == my_start:
-			pass  # Allow, no wall collision check needed
-		else:
-			for wall in walls:
-				if wall != object and wall.visible:
-					# Skip paired walls (same start, opposite direction)
-					if _are_paired_walls(object, wall):
-						continue
-
-					# Check if MY TIP overlaps other wall (not full rect)
-					if my_tip_rect.intersects(wall.next_bounding_rect()):
-						var other_tip_rect := _get_tip_rect(wall.next_bounding_rect(), wall.direction)
-
-						var hit := Collision.Hit.new()
-						hit.bounding_rect = wall.next_bounding_rect()
-						hit.normal = Collision.calculate_normal(rect, hit.bounding_rect)
-						hit.source = wall
-
-						# Check if tip rects cover any same tiles
-						var tips_share_tile := _rects_share_tile(my_tip_rect, other_tip_rect)
-						if tips_share_tile:
-							hit.type = Collision.Type.WALL  # Both die
-						else:
-							hit.type = Collision.Type.TILE  # Materialize
-
-						result.append(hit)
-
-	# Check ball vs wall collisions (for ball reflection off growing walls)
-	if type & Collision.Type.WALL and object is Ball:
-		for wall in walls:
-			if wall.visible:
-				var wall_rect: Rect2 = wall.next_bounding_rect()
-				if rect.intersects(wall_rect):
-					var hit := Collision.Hit.new()
-					hit.type = Collision.Type.WALL
-					hit.bounding_rect = wall_rect
-					hit.normal = Collision.calculate_normal(rect, wall_rect)
-					hit.source = wall
-					result.append(hit)
-
-	# Check ball collisions
-	if type & Collision.Type.BALL:
-		# Use inner_rect if provided (for walls, only inner area triggers death)
-		var check_rect := inner_rect if inner_rect.has_area() else rect
-		# Use spatial grid for ball-ball checks, all balls for wall-ball checks
-		var balls_to_check := _get_nearby_balls(check_rect) if object is Ball else balls
-		for ball in balls_to_check:
-			if ball != object:
-				var ball_next: Rect2 = ball.next_bounding_rect()
-				if check_rect.intersects(ball_next):
-					# Ball hit inner wall area - wall dies
-					var hit := Collision.Hit.new()
-					hit.type = Collision.Type.BALL
-					hit.bounding_rect = ball_next
-					hit.normal = Collision.calculate_normal(check_rect, ball_next)
-					result.append(hit)
-				elif object is Wall and rect.intersects(ball_next):
-					# Ball hit wall tip (not inner rect) - check if ball would be trapped
-					if _would_ball_be_trapped(ball, object as Wall):
-						# Ball would be trapped - wall dies
-						var hit := Collision.Hit.new()
-						hit.type = Collision.Type.BALL
-						result.append(hit)
-
-	return result
-
-
-## Check collision against tiles
-## wall_dir: -1 for non-walls (check all corners), or Wall.Direction to check only leading edge
-func _check_collision_tiles(rect: Rect2, wall_dir: int = -1) -> Array:
-	var normal := Vector2.ZERO
-
-	# Small epsilon to avoid edge-case collisions
-	const D := 0.01
-
-	# Clamp to valid range (end can reach TILE_NUM to detect right/bottom borders)
-	var check_rect := rect
-	check_rect.position.x = clamp(check_rect.position.x, 0, TILE_NUM_W - 1)
-	check_rect.position.y = clamp(check_rect.position.y, 0, TILE_NUM_H - 1)
-	check_rect.end.x = clamp(check_rect.end.x, 0, TILE_NUM_W)
-	check_rect.end.y = clamp(check_rect.end.y, 0, TILE_NUM_H)
-
-	# For walls, only check corners on the leading edge (tip)
-	# UP=0: check top corners (ul, ur)
-	# DOWN=1: check bottom corners (lr, ll)
-	# LEFT=2: check left corners (ul, ll)
-	# RIGHT=3: check right corners (ur, lr)
-	var check_ul := wall_dir == -1 or wall_dir == Wall.Direction.UP or wall_dir == Wall.Direction.LEFT
-	var check_ur := wall_dir == -1 or wall_dir == Wall.Direction.UP or wall_dir == Wall.Direction.RIGHT
-	var check_lr := wall_dir == -1 or wall_dir == Wall.Direction.DOWN or wall_dir == Wall.Direction.RIGHT
-	var check_ll := wall_dir == -1 or wall_dir == Wall.Direction.DOWN or wall_dir == Wall.Direction.LEFT
-
-	var ul: int = TileType.FREE
-	var ur: int = TileType.FREE
-	var lr: int = TileType.FREE
-	var ll: int = TileType.FREE
-
-	# Corner tile coordinates for debug
-	var ul_tile := Vector2i(int(check_rect.position.x + D), int(check_rect.position.y + D))
-	var ur_tile := Vector2i(int(check_rect.end.x - D), int(check_rect.position.y + D))
-	var lr_tile := Vector2i(int(check_rect.end.x - D), int(check_rect.end.y - D))
-	var ll_tile := Vector2i(int(check_rect.position.x + D), int(check_rect.end.y - D))
-
-	if check_ul:
-		ul = tiles[ul_tile.x][ul_tile.y]
-		if ul != TileType.FREE:
-			normal += Vector2(1, 1)
-
-	if check_ur:
-		ur = tiles[ur_tile.x][ur_tile.y]
-		if ur != TileType.FREE:
-			normal += Vector2(-1, 1)
-
-	if check_lr:
-		lr = tiles[lr_tile.x][lr_tile.y]
-		if lr != TileType.FREE:
-			normal += Vector2(-1, -1)
-
-	if check_ll:
-		ll = tiles[ll_tile.x][ll_tile.y]
-		if ll != TileType.FREE:
-			normal += Vector2(1, -1)
-
-	var result: Array = []
-	if ul != TileType.FREE or ur != TileType.FREE or lr != TileType.FREE or ll != TileType.FREE:
-		var hit := Collision.Hit.new()
-		hit.type = Collision.Type.TILE
-		hit.normal = normal
-		result.append(hit)
-
-	return result
-
-
-## Check ball collision against tiles, detecting which edge was actually crossed
-func _check_ball_collision_tiles(ball: Ball) -> Array:
-	var current_rect := ball.ball_bounding_rect()
-	var next_rect := ball.next_bounding_rect()
-
-	const D := 0.01
-	var normal := Vector2.ZERO
-
-	# Check each corner: did it cross into a wall tile?
-	# For each corner, determine if X boundary, Y boundary, or both were crossed
-	var corners_hit := []
-
-	# Upper-left corner
-	var ul_curr_pos := Vector2(current_rect.position.x + D, current_rect.position.y + D)
-	var ul_next_pos := Vector2(next_rect.position.x + D, next_rect.position.y + D)
-	var ul_next := Vector2i(int(ul_next_pos.x), int(ul_next_pos.y))
-	if ul_next.x >= 0 and ul_next.x < TILE_NUM_W and ul_next.y >= 0 and ul_next.y < TILE_NUM_H:
-		if tiles[ul_next.x][ul_next.y] != TileType.FREE:
-			normal += _get_crossing_normal(ul_curr_pos, ul_next_pos, ul_next, 1, 1)
-			corners_hit.append("UL@%s" % ul_next)
-
-	# Upper-right corner
-	var ur_curr_pos := Vector2(current_rect.end.x - D, current_rect.position.y + D)
-	var ur_next_pos := Vector2(next_rect.end.x - D, next_rect.position.y + D)
-	var ur_next := Vector2i(int(ur_next_pos.x), int(ur_next_pos.y))
-	if ur_next.x >= 0 and ur_next.x < TILE_NUM_W and ur_next.y >= 0 and ur_next.y < TILE_NUM_H:
-		if tiles[ur_next.x][ur_next.y] != TileType.FREE:
-			normal += _get_crossing_normal(ur_curr_pos, ur_next_pos, ur_next, -1, 1)
-			corners_hit.append("UR@%s" % ur_next)
-
-	# Lower-right corner
-	var lr_curr_pos := Vector2(current_rect.end.x - D, current_rect.end.y - D)
-	var lr_next_pos := Vector2(next_rect.end.x - D, next_rect.end.y - D)
-	var lr_next := Vector2i(int(lr_next_pos.x), int(lr_next_pos.y))
-	if lr_next.x >= 0 and lr_next.x < TILE_NUM_W and lr_next.y >= 0 and lr_next.y < TILE_NUM_H:
-		if tiles[lr_next.x][lr_next.y] != TileType.FREE:
-			normal += _get_crossing_normal(lr_curr_pos, lr_next_pos, lr_next, -1, -1)
-			corners_hit.append("LR@%s" % lr_next)
-
-	# Lower-left corner
-	var ll_curr_pos := Vector2(current_rect.position.x + D, current_rect.end.y - D)
-	var ll_next_pos := Vector2(next_rect.position.x + D, next_rect.end.y - D)
-	var ll_next := Vector2i(int(ll_next_pos.x), int(ll_next_pos.y))
-	if ll_next.x >= 0 and ll_next.x < TILE_NUM_W and ll_next.y >= 0 and ll_next.y < TILE_NUM_H:
-		if tiles[ll_next.x][ll_next.y] != TileType.FREE:
-			normal += _get_crossing_normal(ll_curr_pos, ll_next_pos, ll_next, 1, -1)
-			corners_hit.append("LL@%s" % ll_next)
-
-	var result: Array = []
-	if not corners_hit.is_empty():
-		# Check which corners hit to determine edge vs corner collision
-		var ul_hit: bool = tiles[ul_next.x][ul_next.y] != TileType.FREE if ul_next.x >= 0 and ul_next.x < TILE_NUM_W and ul_next.y >= 0 and ul_next.y < TILE_NUM_H else false
-		var ur_hit: bool = tiles[ur_next.x][ur_next.y] != TileType.FREE if ur_next.x >= 0 and ur_next.x < TILE_NUM_W and ur_next.y >= 0 and ur_next.y < TILE_NUM_H else false
-		var ll_hit: bool = tiles[ll_next.x][ll_next.y] != TileType.FREE if ll_next.x >= 0 and ll_next.x < TILE_NUM_W and ll_next.y >= 0 and ll_next.y < TILE_NUM_H else false
-		var lr_hit: bool = tiles[lr_next.x][lr_next.y] != TileType.FREE if lr_next.x >= 0 and lr_next.x < TILE_NUM_W and lr_next.y >= 0 and lr_next.y < TILE_NUM_H else false
-
-		# Override normal based on corner hit patterns
-		# Two corners on same edge = edge collision, not corner
-		var adjusted_normal := normal
-		if (ul_hit and ur_hit) and not (ll_hit or lr_hit):
-			# Top edge hit
-			adjusted_normal = Vector2(0, 2)
-		elif (ll_hit and lr_hit) and not (ul_hit or ur_hit):
-			# Bottom edge hit
-			adjusted_normal = Vector2(0, -2)
-		elif (ul_hit and ll_hit) and not (ur_hit or lr_hit):
-			# Left edge hit
-			adjusted_normal = Vector2(2, 0)
-		elif (ur_hit and lr_hit) and not (ul_hit or ll_hit):
-			# Right edge hit
-			adjusted_normal = Vector2(-2, 0)
-
-		var hit := Collision.Hit.new()
-		hit.type = Collision.Type.TILE
-		hit.normal = adjusted_normal
-		result.append(hit)
-
-	return result
-
-
-## Get normal based on which tile boundary was crossed
-## curr_pos: corner's current position (float)
-## next_pos: corner's next position (float)
-## next_tile: the tile the corner moved into
-## nx, ny: the default normal direction for this corner
-func _get_crossing_normal(curr_pos: Vector2, next_pos: Vector2, next_tile: Vector2i, nx: int, ny: int) -> Vector2:
-	# Calculate distance from next position to tile edges
-	# For nx=1 (left-side corner), the relevant X edge is at next_tile.x + 1 (right edge of tile to left)
-	# For nx=-1 (right-side corner), the relevant X edge is at next_tile.x (left edge of tile to right)
-	var tile_edge_x: float = next_tile.x if nx < 0 else next_tile.x + 1
-	var tile_edge_y: float = next_tile.y if ny < 0 else next_tile.y + 1
-
-	# How far did we penetrate past each edge?
-	var penetration_x: float = absf(next_pos.x - tile_edge_x)
-	var penetration_y: float = absf(next_pos.y - tile_edge_y)
-
-	# If penetrations are similar (within epsilon), it's a corner hit
-	const CORNER_EPSILON := 0.5  # Threshold for "close enough" to be a corner
-	var penetration_ratio: float = penetration_x / penetration_y if penetration_y > 0.001 else 999.0
-	if penetration_ratio < 0.001:
-		penetration_ratio = 1.0 / 999.0
-
-	# If ratio is close to 1, both edges were hit nearly simultaneously
-	var is_corner := penetration_ratio > (1.0 / (1.0 + CORNER_EPSILON)) and penetration_ratio < (1.0 + CORNER_EPSILON)
-
-	# Use penetration ratio to determine if it's a corner or edge hit
-	# Penetration ratio close to 1 means both edges hit simultaneously (corner)
-	if is_corner:
-		# True corner hit - penetrations are similar
-		return Vector2(nx, ny)
-	elif penetration_x < penetration_y:
-		# Less X penetration = hit vertical edge first
-		return Vector2(nx, 0)
-	else:
-		# Less Y penetration = hit horizontal edge first
-		return Vector2(0, ny)
 
 
 ## Check if two walls are a paired set (UP/DOWN or LEFT/RIGHT from same origin)
@@ -938,59 +518,6 @@ func _are_paired_walls(wall1: Wall, wall2: Wall) -> bool:
 		   (d1 == Wall.Direction.DOWN and d2 == Wall.Direction.UP) or \
 		   (d1 == Wall.Direction.LEFT and d2 == Wall.Direction.RIGHT) or \
 		   (d1 == Wall.Direction.RIGHT and d2 == Wall.Direction.LEFT)
-
-
-## Get the tip rectangle for a wall (leading edge only)
-## Used for wall-to-wall collision - only the tip triggers collision
-func _get_tip_rect(rect: Rect2, direction: int) -> Rect2:
-	const TIP_SIZE := 0.1  # Small strip representing the tip
-
-	match direction:
-		Wall.Direction.UP:
-			return Rect2(rect.position.x, rect.position.y, rect.size.x, TIP_SIZE)
-		Wall.Direction.DOWN:
-			return Rect2(rect.position.x, rect.end.y - TIP_SIZE, rect.size.x, TIP_SIZE)
-		Wall.Direction.LEFT:
-			return Rect2(rect.position.x, rect.position.y, TIP_SIZE, rect.size.y)
-		Wall.Direction.RIGHT:
-			return Rect2(rect.end.x - TIP_SIZE, rect.position.y, TIP_SIZE, rect.size.y)
-
-	return rect  # Fallback
-
-
-## Check if two rectangles cover any of the same tiles
-func _rects_share_tile(rect1: Rect2, rect2: Rect2) -> bool:
-	# Get tile ranges for each rect
-	var r1_x1 := int(rect1.position.x)
-	var r1_y1 := int(rect1.position.y)
-	var r1_x2 := int(ceil(rect1.end.x - 0.001))  # Exclusive end, small epsilon
-	var r1_y2 := int(ceil(rect1.end.y - 0.001))
-
-	var r2_x1 := int(rect2.position.x)
-	var r2_y1 := int(rect2.position.y)
-	var r2_x2 := int(ceil(rect2.end.x - 0.001))
-	var r2_y2 := int(ceil(rect2.end.y - 0.001))
-
-	# Check if tile ranges overlap
-	var x_overlap := r1_x1 <= r2_x2 and r2_x1 <= r1_x2
-	var y_overlap := r1_y1 <= r2_y2 and r2_y1 <= r1_y2
-
-	return x_overlap and y_overlap
-
-
-## Get the tile coordinates of a wall's tip
-func _get_tip_tile(rect: Rect2, direction: int) -> Vector2i:
-	match direction:
-		Wall.Direction.UP:
-			return Vector2i(int(rect.position.x), int(rect.position.y))
-		Wall.Direction.DOWN:
-			return Vector2i(int(rect.position.x), int(rect.end.y - 0.01))
-		Wall.Direction.LEFT:
-			return Vector2i(int(rect.position.x), int(rect.position.y))
-		Wall.Direction.RIGHT:
-			return Vector2i(int(rect.end.x - 0.01), int(rect.position.y))
-
-	return Vector2i(-1, -1)  # Fallback
 
 
 ## Convert relative position to pixel position
@@ -1104,57 +631,6 @@ func _flood_fill(start_x: int, start_y: int):
 		stack.push_back(Vector2i(x + 1, y))  # Right
 		stack.push_back(Vector2i(x, y + 1))  # Down
 		stack.push_back(Vector2i(x - 1, y))  # Left
-
-
-## Check if ball would be trapped if wall continues growing
-## Returns true if ball has insufficient space to escape after reflecting off wall tip
-func _would_ball_be_trapped(ball: Ball, wall: Wall) -> bool:
-	var ball_rect := ball.ball_bounding_rect()
-	var ball_center := ball_rect.get_center()
-	var check_x := int(ball_center.x)
-	var check_y := int(ball_center.y)
-
-	# Ball needs at least 2 tiles of free space to escape safely
-	const MIN_ESCAPE_SPACE := 2
-
-	match wall.direction:
-		Wall.Direction.DOWN:
-			# Wall going down, ball must escape upward
-			var free := 0
-			for y in range(check_y - 1, 0, -1):
-				if tiles[check_x][y] != TileType.FREE:
-					break
-				free += 1
-			return free < MIN_ESCAPE_SPACE
-
-		Wall.Direction.UP:
-			# Wall going up, ball must escape downward
-			var free := 0
-			for y in range(check_y + 1, TILE_NUM_H - 1):
-				if tiles[check_x][y] != TileType.FREE:
-					break
-				free += 1
-			return free < MIN_ESCAPE_SPACE
-
-		Wall.Direction.RIGHT:
-			# Wall going right, ball must escape leftward
-			var free := 0
-			for x in range(check_x - 1, 0, -1):
-				if tiles[x][check_y] != TileType.FREE:
-					break
-				free += 1
-			return free < MIN_ESCAPE_SPACE
-
-		Wall.Direction.LEFT:
-			# Wall going left, ball must escape rightward
-			var free := 0
-			for x in range(check_x + 1, TILE_NUM_W - 1):
-				if tiles[x][check_y] != TileType.FREE:
-					break
-				free += 1
-			return free < MIN_ESCAPE_SPACE
-
-	return false
 
 
 ## Custom drawing for the board tiles
