@@ -445,10 +445,12 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var rank: int = json.get("rank", 0)
 	var stored: bool = json.get("stored", false)
 	var dry_run: bool = json.get("dry_run", false)
+	var verified: bool = json.get("verified", false)
 	var entries: Array = json.get("entries", [])
 
 	if dry_run:
 		print("      dry_run=true (score not persisted)")
+	print("      verified=%s" % verified)
 
 	# Store for later nickname updates
 	_current_score_id = score_id
