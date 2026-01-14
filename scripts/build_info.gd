@@ -19,18 +19,16 @@ func _init() -> void:
 
 
 func _load_version_override() -> void:
-	if not FileAccess.file_exists(VERSION_OVERRIDE):
+	if not ResourceLoader.exists(VERSION_OVERRIDE):
 		return
-	var content := FileAccess.get_file_as_string(VERSION_OVERRIDE)
-	var match := RegEx.create_from_string('const TAG = "([^"]*)"').search(content)
-	if match:
-		version_tag = match.get_string(1)
+	var script = load(VERSION_OVERRIDE)
+	if script and "TAG" in script:
+		version_tag = script.TAG
 
 
 func _load_config_override() -> void:
-	if not FileAccess.file_exists(CONFIG_OVERRIDE):
+	if not ResourceLoader.exists(CONFIG_OVERRIDE):
 		return
-	var content := FileAccess.get_file_as_string(CONFIG_OVERRIDE)
-	var match := RegEx.create_from_string('const LEADERBOARD_API_URL = "([^"]*)"').search(content)
-	if match:
-		leaderboard_api_url = match.get_string(1)
+	var script = load(CONFIG_OVERRIDE)
+	if script and "LEADERBOARD_API_URL" in script:
+		leaderboard_api_url = script.LEADERBOARD_API_URL
