@@ -20,10 +20,16 @@ const DIR_UP = 0, DIR_DOWN = 1, DIR_LEFT = 2, DIR_RIGHT = 3;
 // Wall velocity (tiles per tick)
 const WALL_VELOCITY = 0.125;
 
+// Spatial grid for O(n) ball-ball collision
+const GRID_CELL_SIZE = 4;  // Tiles per cell
+const GRID_W = Math.ceil(BOARD_W / GRID_CELL_SIZE);  // 8 cells
+const GRID_H = Math.ceil(BOARD_H / GRID_CELL_SIZE);  // 5 cells
+
 // Game state
 let tiles = [];
 let balls = [];
 let walls = [];  // Array of wall objects
+let ballGrid = [];  // 2D array of ball index lists
 
 // Initialize the physics engine
 function init() {
@@ -568,6 +574,101 @@ function calculateNormal(ax, ay, aw, ah, bx, by, bw, bh) {
   }
 }
 
+// Build spatial grid for ball-ball collision optimization
+function buildBallGrid() {
+  // Clear grid
+  ballGrid = [];
+  for (let x = 0; x < GRID_W; x++) {
+    ballGrid[x] = [];
+    for (let y = 0; y < GRID_H; y++) {
+      ballGrid[x][y] = [];
+    }
+  }
+
+  // Add balls to grid cells based on next position
+  for (let i = 0; i < balls.length; i++) {
+    const ball = balls[i];
+    const nextX = ball.x + ball.vx;
+    const nextY = ball.y + ball.vy;
+
+    // Get cell range (ball may span multiple cells)
+    let cx1 = Math.floor(nextX / GRID_CELL_SIZE);
+    let cy1 = Math.floor(nextY / GRID_CELL_SIZE);
+    let cx2 = Math.floor((nextX + BALL_SIZE) / GRID_CELL_SIZE);
+    let cy2 = Math.floor((nextY + BALL_SIZE) / GRID_CELL_SIZE);
+
+    // Clamp to grid bounds
+    cx1 = Math.max(0, Math.min(cx1, GRID_W - 1));
+    cx2 = Math.max(0, Math.min(cx2, GRID_W - 1));
+    cy1 = Math.max(0, Math.min(cy1, GRID_H - 1));
+    cy2 = Math.max(0, Math.min(cy2, GRID_H - 1));
+
+    // Add ball to all cells it overlaps
+    for (let cx = cx1; cx <= cx2; cx++) {
+      for (let cy = cy1; cy <= cy2; cy++) {
+        ballGrid[cx][cy].push(i);
+      }
+    }
+  }
+}
+
+// Check ball vs ball collisions using spatial grid (O(n) for typical distributions)
+// Returns array of collision pairs: [{ ball1: id, ball2: id, normal: {x, y} }, ...]
+function checkBallBallCollisions() {
+  buildBallGrid();
+
+  const collisions = [];
+  const checked = new Set();  // Track checked pairs to avoid duplicates
+
+  for (let i = 0; i < balls.length; i++) {
+    const a = balls[i];
+    const aNextX = a.x + a.vx;
+    const aNextY = a.y + a.vy;
+
+    // Get cells this ball occupies (include adjacent for safety)
+    let cx1 = Math.floor(aNextX / GRID_CELL_SIZE) - 1;
+    let cy1 = Math.floor(aNextY / GRID_CELL_SIZE) - 1;
+    let cx2 = Math.floor((aNextX + BALL_SIZE) / GRID_CELL_SIZE) + 1;
+    let cy2 = Math.floor((aNextY + BALL_SIZE) / GRID_CELL_SIZE) + 1;
+
+    cx1 = Math.max(0, Math.min(cx1, GRID_W - 1));
+    cx2 = Math.max(0, Math.min(cx2, GRID_W - 1));
+    cy1 = Math.max(0, Math.min(cy1, GRID_H - 1));
+    cy2 = Math.max(0, Math.min(cy2, GRID_H - 1));
+
+    // Check against balls in nearby cells
+    for (let cx = cx1; cx <= cx2; cx++) {
+      for (let cy = cy1; cy <= cy2; cy++) {
+        for (const j of ballGrid[cx][cy]) {
+          if (j <= i) continue;  // Only check each pair once (j > i)
+
+          const pairKey = i * 1000 + j;
+          if (checked.has(pairKey)) continue;
+          checked.add(pairKey);
+
+          const b = balls[j];
+          const bNextX = b.x + b.vx;
+          const bNextY = b.y + b.vy;
+
+          // Check if next positions intersect
+          if (rectsIntersect(
+            { x: aNextX, y: aNextY, w: BALL_SIZE, h: BALL_SIZE },
+            { x: bNextX, y: bNextY, w: BALL_SIZE, h: BALL_SIZE }
+          )) {
+            const normal = calculateNormal(
+              aNextX, aNextY, BALL_SIZE, BALL_SIZE,
+              bNextX, bNextY, BALL_SIZE, BALL_SIZE
+            );
+            collisions.push({ ball1: i, ball2: j, normal: normal });
+          }
+        }
+      }
+    }
+  }
+
+  return collisions;
+}
+
 // Apply collision to ball (set reflect flags)
 function applyBallCollision(ballId, normalX, normalY) {
   if (ballId < 0 || ballId >= balls.length) return;
@@ -746,6 +847,15 @@ function tick() {
     }
   }
 
+  // Check ball vs ball collisions
+  const ballBallCollisions = checkBallBallCollisions();
+  for (const collision of ballBallCollisions) {
+    // Ball 1 reflects based on normal (away from ball 2)
+    applyBallCollision(collision.ball1, collision.normal.x, collision.normal.y);
+    // Ball 2 reflects based on opposite normal (away from ball 1)
+    applyBallCollision(collision.ball2, -collision.normal.x, -collision.normal.y);
+  }
+
   // Tick walls (collisions and growth)
   const wallTickEvents = tickWalls();
   wallEvents.push(...wallTickEvents);
@@ -778,7 +888,7 @@ if (typeof module !== 'undefined') {
     arePairedWalls, rectsShareTile, rectsIntersect,
     wallGoForward, wallStop, wallMaterialize,
     checkWallTileCollision, checkWallWallCollision, checkBallWallCollision,
-    rectIntersects, calculateNormal,
+    checkBallBallCollisions, rectIntersects, calculateNormal,
     tickBall, applyBallCollision, moveBall,
     tickCollisions, tickMovement, tickWalls, tick, simulate
   };
