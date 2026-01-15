@@ -16,6 +16,13 @@ func test_web_virtual_keyboard_enabled():
 	return TestRunner.assert_eq(value, "true", "Web export must have experimental_virtual_keyboard=true")
 
 
+func test_ios_share_plugin_enabled():
+	# SharePlugin must be enabled for iOS share functionality to work.
+	var config := _load_export_presets()
+	var value := _get_preset_setting(config, "iOS", "plugins/SharePlugin")
+	return TestRunner.assert_eq(value, "true", "iOS export must have plugins/SharePlugin=true")
+
+
 # =============================================================================
 # Helper functions
 # =============================================================================
@@ -30,7 +37,33 @@ func _load_export_presets() -> String:
 	return content
 
 
-## Get a preset option value from export_presets.cfg
+## Get a preset setting value from export_presets.cfg (anywhere in preset section)
+## Returns the value as string, or empty string if not found
+func _get_preset_setting(config: String, preset_name: String, setting_key: String) -> String:
+	var lines := config.split("\n")
+	var in_target_preset := false
+
+	for line in lines:
+		line = line.strip_edges()
+
+		# Check for new preset header (not options) - resets our state
+		if line.begins_with("[preset.") and line.ends_with("]") and not ".options]" in line:
+			in_target_preset = false
+
+		# Check for preset name
+		if line.begins_with("name="):
+			var name := line.substr(5).strip_edges().trim_prefix("\"").trim_suffix("\"")
+			if name == preset_name:
+				in_target_preset = true
+
+		# Look for the setting anywhere in preset section
+		if in_target_preset and line.begins_with(setting_key + "="):
+			return line.substr(setting_key.length() + 1)
+
+	return ""
+
+
+## Get a preset option value from export_presets.cfg (in .options section)
 ## Returns the value as string, or empty string if not found
 func _get_preset_option(config: String, preset_name: String, option_key: String) -> String:
 	var lines := config.split("\n")
