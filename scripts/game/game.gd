@@ -327,46 +327,28 @@ func _setup_debug_ui():
 	style_hover.set_corner_radius_all(2)
 
 	var buttons := [
-		["+10", func():
-			GameManager.debug_cheated = true
-			GameManager.add_score(10)],
 		["+100", func():
 			GameManager.debug_cheated = true
 			GameManager.add_score(100)],
-		["+1 ball", func():
-			GameManager.debug_cheated = true
-			board.add_ball()
-			GameManager.level += 1
-			GameManager.lives += 1
-			GameManager.level_changed.emit(GameManager.level)
-			GameManager.lives_changed.emit(GameManager.lives)],
-		["+10 ball", func():
-			GameManager.debug_cheated = true
-			for i in 10:
-				board.add_ball()
-			GameManager.level += 10
-			GameManager.lives += 10
-			GameManager.level_changed.emit(GameManager.level)
-			GameManager.lives_changed.emit(GameManager.lives)],
 		["die", func():
 			GameManager.debug_cheated = true
 			GameManager.lose_life()],
-		["game over", func():
+		["g.over", func():
 			GameManager.debug_cheated = true
 			GameManager.lives = 1
 			GameManager.lose_life()],
-		["next lvl", func():
+		["next", func():
 			GameManager.debug_cheated = true
 			GameManager.filled = 75
 			GameManager.level_complete()],
-		["timeout", func():
+		["t.out", func():
 			GameManager.debug_cheated = true
 			GameManager.time = 2
 			GameManager.time_changed.emit(GameManager.time)],
 		["+60s", func():
 			GameManager.time += 60
 			GameManager.time_changed.emit(GameManager.time)],
-		["+1 life", func():
+		["+life", func():
 			GameManager.lives += 1
 			GameManager.lives_changed.emit(GameManager.lives)],
 	]
@@ -374,8 +356,8 @@ func _setup_debug_ui():
 	for btn_data in buttons:
 		var btn := Button.new()
 		btn.text = btn_data[0]
-		btn.custom_minimum_size = Vector2(54, 27)
-		btn.add_theme_font_size_override("font_size", 10)
+		btn.custom_minimum_size = Vector2(40, 22)
+		btn.add_theme_font_size_override("font_size", 9)
 		btn.add_theme_stylebox_override("normal", style)
 		btn.add_theme_stylebox_override("hover", style_hover)
 		btn.add_theme_stylebox_override("pressed", style)
