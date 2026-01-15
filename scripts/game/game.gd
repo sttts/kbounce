@@ -127,69 +127,32 @@ func _unhandled_input(event):
 		vertical_wall = not vertical_wall
 		return
 
-	# Handle mouse button - swipe to determine direction
-	if event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.pressed:
-				# Only start tracking if click is inside board area
-				var board_rect: Rect2 = board.get_board_rect()
-				if board_rect.has_point(event.position):
-					_swipe_start_pos = event.position
-					_swipe_active = true
-			else:
-				# Mouse released - build with current direction if no swipe detected
-				if _swipe_active and _swipe_start_pos != Vector2.ZERO:
-					_build_wall_at(_swipe_start_pos)
-				_swipe_start_pos = Vector2.ZERO
-				_swipe_active = false
-
-	# Handle mouse motion - detect swipe direction
-	elif event is InputEventMouseMotion:
-		if _swipe_active and _swipe_start_pos != Vector2.ZERO:
-			var delta: Vector2 = event.position - _swipe_start_pos
-			# Use max of horizontal/vertical movement (not Euclidean distance)
-			var max_delta := maxf(abs(delta.x), abs(delta.y))
-			if max_delta >= SWIPE_THRESHOLD:
-				# Determine direction from dominant axis
-				if abs(delta.x) > abs(delta.y):
-					vertical_wall = false  # Horizontal swipe = horizontal wall
-				else:
-					vertical_wall = true   # Vertical swipe = vertical wall
-				# Build wall at start position with detected direction
-				_build_wall_at(_swipe_start_pos)
-				_swipe_start_pos = Vector2.ZERO
-				_swipe_active = false
-
-	# Handle touch - same swipe logic
-	elif event is InputEventScreenTouch:
+	# Handle press (mouse left button or touch)
+	var is_press := (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) \
+		or event is InputEventScreenTouch
+	if is_press:
 		if event.pressed:
-			# Only start tracking if touch is inside board area
 			var board_rect: Rect2 = board.get_board_rect()
 			if board_rect.has_point(event.position):
 				_swipe_start_pos = event.position
 				_swipe_active = true
 		else:
-			# Touch released - build with current direction if no swipe detected
 			if _swipe_active and _swipe_start_pos != Vector2.ZERO:
 				_build_wall_at(_swipe_start_pos)
 			_swipe_start_pos = Vector2.ZERO
 			_swipe_active = false
+		return
 
-	elif event is InputEventScreenDrag:
-		if _swipe_active and _swipe_start_pos != Vector2.ZERO:
-			var delta: Vector2 = event.position - _swipe_start_pos
-			# Use max of horizontal/vertical movement (not Euclidean distance)
-			var max_delta := maxf(abs(delta.x), abs(delta.y))
-			if max_delta >= SWIPE_THRESHOLD:
-				# Determine direction from dominant axis
-				if abs(delta.x) > abs(delta.y):
-					vertical_wall = false  # Horizontal swipe = horizontal wall
-				else:
-					vertical_wall = true   # Vertical swipe = vertical wall
-				# Build wall at start position with detected direction
-				_build_wall_at(_swipe_start_pos)
-				_swipe_start_pos = Vector2.ZERO
-				_swipe_active = false
+	# Handle drag (mouse motion or touch drag) - detect swipe direction
+	var is_drag := event is InputEventMouseMotion or event is InputEventScreenDrag
+	if is_drag and _swipe_active and _swipe_start_pos != Vector2.ZERO:
+		var delta: Vector2 = event.position - _swipe_start_pos
+		var max_delta := maxf(abs(delta.x), abs(delta.y))
+		if max_delta >= SWIPE_THRESHOLD:
+			vertical_wall = abs(delta.x) <= abs(delta.y)
+			_build_wall_at(_swipe_start_pos)
+			_swipe_start_pos = Vector2.ZERO
+			_swipe_active = false
 
 
 ## Build wall at screen position
