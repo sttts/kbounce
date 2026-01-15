@@ -598,7 +598,9 @@ func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_ent
 	# Only handle during game over (either sub-state)
 	if not GameManager.is_game_over():
 		return
-	game_over_loading_label.visible = false
+	# Keep failure message visible if retry/report button is showing
+	if not _upload_failed_network and not _upload_failed_rejected:
+		game_over_loading_label.visible = false
 	_clear_game_over_entries()
 
 	const MAX_VISIBLE := 9
