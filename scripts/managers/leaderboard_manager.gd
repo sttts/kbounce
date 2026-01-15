@@ -402,13 +402,6 @@ func capture_screenshot(viewport: Viewport):
 
 ## Submit score to leaderboard (can be called without nickname - update later via PATCH)
 func submit_score(score: int, level: int):
-	# Debug: simulate network failure (check first to always trigger when flag set)
-	if debug_next_upload_fail_network:
-		debug_next_upload_fail_network = false
-		print("[API] DEBUG: Simulating network failure")
-		score_failed.emit("Request failed: Can't connect to host", "debug-net-fail")
-		return
-
 	if score <= 0:
 		# Score of 0 shouldn't be submitted (handled by GameManager skipping leaderboard)
 		return
@@ -445,10 +438,10 @@ func submit_score(score: int, level: int):
 	if _cached_lowest_score == 0 or score > _cached_lowest_score:
 		var replay := ReplayManager.get_replay()
 		if not replay.is_empty():
-			# Debug: modify replay score to trigger server rejection (score mismatch)
+			# Debug: modify replay to trigger server rejection (score mismatch)
 			if debug_next_upload_taint_replay:
 				debug_next_upload_taint_replay = false
-				print("[API] DEBUG: Modifying replay final_score to cause mismatch")
+				print("[API] DEBUG: Tainting replay final_score to cause server rejection")
 				replay["final_score"] = replay.get("final_score", 0) + 1000
 			data["replay"] = replay
 
@@ -487,6 +480,15 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var url: String = _request_urls.get("score", "/score")
 	var request_id := _parse_request_id(headers)
 	print("----> POST %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
+
+	# Debug: simulate network failure after real request completes
+	if debug_next_upload_fail_network:
+		debug_next_upload_fail_network = false
+		print("[API] DEBUG: Simulating network failure")
+		var error_msg := "Request failed: Can't connect to host"
+		score_failed.emit(error_msg, request_id)
+		return
+
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)

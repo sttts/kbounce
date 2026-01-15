@@ -558,6 +558,7 @@ func _on_score_failed(error: String, request_id: String):
 		_upload_failed_rejected = false
 		game_over_loading_label.text = "Upload failed!"
 		game_over_loading_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
+		game_over_loading_label.add_theme_font_size_override("font_size", 18)
 		game_over_loading_label.visible = true
 		_show_retry_button()
 	else:
@@ -568,6 +569,7 @@ func _on_score_failed(error: String, request_id: String):
 		_rejection_request_id = request_id
 		game_over_loading_label.text = "Score rejected!"
 		game_over_loading_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
+		game_over_loading_label.add_theme_font_size_override("font_size", 18)
 		game_over_loading_label.visible = true
 		_show_report_button()
 
@@ -853,9 +855,10 @@ func _hide_retry_report_buttons():
 		_report_button.queue_free()
 		_report_button = null
 	_upload_failed_network = false
-	# Reset label color to default grey
-	game_over_loading_label.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
 	_upload_failed_rejected = false
+	# Reset label styling to default
+	game_over_loading_label.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
+	game_over_loading_label.remove_theme_font_size_override("font_size")
 
 
 func _on_retry_upload_pressed():
