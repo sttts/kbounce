@@ -30,12 +30,17 @@ let tiles = [];
 let balls = [];
 let walls = [];  // Array of wall objects
 let ballGrid = [];  // 2D array of ball index lists
+let tickCounter = 0;  // Global tick counter, incremented at end of tick()
+
+// Replay validation state (null when not validating)
+let replay = null;
 
 // Initialize the physics engine
 function init() {
   tiles = [];
   balls = [];
   walls = [];
+  tickCounter = 0;
   for (let x = 0; x < BOARD_W; x++) {
     tiles[x] = [];
     for (let y = 0; y < BOARD_H; y++) {
@@ -89,6 +94,11 @@ function getTile(x, y) {
   return BORDER;
 }
 
+// Get all tiles (for syncing to GDScript)
+function getTiles() {
+  return tiles;
+}
+
 // Set tiles in a rectangle
 function setTileRect(x1, y1, x2, y2, type) {
   for (let x = x1; x < x2; x++) {
@@ -138,40 +148,8 @@ function addWall(startX, startY, direction) {
     w: 1,
     h: 1
   });
+
   return id;
-}
-
-// Get wall state
-function getWall(id) {
-  if (id >= 0 && id < walls.length) {
-    const w = walls[id];
-    return {
-      id: w.id,
-      startX: w.startX,
-      startY: w.startY,
-      direction: w.direction,
-      building: w.building,
-      x: w.x, y: w.y, w: w.w, h: w.h
-    };
-  }
-  return null;
-}
-
-// Get all walls state
-function getWalls() {
-  return walls.map(w => ({
-    id: w.id,
-    startX: w.startX,
-    startY: w.startY,
-    direction: w.direction,
-    building: w.building,
-    x: w.x, y: w.y, w: w.w, h: w.h
-  }));
-}
-
-// Get wall count
-function getWallCount() {
-  return walls.length;
 }
 
 // Get wall's next bounding rect (after growth)
@@ -434,6 +412,77 @@ function wallMaterialize(wallId, skipStartTile = false) {
   }
 
   return { x1, y1, x2, y2 };
+}
+
+// Temporary tile type for flood fill
+const TEMP = 99;
+
+// Iterative flood fill from a point (marks FREE as TEMP)
+function floodFill(startX, startY) {
+  if (startX < 0 || startX >= BOARD_W || startY < 0 || startY >= BOARD_H) return;
+  if (tiles[startX][startY] !== FREE) return;
+
+  const stack = [[startX, startY]];
+
+  while (stack.length > 0) {
+    const [x, y] = stack.pop();
+    if (x < 0 || x >= BOARD_W || y < 0 || y >= BOARD_H) continue;
+    if (tiles[x][y] !== FREE) continue;
+
+    tiles[x][y] = TEMP;
+
+    stack.push([x + 1, y]);
+    stack.push([x - 1, y]);
+    stack.push([x, y + 1]);
+    stack.push([x, y - 1]);
+  }
+}
+
+// Fill enclosed areas after wall completion
+// Flood fills from all ball positions, then converts unreachable FREE to WALL
+// Returns the new fill percentage
+function fillEnclosedAreas() {
+  // Flood fill from all corners of each ball's bounding rect
+  for (const ball of balls) {
+    const x1 = Math.floor(ball.x);
+    const y1 = Math.floor(ball.y);
+    const x2 = Math.floor(ball.x + BALL_SIZE);
+    const y2 = Math.floor(ball.y + BALL_SIZE);
+
+    floodFill(x1, y1);
+    floodFill(x1, y2);
+    floodFill(x2, y1);
+    floodFill(x2, y2);
+  }
+
+  // Convert remaining FREE to WALL (enclosed), TEMP back to FREE
+  for (let x = 0; x < BOARD_W; x++) {
+    for (let y = 0; y < BOARD_H; y++) {
+      if (tiles[x][y] === FREE) {
+        tiles[x][y] = WALL;
+      } else if (tiles[x][y] === TEMP) {
+        tiles[x][y] = FREE;
+      }
+    }
+  }
+
+  return getFillPercent();
+}
+
+// Calculate current fill percentage (WALL tiles in interior)
+function getFillPercent() {
+  let filledCount = 0;
+  // Count interior tiles (exclude border)
+  for (let x = 1; x < BOARD_W - 1; x++) {
+    for (let y = 1; y < BOARD_H - 1; y++) {
+      if (tiles[x][y] === WALL) {
+        filledCount++;
+      }
+    }
+  }
+  // Interior size is (BOARD_W - 2) * (BOARD_H - 2)
+  const interiorSize = (BOARD_W - 2) * (BOARD_H - 2);
+  return Math.floor(filledCount * 100 / interiorSize);
 }
 
 // Port of _get_crossing_normal from board.gd
@@ -733,6 +782,7 @@ function tickMovement() {
 // Returns array of wall events: { wallId, event: 'die'|'finish'|'wall_collision', ... }
 function tickWalls() {
   const events = [];
+  let anyWallFinished = false;
 
   // Check wall collisions first (before growth)
   for (let i = 0; i < walls.length; i++) {
@@ -754,6 +804,7 @@ function tickWalls() {
       const bounds = wallMaterialize(i, pairedBuilding);
       wallStop(i);
       events.push({ wallId: i, event: 'finish', bounds: bounds });
+      anyWallFinished = true;
       continue;
     }
 
@@ -787,6 +838,7 @@ function tickWalls() {
         const bounds = wallMaterialize(i, pairedBuilding);
         wallStop(i);
         events.push({ wallId: i, event: 'finish', bounds: bounds });
+        anyWallFinished = true;
       }
       continue;
     }
@@ -799,12 +851,32 @@ function tickWalls() {
     }
   }
 
-  return events;
+  // Track if any wall finished (flood fill happens after balls move)
+  return { events, anyWallFinished };
 }
 
-// Full tick: check collisions, apply, and move
-// Returns { balls: array of ball collision info, walls: array of wall events }
-function tick() {
+// Full tick: process actions, check collisions, apply, and move
+// Input: actions - array of wall placements [{x, y, vertical}, ...]
+// Returns { balls, collisions, walls, newWalls, levelComplete, fillPercent }
+function tick(actions) {
+  // Process wall placement actions at start of tick
+  const newWalls = [];
+  if (actions && actions.length > 0) {
+    for (const action of actions) {
+      if (action.vertical) {
+        const id1 = addWall(action.x, action.y, DIR_UP);
+        const id2 = addWall(action.x, action.y, DIR_DOWN);
+        newWalls.push({ id: id1, startX: action.x, startY: action.y, direction: DIR_UP });
+        newWalls.push({ id: id2, startX: action.x, startY: action.y, direction: DIR_DOWN });
+      } else {
+        const id1 = addWall(action.x, action.y, DIR_LEFT);
+        const id2 = addWall(action.x, action.y, DIR_RIGHT);
+        newWalls.push({ id: id1, startX: action.x, startY: action.y, direction: DIR_LEFT });
+        newWalls.push({ id: id2, startX: action.x, startY: action.y, direction: DIR_RIGHT });
+      }
+    }
+  }
+
   const ballCollisions = [];
   const wallEvents = [];
 
@@ -824,11 +896,11 @@ function tick() {
 
       // Kill wall if hit inner area
       if (wallResult.killsWall) {
+        const wall = walls[wallResult.wallId];
         wallStop(wallResult.wallId);
         wallEvents.push({ wallId: wallResult.wallId, event: 'die', ballId: i });
 
         // Kill paired wall too (emits 'die_paired' - no life loss)
-        const wall = walls[wallResult.wallId];
         for (let j = 0; j < walls.length; j++) {
           if (j !== wallResult.wallId && walls[j].building && arePairedWalls(wall, walls[j])) {
             wallStop(j);
@@ -856,16 +928,51 @@ function tick() {
     applyBallCollision(collision.ball2, -collision.normal.x, -collision.normal.y);
   }
 
-  // Tick walls (collisions and growth)
-  const wallTickEvents = tickWalls();
-  wallEvents.push(...wallTickEvents);
+  // Tick walls (collisions and growth) - returns events and whether any wall finished
+  const wallTickResult = tickWalls();
+  wallEvents.push(...wallTickResult.events);
 
   // Move balls
   for (let i = 0; i < balls.length; i++) {
     moveBall(i);
   }
 
-  return { balls: ballCollisions, walls: wallEvents };
+  // Fill enclosed areas AFTER balls move
+  let levelComplete = false;
+  let fillPercent = 0;
+  if (wallTickResult.anyWallFinished) {
+    fillPercent = fillEnclosedAreas();
+    // Add fill percentage to all finish events
+    for (const event of wallEvents) {
+      if (event.event === 'finish') {
+        event.fillPercent = fillPercent;
+      }
+    }
+    if (fillPercent >= 75) {
+      levelComplete = true;
+    }
+  }
+
+  // Increment tick counter at end of tick
+  tickCounter++;
+
+  // Collect active (building) wall states for visual sync
+  const activeWalls = walls
+    .filter(w => w.building)
+    .map(w => ({ id: w.id, x: w.x, y: w.y, w: w.w, h: w.h }));
+
+  // Return full state including tick number
+  return {
+    tick: tickCounter,
+    balls: balls.map(b => ({ id: b.id, x: b.x, y: b.y, vx: b.vx, vy: b.vy })),
+    collisions: ballCollisions,
+    wallEvents,
+    newWalls,
+    activeWalls,
+    tilesChanged: wallTickResult.anyWallFinished,
+    levelComplete,
+    fillPercent
+  };
 }
 
 // Simulate N ticks and return final state (for testing)
@@ -876,20 +983,164 @@ function simulate(ticks) {
   return getBalls();
 }
 
+// Start replay validation mode - sets up state for step-by-step replay
+// Returns initial state. Call replayTick() repeatedly to advance.
+function startReplay(level) {
+  // Initialize physics (same as game does at level start)
+  init();
+
+  // Add balls with initial state (same as game does)
+  for (const ball of level.balls) {
+    addBall(ball.x, ball.y, ball.vx, ball.vy);
+  }
+
+  // Set up replay state (tickCounter was reset by init())
+  replay = {
+    actions: [...level.actions].sort((a, b) => a.t - b.t),
+    actionIndex: 0,
+    checkpoints: level.checkpoints ? [...level.checkpoints].sort((a, b) => a.t - b.t) : [],
+    checkpointIndex: 0,
+    maxTicks: level.result?.tick || 10000,
+    trace: []
+  };
+
+  return { valid: true };
+}
+
+// Process one tick of replay - same as game: tick(actions) then check checkpoint
+function replayStep() {
+  if (!replay) return { done: true };
+
+  const POSITION_TOLERANCE = 0.01;
+  const nextTick = tickCounter + 1;
+
+  // 1. Collect actions for this tick
+  const actions = [];
+  while (replay.actionIndex < replay.actions.length && replay.actions[replay.actionIndex].t === nextTick) {
+    const action = replay.actions[replay.actionIndex];
+    if ("x" in action && "y" in action && "v" in action) {
+      actions.push({ x: action.x, y: action.y, vertical: action.v });
+    }
+    replay.actionIndex++;
+  }
+
+  // 2. Run physics tick with actions - SAME tick() function as game uses
+  // tick() increments tickCounter internally
+  const result = tick(actions);
+
+  // Record trace for debugging (use balls from tick result)
+  if (tickCounter % 10 === 0) {
+    replay.trace.push({
+      t: tickCounter,
+      balls: result.balls.map(b => ({
+        x: Math.round(b.x * 1000) / 1000,
+        y: Math.round(b.y * 1000) / 1000,
+        vx: b.vx,
+        vy: b.vy
+      }))
+    });
+    if (replay.trace.length > 100) replay.trace.shift();
+  }
+
+  // 4. Check checkpoint (tickCounter was incremented by tick())
+  while (replay.checkpointIndex < replay.checkpoints.length &&
+         replay.checkpoints[replay.checkpointIndex].t === tickCounter) {
+    const checkpoint = replay.checkpoints[replay.checkpointIndex];
+    const currentBalls = result.balls;
+
+    if (currentBalls.length !== checkpoint.balls.length) {
+      const errorResult = {
+        valid: false,
+        error: "Ball count mismatch",
+        tick: tickCounter,
+        expected: checkpoint.balls.length,
+        actual: currentBalls.length,
+        trace: replay.trace.slice(-20)
+      };
+      replay = null;
+      return errorResult;
+    }
+
+    for (let i = 0; i < currentBalls.length; i++) {
+      const expected = checkpoint.balls[i];
+      const actual = currentBalls[i];
+      const dx = Math.abs(actual.x - expected.x);
+      const dy = Math.abs(actual.y - expected.y);
+
+      if (dx > POSITION_TOLERANCE || dy > POSITION_TOLERANCE) {
+        // Debug: check tiles between actual and expected x positions
+        const minX = Math.floor(Math.min(expected.x, actual.x));
+        const maxX = Math.ceil(Math.max(expected.x, actual.x) + BALL_SIZE);
+        const ballY = Math.floor(actual.y);
+        const tilesInPath = [];
+        for (let tx = minX; tx <= maxX && tx < BOARD_W; tx++) {
+          if (tx >= 0 && ballY >= 0 && ballY < BOARD_H) {
+            const t = tiles[tx][ballY];
+            tilesInPath.push({ x: tx, y: ballY, type: t === FREE ? "FREE" : t === BORDER ? "BORDER" : "WALL" });
+          }
+        }
+        const errorResult = {
+          valid: false,
+          error: "Ball position mismatch",
+          tick: tickCounter,
+          ball: i,
+          expected: { x: expected.x, y: expected.y },
+          actual: { x: actual.x, y: actual.y },
+          trace: replay.trace.slice(-20),
+          tilesInPath: tilesInPath
+        };
+        replay = null;
+        return errorResult;
+      }
+
+      // Check velocity if recorded
+      if ("vx" in expected && "vy" in expected) {
+        if (actual.vx !== expected.vx || actual.vy !== expected.vy) {
+          const errorResult = {
+            valid: false,
+            error: "Ball velocity mismatch",
+            tick: tickCounter,
+            ball: i,
+            expected: { x: expected.x, y: expected.y, vx: expected.vx, vy: expected.vy },
+            actual: { x: actual.x, y: actual.y, vx: actual.vx, vy: actual.vy },
+            trace: replay.trace.slice(-20)
+          };
+          replay = null;
+          return errorResult;
+        }
+      }
+    }
+    replay.checkpointIndex++;
+  }
+
+  // Check if done
+  if (tickCounter >= replay.maxTicks) {
+    replay = null;
+    return { valid: true, done: true };
+  }
+
+  return { valid: true, done: false };
+}
+
+// Convenience function to validate entire level at once
+function validateLevel(level) {
+  const startResult = startReplay(level);
+  if (!startResult.valid) return startResult;
+
+  while (true) {
+    const result = replayStep();
+    if (!result.valid || result.done) {
+      return result;
+    }
+  }
+}
+
 // Export for CommonJS (Node.js)
 if (typeof module !== 'undefined') {
   module.exports = {
+    // Constants
     VERSION, BOARD_W, BOARD_H, BALL_SIZE, FREE, BORDER, WALL,
-    DIR_UP, DIR_DOWN, DIR_LEFT, DIR_RIGHT, WALL_VELOCITY,
-    init, getVersion, clearBalls, addBall, setTile, getTile, setTileRect,
-    getBall, getBalls, getBallCount,
-    clearWalls, addWall, getWall, getWalls, getWallCount,
-    wallNextRect, wallInnerRect, wallTipTile, wallTipRect,
-    arePairedWalls, rectsShareTile, rectsIntersect,
-    wallGoForward, wallStop, wallMaterialize,
-    checkWallTileCollision, checkWallWallCollision, checkBallWallCollision,
-    checkBallBallCollisions, rectIntersects, calculateNormal,
-    tickBall, applyBallCollision, moveBall,
-    tickCollisions, tickMovement, tickWalls, tick, simulate
+    // Public API (used by GDScript)
+    init, getVersion, addBall, tick, validateLevel, getTiles
   };
 }

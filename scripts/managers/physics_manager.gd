@@ -97,11 +97,6 @@ func _eval(code: String) -> Variant:
 
 
 ## Check if physics is ready
-func is_initialized() -> bool:
-	return _initialized
-
-
-## Alias for is_initialized
 func is_ready() -> bool:
 	return _initialized
 
@@ -118,13 +113,6 @@ func get_version() -> int:
 	return version
 
 
-## Clear all balls
-func clear_balls():
-	if not _initialized:
-		return
-	_eval("clearBalls()")
-
-
 ## Add a ball and return its ID
 func add_ball(x: float, y: float, vx: float, vy: float) -> int:
 	if not _initialized:
@@ -133,133 +121,68 @@ func add_ball(x: float, y: float, vx: float, vy: float) -> int:
 	return int(result) if result != null else -1
 
 
-## Set a tile type
-func set_tile(x: int, y: int, type: int):
-	if not _initialized:
-		return
-	_eval("setTile(%d, %d, %d)" % [x, y, type])
-
-
-## Get a tile type
-func get_tile(x: int, y: int) -> int:
-	if not _initialized:
-		return 2  # BORDER
-	var result = _eval("getTile(%d, %d)" % [x, y])
-	return int(result) if result != null else 2
-
-
-## Set tiles in a rectangle
-func set_tile_rect(x1: int, y1: int, x2: int, y2: int, type: int):
-	if not _initialized:
-		return
-	_eval("setTileRect(%d, %d, %d, %d, %d)" % [x1, y1, x2, y2, type])
-
-
-## Get ball state
-func get_ball(id: int) -> Dictionary:
-	if not _initialized:
-		return {}
-	var result = _eval("getBall(%d)" % id)
-	if result == null or result is bool:
-		return {}
-	return result
-
-
-## Get all balls state
-func get_balls() -> Array:
+## Get tiles (2D array [x][y]) - for rendering
+func get_tiles() -> Array:
 	if not _initialized:
 		return []
-	var result = _eval("getBalls()")
+	var result = _eval("getTiles()")
 	return result if result != null else []
 
 
-## Get ball count
-func get_ball_count() -> int:
+## Tick all physics with wall placement actions
+## actions: array of { x, y, vertical } - wall placements for this tick
+## Returns { tick, balls, collisions, wallEvents, newWalls, activeWalls, tilesChanged, levelComplete, fillPercent }
+func tick(actions: Array = []) -> Dictionary:
+	var empty_result := {
+		"tick": 0, "balls": [], "collisions": [], "wallEvents": [], "newWalls": [],
+		"activeWalls": [], "tilesChanged": false, "levelComplete": false, "fillPercent": 0
+	}
 	if not _initialized:
-		return 0
-	var result = _eval("getBallCount()")
-	return int(result) if result != null else 0
+		return empty_result
 
-
-## Clear all walls
-func clear_walls():
-	if not _initialized:
-		return
-	_eval("clearWalls()")
-
-
-## Add a wall at position with direction and return its ID
-## Direction: 0=UP, 1=DOWN, 2=LEFT, 3=RIGHT
-func add_wall(start_x: int, start_y: int, direction: int) -> int:
-	if not _initialized:
-		return -1
-	var result = _eval("addWall(%d, %d, %d)" % [start_x, start_y, direction])
-	return int(result) if result != null else -1
-
-
-## Get wall state
-func get_wall(id: int) -> Dictionary:
-	if not _initialized:
-		return {}
-	var result = _eval("getWall(%d)" % id)
-	if result == null or result is bool:
-		return {}
-	return result
-
-
-## Get all walls state
-func get_walls() -> Array:
-	if not _initialized:
-		return []
-	var result = _eval("getWalls()")
-	return result if result != null else []
-
-
-## Get wall count
-func get_wall_count() -> int:
-	if not _initialized:
-		return 0
-	var result = _eval("getWallCount()")
-	return int(result) if result != null else 0
-
-
-## Apply collision to ball (used by tests)
-func apply_ball_collision(ball_id: int, normal: Vector2):
-	if not _initialized:
-		return
-	_eval("applyBallCollision(%d, %f, %f)" % [ball_id, normal.x, normal.y])
-
-
-## Tick all physics - returns { balls: Array, walls: Array }
-## balls: array of { hit: bool, normal: Vector2, hitWall: bool, wallId: int }
-## walls: array of { wallId: int, event: String, ... }
-func tick() -> Dictionary:
-	if not _initialized:
-		return { "balls": [], "walls": [] }
-	var result = _eval("tick()")
+	var actions_json := JSON.stringify(actions)
+	var result = _eval("tick(%s)" % actions_json)
 	if result == null:
-		return { "balls": [], "walls": [] }
+		return empty_result
 
-	# Convert ball collision results
-	var ball_collisions: Array = []
-	var balls_result = result.get("balls", [])
-	for r in balls_result:
-		ball_collisions.append({
+	# Convert collision results for sound effects
+	var collisions: Array = []
+	for r in result.get("collisions", []):
+		collisions.append({
 			"hit": r.get("hit", false),
 			"normal": Vector2(r.get("normalX", 0), r.get("normalY", 0)),
 			"hitWall": r.get("hitWall", false),
 			"wallId": int(r.get("wallId", -1))
 		})
 
-	# Wall events are already in right format
-	var wall_events: Array = result.get("walls", [])
+	return {
+		"tick": int(result.get("tick", 0)),
+		"balls": result.get("balls", []),
+		"collisions": collisions,
+		"wallEvents": result.get("wallEvents", []),
+		"newWalls": result.get("newWalls", []),
+		"activeWalls": result.get("activeWalls", []),
+		"tilesChanged": result.get("tilesChanged", false),
+		"levelComplete": result.get("levelComplete", false),
+		"fillPercent": int(result.get("fillPercent", 0))
+	}
 
-	return { "balls": ball_collisions, "walls": wall_events }
 
-
-## Simulate N ticks (for testing)
-func simulate(ticks: int) -> Array:
+## Validate a level replay using the same physics code as the server
+## Returns: { valid: bool, error?: string, tick?: int, ball?: int, expected?: {x, y}, actual?: {x, y} }
+func validate_level(level_data: Dictionary) -> Dictionary:
 	if not _initialized:
-		return []
-	var result = _eval("simulate(%d)" % ticks)
-	return result if result != null else []
+		return { "valid": false, "error": "Physics not initialized" }
+
+	# Convert Dictionary to JSON string for JS
+	var json_str := JSON.stringify(level_data)
+
+	if _is_web:
+		var result_str = JavaScriptBridge.eval("JSON.stringify(physics.validateLevel(%s))" % json_str)
+		if result_str == null:
+			return { "valid": false, "error": "Validation failed on web" }
+		return JSON.parse_string(result_str)
+	else:
+		return _js.eval("validateLevel(%s)" % json_str)
+
+

@@ -54,7 +54,6 @@ func _ready():
 	GameManager.level_changed.connect(_on_level_changed)
 
 	# Connect board signals
-	board.fill_changed.connect(_on_fill_changed)
 	board.wall_died.connect(_on_wall_died)
 
 	# Setup time timer
@@ -232,10 +231,16 @@ func _physics_process(delta: float):
 
 		# Run physics ticks to catch up
 		while _physics_accumulator >= PHYSICS_TICK_TIME:
-			board.tick()
+			var result := board.tick()
 			AudioManager.tick()
-			ReplayManager.tick(board)
+			ReplayManager.update_tick(result.get("tick", 0), result.get("balls", []))
+			GameManager.update_fill(result.get("fillPercent", 0))
 			_physics_accumulator -= PHYSICS_TICK_TIME
+
+			# Check for level completion AFTER tick is fully complete
+			if result.get("levelComplete", false):
+				GameManager.level_complete()
+				break  # Stop processing more ticks this frame
 	else:
 		# Animate balls in all non-running states (demo, paused, game over, etc.)
 		board.animate_balls()
@@ -263,11 +268,6 @@ func _on_time_tick():
 		if GameManager.state == GameManager.GameState.RUNNING:
 			# Still have lives, restart level
 			_start_level()
-
-
-## Fill percentage changed
-func _on_fill_changed(percent: int):
-	GameManager.update_fill(percent)
 
 
 ## Wall destroyed by ball

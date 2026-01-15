@@ -6,14 +6,8 @@
 class_name Wall
 extends Node2D
 
-## Emitted when wall finishes building (reaches edge or other wall)
-signal finished(x1: int, y1: int, x2: int, y2: int)
-
-## Emitted when wall is destroyed by a ball
+## Emitted when wall is destroyed by a ball (costs a life)
 signal died
-
-## Emitted when wall dies from wall-to-wall collision (paired wall should also die)
-signal died_from_wall_collision
 
 ## Wall direction
 enum Direction { UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3 }
@@ -186,48 +180,15 @@ func _draw():
 
 ## Wall completed successfully
 func _finish():
-	if not _building:
-		return
-
-	_building = false
-	visible = false
-
 	AudioManager.play("wallend")
 
-	# Calculate tile bounds from bounding rect
-	var x1 := int(_bounding_rect.position.x)
-	var y1 := int(_bounding_rect.position.y)
-	var x2 := int(ceil(_bounding_rect.end.x))
-	var y2 := int(ceil(_bounding_rect.end.y))
 
-	finished.emit(x1, y1, x2, y2)
-
-
-## Wall destroyed by ball or another wall
+## Wall destroyed by ball (costs a life)
 func die():
-	if not _building:
-		return
-	_building = false
-	visible = false
-
 	AudioManager.play("death")
 	died.emit()
 
 
-## Wall destroyed by wall-to-wall collision (paired wall should also die)
-## Does NOT cost a life - only ball collisions cost lives
+## Wall destroyed by wall-to-wall collision (no life cost)
 func die_from_wall():
-	if not _building:
-		return
-	_building = false
-	visible = false
-
 	AudioManager.play("death")
-	# Don't emit died - wall-to-wall collision doesn't cost a life
-	died_from_wall_collision.emit()
-
-
-## Stop wall construction without finishing or dying (for level reset)
-func stop():
-	_building = false
-	visible = false

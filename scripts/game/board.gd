@@ -8,8 +8,6 @@ extends Node2D
 
 ## Emitted when ball count changes
 signal balls_changed(count: int)
-## Emitted when fill percentage changes
-signal fill_changed(percent: int)
 ## Emitted when a wall is destroyed by a ball
 signal wall_died
 
@@ -20,26 +18,17 @@ const TILE_NUM_H := 20
 ## Tile types
 enum TileType { EMPTY, FREE, BORDER, WALL, TEMP }
 
-## Wall directions for indexing
-const DIR_UP := 0
-const DIR_RIGHT := 1
-const DIR_DOWN := 2
-const DIR_LEFT := 3
-
 ## 2D array of tile states [x][y]
 var tiles: Array = []
 
 ## Size of each tile in pixels
 var tile_size := Vector2i(32, 32)
 
-## Current fill percentage (0-100)
-var filled_percent := 0
-
 ## Active balls on the board
 var balls: Array = []
 
-## Four walls (UP, RIGHT, DOWN, LEFT)
-var walls: Array = []
+## Active walls (js_id → Wall node)
+var _walls: Dictionary = {}
 
 ## Ball velocity (tiles per tick)
 var ball_velocity := 0.125
@@ -64,7 +53,6 @@ func _ready():
 	_ball_scene = preload("res://scenes/game/ball.tscn")
 	_wall_scene = preload("res://scenes/game/wall.tscn")
 
-	_init_walls()
 	clear()
 
 	# JS physics is required
@@ -72,13 +60,13 @@ func _ready():
 		push_error("Board: JS physics not ready - physics will not work!")
 
 
-## Mapping from GDScript wall index to JS wall ID
-var _js_wall_ids: Array[int] = [-1, -1, -1, -1]
-
 ## Initialize JS physics state (call after clear() and before adding balls)
 func _init_js_physics():
 	PhysicsManager.init()
-	_js_wall_ids = [-1, -1, -1, -1]
+	# Clear any leftover walls
+	for wall in _walls.values():
+		wall.queue_free()
+	_walls.clear()
 
 
 ## Sync a ball to JS physics (call after setting position/velocity)
@@ -90,27 +78,16 @@ func _sync_ball_to_js(ball: Ball, ball_id: int):
 		push_warning("Board: JS ball ID mismatch: expected %d, got %d" % [ball_id, id])
 
 
-## Sync ball position from JS physics (call after tick)
-func _sync_ball_from_js(ball: Ball, ball_id: int):
-	var state := PhysicsManager.get_ball(ball_id)
-	if state.is_empty():
+
+
+## Sync all tiles FROM JS physics (physics.js is source of truth)
+func _sync_tiles_from_js():
+	var js_tiles: Array = PhysicsManager.get_tiles()
+	if js_tiles.is_empty():
 		return
-	ball.velocity = Vector2(state.get("vx", 0), state.get("vy", 0))
-	ball.set_relative_pos(state.get("x", 0), state.get("y", 0))
-
-
-## Sync all tiles to JS physics
-func _sync_tiles_to_js():
 	for x in range(TILE_NUM_W):
 		for y in range(TILE_NUM_H):
-			PhysicsManager.set_tile(x, y, tiles[x][y])
-
-
-## Add a wall to JS physics when it starts building
-func _add_wall_to_js(wall_index: int, start_x: int, start_y: int):
-	var wall: Wall = walls[wall_index]
-	var js_id := PhysicsManager.add_wall(start_x, start_y, wall.direction)
-	_js_wall_ids[wall_index] = js_id
+			tiles[x][y] = int(js_tiles[x][y])
 
 
 ## Show demo balls (animated but not moving) for start screen
@@ -154,32 +131,13 @@ func animate_balls():
 		ball.update_visuals()
 
 
-## Stop and hide all walls (for game over / returning to menu)
+## Stop and remove all walls (for game over / returning to menu)
 func hide_walls():
-	for wall in walls:
-		wall.stop()
+	for wall in _walls.values():
+		wall.queue_free()
+	_walls.clear()
 
 
-func _init_walls():
-	# Create 4 walls, one for each direction
-	# Order: UP=0, RIGHT=1, DOWN=2, LEFT=3
-	var directions = [
-		Wall.Direction.UP,
-		Wall.Direction.RIGHT,
-		Wall.Direction.DOWN,
-		Wall.Direction.LEFT
-	]
-
-	for dir in directions:
-		var wall: Wall = _wall_scene.instantiate()
-		wall.direction = dir
-		wall.board = self
-		wall.visible = false
-		wall.died.connect(_on_wall_died)
-		wall.finished.connect(_on_wall_finished.bind(wall))
-		wall.died_from_wall_collision.connect(_on_wall_died_from_collision.bind(wall))
-		walls.append(wall)
-		add_child(wall)
 
 
 ## Clear the board to initial state
@@ -196,7 +154,6 @@ func clear():
 				column.append(TileType.FREE)
 		tiles.append(column)
 
-	filled_percent = 0
 	queue_redraw()
 
 
@@ -212,7 +169,7 @@ func resize(_size: Vector2i) -> Vector2i:
 		ball.resize(tile_size)
 
 	# Resize all walls
-	for wall in walls:
+	for wall in _walls.values():
 		wall.resize(tile_size)
 
 	# Return actual board size
@@ -225,7 +182,6 @@ func resize(_size: Vector2i) -> Vector2i:
 func new_level(level: int):
 	clear()
 	_init_js_physics()
-	fill_changed.emit(filled_percent)
 
 	# Generate seed for deterministic ball placement
 	var level_seed := randi()
@@ -321,21 +277,14 @@ func reverse_balls():
 	print("REVERSED all %d balls" % balls.size())
 
 
-## Reset walls
-	for wall in walls:
-		wall.wall_velocity = wall_velocity
-		wall.stop()
+## Pending wall actions for next tick
+var _pending_actions: Array = []
 
 
-## Build a wall at the given position
+## Queue a wall placement for the next tick
 func build_wall(pos: Vector2, vertical: bool):
-	# Two wall slots: Slot 1 = UP/LEFT, Slot 2 = DOWN/RIGHT
-	# Each slot can have at most one wall building
-	var slot1_busy: bool = walls[DIR_UP].visible or walls[DIR_LEFT].visible
-	var slot2_busy: bool = walls[DIR_DOWN].visible or walls[DIR_RIGHT].visible
-
-	# Need at least one free slot
-	if slot1_busy and slot2_busy:
+	# Max 4 active walls (2 placements × 2 directions each)
+	if _walls.size() >= 4:
 		return
 
 	# Convert pixel position to tile coordinates
@@ -351,125 +300,123 @@ func build_wall(pos: Vector2, vertical: bool):
 		return
 
 	# Cannot start inside another building wall's rectangle
-	for wall: Wall in walls:
-		if wall.visible:
-			var wall_rect: Rect2 = wall.bounding_rect()
-			if tile_x >= int(wall_rect.position.x) and tile_x < int(ceil(wall_rect.end.x)) and \
-			   tile_y >= int(wall_rect.position.y) and tile_y < int(ceil(wall_rect.end.y)):
-				return
+	for wall: Wall in _walls.values():
+		var wall_rect: Rect2 = wall.bounding_rect()
+		if tile_x >= int(wall_rect.position.x) and tile_x < int(ceil(wall_rect.end.x)) and \
+		   tile_y >= int(wall_rect.position.y) and tile_y < int(ceil(wall_rect.end.y)):
+			return
 
-	# Record wall placement for replay
-	ReplayManager.record_wall(tile_x, tile_y, vertical)
-
-	# Start building walls in available slots
-	if vertical:
-		if not slot1_busy:
-			walls[DIR_UP].build(tile_x, tile_y)
-			_add_wall_to_js(DIR_UP, tile_x, tile_y)
-		if not slot2_busy:
-			walls[DIR_DOWN].build(tile_x, tile_y)
-			_add_wall_to_js(DIR_DOWN, tile_x, tile_y)
-	else:
-		if not slot1_busy:
-			walls[DIR_LEFT].build(tile_x, tile_y)
-			_add_wall_to_js(DIR_LEFT, tile_x, tile_y)
-		if not slot2_busy:
-			walls[DIR_RIGHT].build(tile_x, tile_y)
-			_add_wall_to_js(DIR_RIGHT, tile_x, tile_y)
+	# Queue action for next tick (will be passed to tick())
+	_pending_actions.append({"x": tile_x, "y": tile_y, "vertical": vertical})
 
 
 ## Game tick - called once per frame
-func tick():
+## Returns { tick: int, levelComplete: bool, fillPercent: int }
+func tick() -> Dictionary:
 	var start := Time.get_ticks_usec()
 
-	_tick_physics()
+	# Record pending actions for replay before passing to physics
+	for action in _pending_actions:
+		ReplayManager.record_wall(action.x, action.y, action.vertical)
+
+	# Pass pending actions to physics - this is the ONLY way walls are placed
+	var result := _tick_physics(_pending_actions)
+	_pending_actions.clear()
 
 	# Record timing and print stats
 	_tick_times.append((Time.get_ticks_usec() - start) / 1000.0)
 	_print_stats()
 
+	return result
+
 
 ## Tick physics (JS is source of truth)
-func _tick_physics():
-	# Run JS physics tick (handles all collisions: ball vs tile, ball vs wall, wall vs tile/wall)
-	var js_result: Dictionary = PhysicsManager.tick()
-	var js_ball_collisions: Array = js_result.get("balls", [])
-	var js_wall_events: Array = js_result.get("walls", [])
+## Returns { tick, balls, levelComplete, fillPercent, tilesChanged }
+func _tick_physics(actions: Array) -> Dictionary:
+	var js_result: Dictionary = PhysicsManager.tick(actions)
+	var js_balls: Array = js_result.get("balls", [])
+	var js_collisions: Array = js_result.get("collisions", [])
+	var js_wall_events: Array = js_result.get("wallEvents", [])
+	var js_new_walls: Array = js_result.get("newWalls", [])
+	var js_active_walls: Array = js_result.get("activeWalls", [])
 
-	# Process ball collision results
+	# Create wall visuals for newly created walls
+	for new_wall in js_new_walls:
+		var js_id: int = int(new_wall.get("id", -1))
+		var start_x: int = int(new_wall.get("startX", 0))
+		var start_y: int = int(new_wall.get("startY", 0))
+		var direction: int = int(new_wall.get("direction", 0))
+
+		var wall: Wall = _wall_scene.instantiate()
+		wall.direction = direction
+		wall.wall_velocity = wall_velocity
+		wall.board = self
+		wall.resize(tile_size)
+		wall.died.connect(_on_wall_died.bind(wall))
+		add_child(wall)
+		_walls[js_id] = wall
+		wall.build(start_x, start_y)
+
+	# Process ball collision results (for sound effects)
 	for i in range(balls.size()):
 		var hits: Array = []
-		if i < js_ball_collisions.size():
-			var collision: Dictionary = js_ball_collisions[i]
+		if i < js_collisions.size():
+			var collision: Dictionary = js_collisions[i]
 			if collision.get("hit", false):
 				var hit := Collision.Hit.new()
-				if collision.get("hitWall", false):
-					hit.type = Collision.Type.WALL
-				else:
-					hit.type = Collision.Type.TILE
+				hit.type = Collision.Type.WALL if collision.get("hitWall", false) else Collision.Type.TILE
 				hit.normal = collision.get("normal", Vector2.ZERO)
 				hits.append(hit)
-		# Always call collide to decrement sound delay
 		balls[i].collide(hits)
 
-	# Process wall events from JS
+	# Process wall events
 	for event in js_wall_events:
-		var js_wall_id: int = int(event.get("wallId", -1))
+		var js_id: int = int(event.get("wallId", -1))
 		var event_type: String = event.get("event", "")
-
-		# Find the GDScript wall that corresponds to this JS wall ID
-		var gd_wall_index := -1
-		for i in range(4):
-			if _js_wall_ids[i] == js_wall_id:
-				gd_wall_index = i
-				break
-
-		if gd_wall_index < 0:
+		var wall: Wall = _walls.get(js_id)
+		if wall == null:
 			continue
-
-		var wall: Wall = walls[gd_wall_index]
 
 		match event_type:
 			"die":
-				# Wall killed by ball - triggers life loss
 				wall.die()
-				_js_wall_ids[gd_wall_index] = -1
-			"die_paired":
-				# Paired wall killed when its partner was hit - no life loss
+			"die_paired", "wall_collision":
 				wall.die_from_wall()
-				_js_wall_ids[gd_wall_index] = -1
 			"finish":
-				# Wall completed - materialize tiles
-				var bounds: Dictionary = event.get("bounds", {})
-				var x1: int = int(bounds.get("x1", 0))
-				var y1: int = int(bounds.get("y1", 0))
-				var x2: int = int(bounds.get("x2", 0))
-				var y2: int = int(bounds.get("y2", 0))
 				wall._finish()
-				_js_wall_ids[gd_wall_index] = -1
-				# Note: _on_wall_finished will be called by the signal
-			"wall_collision":
-				# Wall killed by another wall - no life loss
-				wall.die_from_wall()
-				_js_wall_ids[gd_wall_index] = -1
+		_walls.erase(js_id)
+		wall.queue_free()
 
-	# Sync ball positions from JS and update visuals
+	# Sync ball positions and update visuals
 	for i in range(balls.size()):
-		_sync_ball_from_js(balls[i], i)
+		if i < js_balls.size():
+			var state: Dictionary = js_balls[i]
+			balls[i].velocity = Vector2(state.get("vx", 0), state.get("vy", 0))
+			balls[i].set_relative_pos(state.get("x", 0), state.get("y", 0))
 		balls[i].update_visuals()
 
-	# Update wall visuals (JS handles growth, but GDScript walls need to sync)
-	for i in range(4):
-		var wall: Wall = walls[i]
-		if wall.visible and _js_wall_ids[i] >= 0:
-			# Sync wall rect from JS
-			var js_wall: Dictionary = PhysicsManager.get_wall(_js_wall_ids[i])
-			if not js_wall.is_empty():
-				wall._bounding_rect = Rect2(
-					js_wall.get("x", 0), js_wall.get("y", 0),
-					js_wall.get("w", 1), js_wall.get("h", 1)
-				)
+	# Sync wall visuals from activeWalls
+	for active_wall in js_active_walls:
+		var js_id: int = int(active_wall.get("id", -1))
+		var wall: Wall = _walls.get(js_id)
+		if wall:
+			wall._bounding_rect = Rect2(
+				active_wall.get("x", 0), active_wall.get("y", 0),
+				active_wall.get("w", 1), active_wall.get("h", 1)
+			)
 			wall.update_visuals()
+
+	# Sync tiles only when changed
+	if js_result.get("tilesChanged", false):
+		_sync_tiles_from_js()
+		queue_redraw()
+
+	return {
+		"tick": js_result.get("tick", 0),
+		"balls": js_balls,
+		"levelComplete": js_result.get("levelComplete", false),
+		"fillPercent": js_result.get("fillPercent", 0)
+	}
 
 
 ## Print performance stats (called from tick)
@@ -511,22 +458,6 @@ func _print_stats():
 	_last_stats_time = now
 
 
-## Check if two walls are a paired set (UP/DOWN or LEFT/RIGHT from same origin)
-## Paired walls extend in opposite directions from the same click point
-func _are_paired_walls(wall1: Wall, wall2: Wall) -> bool:
-	# Must share the same starting position
-	if wall1.start_x != wall2.start_x or wall1.start_y != wall2.start_y:
-		return false
-
-	# UP(0) pairs with DOWN(1), LEFT(2) pairs with RIGHT(3)
-	var d1 := wall1.direction
-	var d2 := wall2.direction
-	return (d1 == Wall.Direction.UP and d2 == Wall.Direction.DOWN) or \
-		   (d1 == Wall.Direction.DOWN and d2 == Wall.Direction.UP) or \
-		   (d1 == Wall.Direction.LEFT and d2 == Wall.Direction.RIGHT) or \
-		   (d1 == Wall.Direction.RIGHT and d2 == Wall.Direction.LEFT)
-
-
 ## Convert relative position to pixel position
 func map_position(relative_pos: Vector2) -> Vector2:
 	return Vector2(tile_size.x * relative_pos.x, tile_size.y * relative_pos.y)
@@ -538,106 +469,8 @@ func get_board_rect() -> Rect2:
 
 
 ## Handle wall death (hit by ball)
-func _on_wall_died():
-	ReplayManager.record_wall_killed()
+func _on_wall_died(_wall: Wall):
 	wall_died.emit()
-
-
-## Handle wall death from wall-to-wall collision (kill paired wall too)
-func _on_wall_died_from_collision(wall: Wall):
-	# Find and kill the paired wall (same start position, opposite direction)
-	# Use die_from_wall() so it doesn't cost a life
-	for other_wall in walls:
-		if other_wall != wall and other_wall.visible:
-			if _are_paired_walls(wall, other_wall):
-				other_wall.die_from_wall()
-
-
-## Handle wall completion
-func _on_wall_finished(x1: int, y1: int, x2: int, y2: int, wall: Wall):
-	# Check if paired wall is still building
-	var paired_wall_active := false
-	var start_x := wall.start_x
-	var start_y := wall.start_y
-	for other_wall in walls:
-		if other_wall != wall and other_wall.visible:
-			if _are_paired_walls(wall, other_wall):
-				paired_wall_active = true
-				break
-
-	# Mark tiles as wall (skip starting tile if paired wall still active)
-	for x in range(x1, x2):
-		for y in range(y1, y2):
-			if x >= 0 and x < TILE_NUM_W and y >= 0 and y < TILE_NUM_H:
-				# Skip starting tile if paired wall is still building
-				if paired_wall_active and x == start_x and y == start_y:
-					continue
-				tiles[x][y] = TileType.WALL
-
-	# Flood fill from each ball position to mark reachable areas as TEMP
-	for ball in balls:
-		var ball_rect: Rect2 = ball.ball_bounding_rect()
-		var bx1 := int(ball_rect.position.x)
-		var by1 := int(ball_rect.position.y)
-		var bx2 := int(ball_rect.end.x)
-		var by2 := int(ball_rect.end.y)
-
-		# Fill from all corners of ball bounding rect
-		_flood_fill(bx1, by1)
-		_flood_fill(bx1, by2)
-		_flood_fill(bx2, by1)
-		_flood_fill(bx2, by2)
-
-	# Convert remaining FREE to WALL, TEMP back to FREE
-	for x in range(TILE_NUM_W):
-		for y in range(TILE_NUM_H):
-			if tiles[x][y] == TileType.FREE:
-				tiles[x][y] = TileType.WALL
-			elif tiles[x][y] == TileType.TEMP:
-				tiles[x][y] = TileType.FREE
-
-	# Calculate fill percentage
-	var filled_count := 0
-	for x in range(1, TILE_NUM_W - 1):
-		for y in range(1, TILE_NUM_H - 1):
-			if tiles[x][y] == TileType.WALL:
-				filled_count += 1
-
-	filled_percent = filled_count * 100 / ((TILE_NUM_W - 2) * (TILE_NUM_H - 2))
-	fill_changed.emit(filled_percent)
-
-	# Sync tiles to JS physics
-	_sync_tiles_to_js()
-
-	queue_redraw()
-
-
-## Iterative flood fill algorithm (avoids stack overflow on iOS)
-func _flood_fill(start_x: int, start_y: int):
-	if start_x < 0 or start_x >= TILE_NUM_W or start_y < 0 or start_y >= TILE_NUM_H:
-		return
-	if tiles[start_x][start_y] != TileType.FREE:
-		return
-
-	var stack: Array[Vector2i] = [Vector2i(start_x, start_y)]
-
-	while not stack.is_empty():
-		var pos: Vector2i = stack.pop_back()
-		var x: int = pos.x
-		var y: int = pos.y
-
-		if x < 0 or x >= TILE_NUM_W or y < 0 or y >= TILE_NUM_H:
-			continue
-		if tiles[x][y] != TileType.FREE:
-			continue
-
-		tiles[x][y] = TileType.TEMP
-
-		# Add adjacent tiles to stack
-		stack.push_back(Vector2i(x, y - 1))  # Up
-		stack.push_back(Vector2i(x + 1, y))  # Right
-		stack.push_back(Vector2i(x, y + 1))  # Down
-		stack.push_back(Vector2i(x - 1, y))  # Left
 
 
 ## Custom drawing for the board tiles

@@ -134,13 +134,11 @@ func add_score(points: int):
 	score_changed.emit(score)
 
 
-## Called when fill percentage changes
+## Called when fill percentage changes (UI update only)
+## Note: Level completion is detected from tick() return value, not from fill percentage
 func update_fill(percent: int):
 	filled = percent
 	fill_changed.emit(filled)
-
-	if filled >= MIN_FILL_PERCENT:
-		level_complete()
 
 
 ## Points per remaining life
@@ -152,8 +150,8 @@ func level_complete():
 	# Stop game immediately (no more ball movement, collisions, or time updates)
 	_change_state(GameState.BETWEEN_LEVELS)
 
-	# Record level completion for replay
-	ReplayManager.record_level_complete(filled, time, lives, score)
+	# Stop recording this level (captures physics data)
+	ReplayManager.stop_level(filled, time, lives, score, true)
 
 	# Wait 1 second for walls to finish building animation before showing overlay
 	await get_tree().create_timer(1.0).timeout
@@ -212,8 +210,8 @@ func is_game_over() -> bool:
 
 ## Start the game over flow
 func start_game_over():
-	# Record level failure and stop replay
-	ReplayManager.record_level_failed(filled, time, lives, score)
+	# Stop recording this level and the entire game
+	ReplayManager.stop_level(filled, time, lives, score, false)
 	ReplayManager.stop_game(score, level)
 
 	# Skip leaderboard for score = 0 (died on first level without points)
