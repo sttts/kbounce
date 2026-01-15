@@ -1,30 +1,27 @@
 # Rules of KBounce
 
-## Game/Level Length
+## Game
 
-1. The game will be over if:
-   - your number of lives is zero, or
-   - your time is over.
-2. When at least 75% of the field is filled, a level is completed.
+1. Fill 75% of the field to advance.
+2. Game over when lives reach zero or time runs out.
 
 ## Lives
 
-3. A level is started with one life per ball on the field.
-4. You lose a life if a ball hits the inner part of a building wall.
+3. Start with one life per ball.
+4. Lose a life if a ball hits the inner part of a building wall.
 
 ## Balls
 
-5. Each level includes one more ball.
-6. A ball is reflected by borders, filled walls, and building walls.
+5. Each level adds one more ball.
+6. Balls reflect off borders, filled walls, and building walls.
 
 ## Walls
 
 7. Tap/click to build a wall. Swipe to change direction.
-8. You can _always_ build _two_ wall halves concurrently. If one half is already finished, you can build another wall half.
-9. A wall half is finished when its tip reaches a border or filled wall. Ball hitting the tip does nothing (tip is protected).
-10. A wall half is removed if:
-    - a ball hits the inner part (non-tip), or
-    - two wall halves hit each other with their tips.
+8. Two wall halves can build at once.
+9. A wall half finishes when its tip reaches a border, filled wall, or another building wall.
+10. Ball hitting the tip finishes the wall shortened.
+11. A wall half is removed if a ball hits the inner part (non-tip).
 
 ---
 
@@ -42,17 +39,21 @@
 - LEFT wall: tip at left (lowest x)
 - RIGHT wall: tip at right (highest x)
 
-## Collision Detection
+## Wall vs Border/Filled Collision
 
 - Only the tip is checked for collision with borders/filled walls
 - Tip still in starting tile: no collision check (overlap allowed at start)
 
+## Ball vs Wall Collision
+
+- Ball hits inner area: wall dies, ball reflects
+- Ball hits tip area: wall finishes shortened, ball reflects
+- Tip hit only counts if collision normal matches wall orientation
+
 ## Wall-to-Wall Collision
 
-1. My tip overlaps other wall's bounding rectangle: collision detected
-2. Check if tip rectangles cover any same tile:
-   - **YES** (tip-to-tip): Both walls removed, paired walls also removed
-   - **NO** (tip-to-inner): Hitting wall materializes
+- If my tip overlaps another wall's bounding rectangle: I finish (materialize)
+- Paired walls skip collision check with each other
 
 ## Starting Tile Fill
 

@@ -738,14 +738,16 @@ Lives
 3. Start with one life per ball.
 4. Lose a life if a ball hits the inner part of a building wall.
 
+Balls
+5. Each level adds one more ball.
+6. Balls reflect off borders, filled walls, and building walls.
+
 Walls
-5. Tap/click to build a wall. Swipe to change direction.
-6. Two wall halves can build at once.
-7. A wall half finishes when its tip reaches a border or filled wall.
-8. Ball hitting the tip does nothing (tip is protected).
-9. A wall half is removed if:
-   - a ball hits the inner part (non-tip), or
-   - two wall halves hit each other with their tips.
+7. Tap/click to build a wall. Swipe to change direction.
+8. Two wall halves can build at once.
+9. A wall half finishes when its tip reaches a border, filled wall, or another building wall.
+10. Ball hitting the tip finishes the wall shortened.
+11. A wall half is removed if a ball hits the inner part (non-tip).
 
 Built with:
 Godot Engine
