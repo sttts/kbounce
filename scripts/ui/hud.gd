@@ -30,6 +30,7 @@ var _user_entry: Node = null
 @onready var game_over_overlay: Control = $GameOverOverlay
 @onready var game_over_share_button: Button = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer/ShareButton
 @onready var game_over_new_game_button: Button = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer/NewGameButton
+@onready var game_over_buttons_container: HBoxContainer = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer
 @onready var game_over_entries_container: VBoxContainer = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/ScrollContainer/EntriesContainer
 @onready var game_over_loading_label: Label = $GameOverOverlay/CenterContainer/Panel/HBox/VBox/LoadingLabel
 @onready var level_complete_overlay: Control = $LevelCompleteOverlay
@@ -53,6 +54,15 @@ var _user_entry: Node = null
 
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
+
+## Retry, report, and ignore buttons (created dynamically)
+var _retry_button: Button = null
+var _report_button: Button = null
+var _ignore_button: Button = null
+## Track upload failure state
+var _upload_failed_network: bool = false
+var _upload_failed_rejected: bool = false
+var _rejection_error: String = ""
 
 ## Debug mode click counter
 var _debug_click_count := 0
@@ -500,6 +510,9 @@ func _on_game_over_for_leaderboard():
 	# Reset nickname rejection state
 	_nickname_rejected = false
 
+	# Reset upload failure state and hide any retry/report buttons
+	_hide_retry_report_buttons()
+
 	# Clear previous entries
 	_clear_game_over_entries()
 	_user_entry = null
@@ -521,8 +534,9 @@ func _on_game_over_for_leaderboard():
 
 
 func _on_score_submitted(_score_id: String, _update_token: String, _rank: int, _stored: bool):
+	# Hide retry/report buttons on successful submission
+	_hide_retry_report_buttons()
 	# Note: leaderboard entries come with the score response, no need to request separately
-	pass
 
 
 func _on_score_failed(error: String):
@@ -533,8 +547,28 @@ func _on_score_failed(error: String):
 	# Show user-facing errors (like profanity filter)
 	if error == "Nickname not allowed":
 		_show_error_notification(error)
+		LeaderboardManager.load_leaderboard()
+		return
 
-	# Score submission failed, try to load leaderboard as fallback
+	# Detect network failures vs server rejections
+	var is_network_error := error.begins_with("Request failed:") or error.contains("connect") or error.contains("timeout")
+
+	if is_network_error:
+		_upload_failed_network = true
+		_upload_failed_rejected = false
+		game_over_loading_label.text = "Upload failed"
+		game_over_loading_label.visible = true
+		_show_retry_button()
+	else:
+		# Server rejected the score (validation failed, etc.)
+		_upload_failed_network = false
+		_upload_failed_rejected = true
+		_rejection_error = error
+		game_over_loading_label.text = "Score rejected"
+		game_over_loading_label.visible = true
+		_show_report_button()
+
+	# Load leaderboard as fallback
 	LeaderboardManager.load_leaderboard()
 
 
@@ -786,3 +820,88 @@ func _on_rate_limit_tick():
 			LeaderboardManager.load_leaderboard()
 	else:
 		game_over_loading_label.text = "Rate limited. Retry in %ds..." % _rate_limit_remaining
+
+
+func _show_retry_button():
+	_hide_retry_report_buttons()
+
+	# Create retry button
+	_retry_button = Button.new()
+	_retry_button.text = "Retry"
+	_retry_button.custom_minimum_size = Vector2(80, 48)
+	_retry_button.pressed.connect(_on_retry_upload_pressed)
+	game_over_buttons_container.add_child(_retry_button)
+	game_over_buttons_container.move_child(_retry_button, 0)
+
+	# Create ignore button
+	_create_ignore_button()
+
+
+func _show_report_button():
+	_hide_retry_report_buttons()
+
+	# Create report button
+	_report_button = Button.new()
+	_report_button.text = "Report"
+	_report_button.custom_minimum_size = Vector2(80, 48)
+	_report_button.pressed.connect(_on_report_rejection_pressed)
+	game_over_buttons_container.add_child(_report_button)
+	game_over_buttons_container.move_child(_report_button, 0)
+
+	# Create ignore button
+	_create_ignore_button()
+
+
+func _create_ignore_button():
+	_ignore_button = Button.new()
+	_ignore_button.text = "Ignore"
+	_ignore_button.custom_minimum_size = Vector2(80, 48)
+	_ignore_button.pressed.connect(_on_ignore_failure_pressed)
+	game_over_buttons_container.add_child(_ignore_button)
+	game_over_buttons_container.move_child(_ignore_button, 1)
+
+
+func _hide_retry_report_buttons():
+	if _retry_button != null:
+		_retry_button.queue_free()
+		_retry_button = null
+	if _report_button != null:
+		_report_button.queue_free()
+		_report_button = null
+	if _ignore_button != null:
+		_ignore_button.queue_free()
+		_ignore_button = null
+	_upload_failed_network = false
+	_upload_failed_rejected = false
+
+
+func _on_retry_upload_pressed():
+	_hide_retry_report_buttons()
+	game_over_loading_label.text = "Retrying..."
+	game_over_loading_label.visible = true
+
+	# Request new token and resubmit
+	LeaderboardManager.request_game_token()
+	# Wait for token then submit (the game_over flow will handle this)
+	await LeaderboardManager.token_received
+	if GameManager.is_game_over():
+		LeaderboardManager.submit_score(GameManager.score, GameManager.level)
+
+
+func _on_ignore_failure_pressed():
+	_hide_retry_report_buttons()
+	game_over_loading_label.visible = false
+
+
+func _on_report_rejection_pressed():
+	# Open GitHub issue with pre-filled title and body
+	var title := "Score rejected: " + _rejection_error
+	var body := "**Error:** " + _rejection_error + "\n\n"
+	body += "**Score:** " + str(GameManager.score) + "\n"
+	body += "**Level:** " + str(GameManager.level) + "\n"
+	body += "**Version:** " + BuildInfo.version_tag + "\n"
+	body += "**Platform:** " + OS.get_name() + "\n\n"
+	body += "Please describe what happened:\n\n"
+
+	var url := "https://github.com/sttts/kbounce/issues/new?title=" + title.uri_encode() + "&body=" + body.uri_encode()
+	OS.shell_open(url)
