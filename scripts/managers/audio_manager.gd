@@ -38,7 +38,6 @@ func _ready():
 		"ball_bounce": preload("res://assets/sounds/ball-bounce.ogg"),
 		"ball_bounce_wall": preload("res://assets/sounds/ball-bounce-wall.ogg"),
 		"death": preload("res://assets/sounds/death.ogg"),
-		"reflect": preload("res://assets/sounds/reflect.ogg"),
 		"seconds": preload("res://assets/sounds/seconds.ogg"),
 		"timeout": preload("res://assets/sounds/timeout.ogg"),
 		"wallstart": preload("res://assets/sounds/wallstart.ogg"),

@@ -128,7 +128,7 @@ func _unhandled_input(event):
 		return
 
 	# Handle press (mouse left button or touch)
-	var is_press := (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) \
+	var is_press: bool = (event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT) \
 		or event is InputEventScreenTouch
 	if is_press:
 		if event.pressed:
@@ -144,7 +144,7 @@ func _unhandled_input(event):
 		return
 
 	# Handle drag (mouse motion or touch drag) - detect swipe direction
-	var is_drag := event is InputEventMouseMotion or event is InputEventScreenDrag
+	var is_drag: bool = event is InputEventMouseMotion or event is InputEventScreenDrag
 	if is_drag and _swipe_active and _swipe_start_pos != Vector2.ZERO:
 		var delta: Vector2 = event.position - _swipe_start_pos
 		var max_delta := maxf(abs(delta.x), abs(delta.y))
