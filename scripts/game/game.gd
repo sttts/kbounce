@@ -39,7 +39,7 @@ var vertical_wall := true:
 ## Swipe tracking (works for both mouse and touch)
 var _swipe_start_pos := Vector2.ZERO
 var _swipe_active := false
-const SWIPE_THRESHOLD := 20.0  # Pixels to determine swipe direction
+const SWIPE_THRESHOLD := 16.0  # Pixels to determine swipe direction
 const TAP_THRESHOLD := 7.0  # Max movement to count as a tap
 
 ## Physics time accumulator for fixed timestep
