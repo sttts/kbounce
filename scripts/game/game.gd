@@ -148,15 +148,26 @@ func _unhandled_input(event):
 		return
 
 	# Handle drag (mouse motion or touch drag) - detect swipe direction
+	# Requires 2:1 ratio between axes for clearer intent detection
 	var is_drag: bool = event is InputEventMouseMotion or event is InputEventScreenDrag
 	if is_drag and _swipe_active and _swipe_start_pos != Vector2.ZERO:
 		var delta: Vector2 = event.position - _swipe_start_pos
-		var max_delta := maxf(abs(delta.x), abs(delta.y))
+		var abs_x := abs(delta.x)
+		var abs_y := abs(delta.y)
+		var max_delta := maxf(abs_x, abs_y)
 		if max_delta >= SWIPE_THRESHOLD:
-			vertical_wall = abs(delta.x) <= abs(delta.y)
-			_build_wall_at(_swipe_start_pos)
-			_swipe_start_pos = Vector2.ZERO
-			_swipe_active = false
+			# Require 2:1 ratio for direction detection
+			if abs_y > 2.0 * abs_x:
+				vertical_wall = true
+				_build_wall_at(_swipe_start_pos)
+				_swipe_start_pos = Vector2.ZERO
+				_swipe_active = false
+			elif abs_x > 2.0 * abs_y:
+				vertical_wall = false
+				_build_wall_at(_swipe_start_pos)
+				_swipe_start_pos = Vector2.ZERO
+				_swipe_active = false
+			# Otherwise keep waiting for clearer direction
 
 
 ## Build wall at screen position
