@@ -9,6 +9,7 @@ var _entry_scene: PackedScene = preload("res://scenes/ui/leaderboard_entry.tscn"
 @onready var main_menu: Control = $MainMenu
 @onready var game_container: Control = $GameContainer
 @onready var new_game_button: Button = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox/NewGameButton
+@onready var appstore_button: TextureButton = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox/AppStoreButton
 @onready var entries_container: VBoxContainer = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/ScrollContainer/EntriesContainer
 @onready var scroll_container: ScrollContainer = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/ScrollContainer
 
@@ -32,6 +33,10 @@ func _ready():
 		new_game_button.pressed.connect(_on_new_game_pressed)
 	else:
 		push_error("new_game_button is null!")
+
+	# App Store button: visible on web or when running from editor (IDE)
+	appstore_button.visible = OS.has_feature("web") or OS.has_feature("editor")
+	appstore_button.pressed.connect(_on_appstore_button_pressed)
 
 	GameManager.game_over.connect(_on_game_over)
 	GameManager.state_changed.connect(_on_state_changed)
@@ -58,6 +63,14 @@ func _on_new_game_pressed():
 		game.new_game()
 	else:
 		push_error("Game node not found!")
+
+
+func _on_appstore_button_pressed():
+	var url := "https://apps.apple.com/de/app/kbounce/id6757555544"
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("window.open('%s', '_blank')" % url)
+	else:
+		OS.shell_open(url)
 
 
 func _on_game_over():

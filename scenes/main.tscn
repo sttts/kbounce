@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=11 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/game/game.tscn" id="2_game"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/icons/trophy.png" id="icon_trophy"]
 [ext_resource type="PackedScene" path="res://scenes/ui/leaderboard_entry.tscn" id="scene_entry"]
 [ext_resource type="Texture2D" path="res://icon-trans-512.png" id="icon_logo"]
+[ext_resource type="Texture2D" path="res://assets/icons/appstore.svg" id="icon_appstore"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu"]
 bg_color = Color(1, 1, 1, 0.92)
@@ -191,3 +192,10 @@ text = ""
 icon = ExtResource("icon_play")
 icon_alignment = 1
 expand_icon = true
+
+[node name="AppStoreButton" type="TextureButton" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox"]
+custom_minimum_size = Vector2(168, 56)
+layout_mode = 2
+texture_normal = ExtResource("icon_appstore")
+ignore_texture_size = true
+stretch_mode = 0
