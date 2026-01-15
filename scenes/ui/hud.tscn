@@ -459,6 +459,12 @@ stretch_mode = 5
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="LoadingLabel" type="Label" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+text = "Loading..."
+horizontal_alignment = 1
+
 [node name="ScrollContainer" type="ScrollContainer" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
 custom_minimum_size = Vector2(500, 400)
 layout_mode = 2
@@ -469,12 +475,6 @@ horizontal_scroll_mode = 0
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 4
-
-[node name="LoadingLabel" type="Label" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
-text = "Loading..."
-horizontal_alignment = 1
 
 [node name="ButtonsContainer" type="HBoxContainer" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox"]
 layout_mode = 2
