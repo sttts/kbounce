@@ -145,34 +145,30 @@ func _display_leaderboard(entries: Array, user_entries: Array):
 				user_best_score = score
 				user_best_entry_node = entry
 
-	# Add separator and user's best scores per nickname
-	var user_best_by_nick := _get_best_per_nickname(user_entries)
-	if user_best_by_nick.size() > 0:
-		# Check if any user scores are outside top 10
-		var has_scores_outside_top10 := false
-		for best_entry in user_best_by_nick:
-			var rank: int = best_entry.get("rank", 0)
-			if rank <= 0 or rank > 10:
-				has_scores_outside_top10 = true
-				break
+	# Add separator and all user scores not in top 10
+	var scores_outside_top10: Array = []
+	for ue in user_entries:
+		var score_id = ue.get("id")
+		if score_id != null and str(score_id) in user_score_ids:
+			# Check if already shown in top 10
+			var rank: int = ue.get("rank", 0)
+			if rank > 0 and rank <= 10:
+				continue
+		scores_outside_top10.append(ue)
 
-		if has_scores_outside_top10:
-			_add_separator()
-			for best_entry in user_best_by_nick:
-				# Skip if this score is already shown in top 10
-				var rank: int = best_entry.get("rank", 0)
-				if rank > 0 and rank <= 10:
-					continue
-				var entry = _entry_scene.instantiate()
-				entries_container.add_child(entry)
-				entry.setup(best_entry, true, false)  # is_user=true, not editable
-				entry.screenshot_clicked.connect(_on_screenshot_clicked)
+	if scores_outside_top10.size() > 0:
+		_add_separator()
+		for ue in scores_outside_top10:
+			var entry = _entry_scene.instantiate()
+			entries_container.add_child(entry)
+			entry.setup(ue, true, false)  # is_user=true, not editable
+			entry.screenshot_clicked.connect(_on_screenshot_clicked)
 
-				# Track user's best score below separator
-				var score: int = best_entry.get("score", 0)
-				if score > user_best_score:
-					user_best_score = score
-					user_best_entry_node = entry
+			# Track user's best score below separator
+			var score: int = ue.get("score", 0)
+			if score > user_best_score:
+				user_best_score = score
+				user_best_entry_node = entry
 
 	# Auto-scroll to user's best score entry
 	if user_best_entry_node != null:
@@ -194,28 +190,6 @@ func _on_start_screen_leaderboard_failed(_error: String):
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 		entries_container.add_child(label)
-
-
-func _get_best_per_nickname(user_entries: Array) -> Array:
-	# Group by nickname and get best score for each
-	var best_by_nick: Dictionary = {}
-	for entry in user_entries:
-		var nick: String = entry.get("nickname", "")
-		if nick.is_empty():
-			continue
-		var score: int = entry.get("score", 0)
-		if not best_by_nick.has(nick) or score > best_by_nick[nick].get("score", 0):
-			best_by_nick[nick] = entry
-
-	# Convert to array and sort by score descending
-	var result: Array = best_by_nick.values()
-	result.sort_custom(func(a, b): return a.get("score", 0) > b.get("score", 0))
-
-	# Limit to 10 nicknames
-	if result.size() > 10:
-		result.resize(10)
-
-	return result
 
 
 func _add_separator():
