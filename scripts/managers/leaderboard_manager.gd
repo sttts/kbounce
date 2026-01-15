@@ -402,6 +402,13 @@ func capture_screenshot(viewport: Viewport):
 
 ## Submit score to leaderboard (can be called without nickname - update later via PATCH)
 func submit_score(score: int, level: int):
+	# Debug: simulate network failure (check first to always trigger when flag set)
+	if debug_next_upload_fail_network:
+		debug_next_upload_fail_network = false
+		print("[API] DEBUG: Simulating network failure")
+		score_failed.emit("Request failed: Can't connect to host", "debug-net-fail")
+		return
+
 	if score <= 0:
 		# Score of 0 shouldn't be submitted (handled by GameManager skipping leaderboard)
 		return
@@ -410,13 +417,6 @@ func submit_score(score: int, level: int):
 	if _cached_lowest_score > 0 and score <= _cached_lowest_score:
 		print("[API] Skipping /score (score %d <= cached lowest %d), loading leaderboard" % [score, _cached_lowest_score])
 		load_leaderboard("around_user", score)
-		return
-
-	# Debug: simulate network failure
-	if debug_next_upload_fail_network:
-		debug_next_upload_fail_network = false
-		print("[API] DEBUG: Simulating network failure")
-		score_failed.emit("Request failed: Can't connect to host", "debug-net-fail")
 		return
 
 	if not is_token_valid():

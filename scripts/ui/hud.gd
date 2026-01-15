@@ -828,8 +828,6 @@ func _on_rate_limit_tick():
 
 
 func _show_retry_button():
-	_hide_retry_report_buttons()
-
 	_retry_button = Button.new()
 	_retry_button.text = "Retry"
 	_retry_button.custom_minimum_size = Vector2(80, 48)
@@ -839,8 +837,6 @@ func _show_retry_button():
 
 
 func _show_report_button():
-	_hide_retry_report_buttons()
-
 	_report_button = Button.new()
 	_report_button.text = "Report"
 	_report_button.custom_minimum_size = Vector2(80, 48)
