@@ -190,5 +190,3 @@ func validate_level(level_data: Dictionary) -> Dictionary:
 		if result == null:
 			return { "valid": false, "error": "Validation returned null" }
 		return result
-
-

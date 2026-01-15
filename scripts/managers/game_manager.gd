@@ -105,7 +105,7 @@ func next_level():
 	_change_state(GameState.RUNNING)
 
 
-## Called when player loses a life
+## Called when player loses a life (wall destroyed by ball)
 func lose_life():
 	# Ignore if already in game over state
 	if is_game_over():
