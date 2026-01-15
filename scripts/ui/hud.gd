@@ -545,7 +545,7 @@ func _on_score_failed(error: String, request_id: String):
 		return
 
 	# Show user-facing errors (like profanity filter)
-	if error == "Nickname not allowed":
+	if error == "Nickname contains inappropriate content":
 		_show_error_notification(error)
 		LeaderboardManager.load_leaderboard()
 		return
@@ -586,7 +586,7 @@ func _on_nickname_updated(success: bool, error: String):
 		return
 
 	# Mark nickname as rejected (profanity filter etc)
-	if error == "Nickname not allowed":
+	if error == "Nickname contains inappropriate content":
 		_nickname_rejected = true
 		if _user_entry and _user_entry.has_method("set_nickname_invalid"):
 			_user_entry.set_nickname_invalid(true)

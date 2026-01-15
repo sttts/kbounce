@@ -686,11 +686,7 @@ func _parse_error_response(body: PackedByteArray, response_code: int) -> String:
 		# Log full error response for debugging
 		print("      error body: %s" % JSON.stringify(json))
 		if json.has("error"):
-			var error: String = json["error"]
-			# Return user-friendly messages for known errors
-			if error == "Nickname contains inappropriate content":
-				return "Nickname not allowed"
-			return error
+			return json["error"]
 		return "Server error: %d" % response_code
 
 	# Log non-JSON error response for debugging (e.g. HTML error pages from proxies)
