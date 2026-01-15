@@ -356,7 +356,7 @@ func _setup_debug_ui():
 	for btn_data in buttons:
 		var btn := Button.new()
 		btn.text = btn_data[0]
-		btn.custom_minimum_size = Vector2(40, 22)
+		btn.custom_minimum_size = Vector2(54, 22)
 		btn.add_theme_font_size_override("font_size", 9)
 		btn.add_theme_stylebox_override("normal", style)
 		btn.add_theme_stylebox_override("hover", style_hover)
