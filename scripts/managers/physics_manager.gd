@@ -181,8 +181,14 @@ func validate_level(level_data: Dictionary) -> Dictionary:
 		var result_str = JavaScriptBridge.eval("JSON.stringify(physics.validateLevel(%s))" % json_str)
 		if result_str == null:
 			return { "valid": false, "error": "Validation failed on web" }
-		return JSON.parse_string(result_str)
+		var parsed = JSON.parse_string(result_str)
+		if parsed == null:
+			return { "valid": false, "error": "Failed to parse validation result" }
+		return parsed
 	else:
-		return _js.eval("validateLevel(%s)" % json_str)
+		var result = _js.eval("validateLevel(%s)" % json_str)
+		if result == null:
+			return { "valid": false, "error": "Validation returned null" }
+		return result
 
 
