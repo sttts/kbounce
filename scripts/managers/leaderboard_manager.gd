@@ -105,6 +105,8 @@ var _http_report: HTTPRequest = null
 
 ## Request start times for duration tracking
 var _request_start_times: Dictionary = {}
+## Request URLs for logging in response handlers
+var _request_urls: Dictionary = {}
 
 
 func _ready():
@@ -212,6 +214,7 @@ func update_nickname(new_nickname: String):
 	var body := JSON.stringify(data)
 	var url := API_URL + "/score/" + _current_score_id
 	_request_start_times["nickname"] = Time.get_ticks_msec()
+	_request_urls["nickname"] = url
 	print("[API] PATCH %s" % url)
 	var err := _http_nickname.request(url, _get_headers(), HTTPClient.METHOD_PATCH, body)
 
@@ -221,7 +224,8 @@ func update_nickname(new_nickname: String):
 
 func _on_nickname_update_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("nickname", 0))
-	print("----> PATCH /score rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
+	var url: String = _request_urls.get("nickname", "/score")
+	print("----> PATCH %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -246,6 +250,7 @@ func _on_nickname_update_completed(result: int, response_code: int, headers: Pac
 
 	# Update local country/city from response
 	var json = JSON.parse_string(body.get_string_from_utf8())
+	print("      response: %s" % JSON.stringify(json))
 	if json != null:
 		if json.has("country"):
 			country = json["country"]
@@ -295,6 +300,7 @@ func request_game_token():
 	var body := JSON.stringify({"user_id": user_id})
 	var url := API_URL + "/token"
 	_request_start_times["token"] = Time.get_ticks_msec()
+	_request_urls["token"] = url
 	print("[API] POST %s" % url)
 	var err := _http_token.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
@@ -304,7 +310,8 @@ func request_game_token():
 
 func _on_token_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("token", 0))
-	print("----> POST /token rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
+	var url: String = _request_urls.get("token", "/token")
+	print("----> POST %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -324,6 +331,7 @@ func _on_token_request_completed(result: int, response_code: int, headers: Packe
 		return
 
 	var json = JSON.parse_string(body.get_string_from_utf8())
+	print("      response: %s" % JSON.stringify(json))
 	if json == null or not json.has("token"):
 		token_failed.emit("Invalid response")
 		return
@@ -447,6 +455,7 @@ func submit_score(score: int, level: int):
 	var body := JSON.stringify(data)
 	var url := API_URL + "/score"
 	_request_start_times["score"] = Time.get_ticks_msec()
+	_request_urls["score"] = url
 	print("[API] POST %s (%dKB)" % [url, body.length() / 1024])
 	var err := _http_score.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
@@ -456,7 +465,8 @@ func submit_score(score: int, level: int):
 
 func _on_score_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("score", 0))
-	print("----> POST /score rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
+	var url: String = _request_urls.get("score", "/score")
+	print("----> POST %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -487,10 +497,12 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var dry_run: bool = json.get("dry_run", false)
 	var verified: bool = json.get("verified", false)
 	var entries: Array = json.get("entries", [])
+	var user_entries: Array = json.get("user_entries", [])
 
-	if dry_run:
-		print("      dry_run=true (score not persisted)")
-	print("      verified=%s" % verified)
+	# Log response (summarize arrays to avoid huge output)
+	print("      score_id=%s rank=%d stored=%s verified=%s dry_run=%s entries=%d user_entries=%d" % [
+		score_id, rank, stored, verified, dry_run, entries.size(), user_entries.size()
+	])
 
 	# Store for later nickname updates
 	_current_score_id = score_id
@@ -506,7 +518,6 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	score_submitted.emit(score_id, update_token, rank, stored)
 
 	# Emit leaderboard entries (always emit, even if empty, so UI can update)
-	var user_entries: Array = json.get("user_entries", [])
 	_update_cached_lowest_score(user_entries)
 	leaderboard_loaded.emit(entries, rank, user_entries)
 
@@ -527,6 +538,7 @@ func load_leaderboard(mode: String = "around_user", around_score: int = 0):
 	if around_score > 0:
 		url += "&score=" + str(around_score)
 	_request_start_times["leaderboard"] = Time.get_ticks_msec()
+	_request_urls["leaderboard"] = url
 	print("[API] GET %s" % url)
 	var err := _http_leaderboard.request(url, _get_headers(false))
 
@@ -536,7 +548,8 @@ func load_leaderboard(mode: String = "around_user", around_score: int = 0):
 
 func _on_leaderboard_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("leaderboard", 0))
-	print("----> GET /leaderboard rc=%d dur=%dms size=%d" % [response_code, duration, body.size()])
+	var url: String = _request_urls.get("leaderboard", "/leaderboard")
+	print("----> GET %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -563,6 +576,7 @@ func _on_leaderboard_request_completed(result: int, response_code: int, headers:
 	var entries: Array = json["entries"]
 	var user_rank: int = json.get("user_rank", 0)
 	var user_entries: Array = json.get("user_entries", [])
+	print("      user_rank=%d entries=%d user_entries=%d" % [user_rank, entries.size(), user_entries.size()])
 	_update_cached_lowest_score(user_entries)
 
 	leaderboard_loaded.emit(entries, user_rank, user_entries)
@@ -585,6 +599,7 @@ func report_score(score_id: String):
 	})
 	var url := API_URL + "/report"
 	_request_start_times["report"] = Time.get_ticks_msec()
+	_request_urls["report"] = url
 	print("[API] POST %s" % url)
 	var err := _http_report.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
@@ -594,7 +609,8 @@ func report_score(score_id: String):
 
 func _on_report_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("report", 0))
-	print("----> POST /report rc=%d dur=%dms" % [response_code, duration])
+	var url: String = _request_urls.get("report", "/report")
+	print("----> POST %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -613,6 +629,8 @@ func _on_report_request_completed(result: int, response_code: int, headers: Pack
 		report_failed.emit(error_msg)
 		return
 
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	print("      response: %s" % JSON.stringify(json))
 	report_submitted.emit()
 
 
