@@ -108,6 +108,11 @@ var _request_start_times: Dictionary = {}
 ## Request URLs for logging in response handlers
 var _request_urls: Dictionary = {}
 
+## Debug: simulate network failure on next score upload
+var debug_next_upload_fail_network: bool = false
+## Debug: taint replay on next score upload to trigger server rejection
+var debug_next_upload_taint_replay: bool = false
+
 
 func _ready():
 	_load_identity()
@@ -407,6 +412,13 @@ func submit_score(score: int, level: int):
 		load_leaderboard("around_user", score)
 		return
 
+	# Debug: simulate network failure
+	if debug_next_upload_fail_network:
+		debug_next_upload_fail_network = false
+		print("[API] DEBUG: Simulating network failure")
+		score_failed.emit("Request failed: Can't connect to host", "debug-net-fail")
+		return
+
 	if not is_token_valid():
 		score_failed.emit("No valid game token", "")
 		return
@@ -433,6 +445,11 @@ func submit_score(score: int, level: int):
 	if _cached_lowest_score == 0 or score > _cached_lowest_score:
 		var replay := ReplayManager.get_replay()
 		if not replay.is_empty():
+			# Debug: modify replay score to trigger server rejection (score mismatch)
+			if debug_next_upload_taint_replay:
+				debug_next_upload_taint_replay = false
+				print("[API] DEBUG: Modifying replay score to cause mismatch")
+				replay["score"] = score + 1000
 			data["replay"] = replay
 
 	# Dry-run mode for debug cheats (API processes but doesn't persist)

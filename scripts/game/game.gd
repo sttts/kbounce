@@ -355,8 +355,16 @@ func _setup_debug_ui():
 		["+life", func():
 			GameManager.lives += 1
 			GameManager.lives_changed.emit(GameManager.lives)],
-		["net.err", func():
-			LeaderboardManager.score_failed.emit("Request failed: Can't connect to host")],
+	]
+
+	# Toggle buttons for debug upload failures
+	var toggle_buttons := [
+		["net.err", func(btn: Button):
+			LeaderboardManager.debug_next_upload_fail_network = not LeaderboardManager.debug_next_upload_fail_network
+			btn.text = "NET!" if LeaderboardManager.debug_next_upload_fail_network else "net.err"],
+		["reject", func(btn: Button):
+			LeaderboardManager.debug_next_upload_taint_replay = not LeaderboardManager.debug_next_upload_taint_replay
+			btn.text = "REJ!" if LeaderboardManager.debug_next_upload_taint_replay else "reject"],
 	]
 
 	for btn_data in buttons:
@@ -369,4 +377,17 @@ func _setup_debug_ui():
 		btn.add_theme_stylebox_override("pressed", style)
 		btn.add_theme_stylebox_override("focus", style)
 		btn.pressed.connect(btn_data[1])
+		top_right.add_child(btn)
+
+	# Toggle buttons pass themselves to the callback
+	for btn_data in toggle_buttons:
+		var btn := Button.new()
+		btn.text = btn_data[0]
+		btn.custom_minimum_size = Vector2(54, 22)
+		btn.add_theme_font_size_override("font_size", 9)
+		btn.add_theme_stylebox_override("normal", style)
+		btn.add_theme_stylebox_override("hover", style_hover)
+		btn.add_theme_stylebox_override("pressed", style)
+		btn.add_theme_stylebox_override("focus", style)
+		btn.pressed.connect(btn_data[1].bind(btn))
 		top_right.add_child(btn)
