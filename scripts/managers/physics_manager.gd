@@ -113,11 +113,11 @@ func get_version() -> int:
 	return version
 
 
-## Add a ball and return its ID
-func add_ball(x: float, y: float, vx: float, vy: float) -> int:
+## Add a ball and return its ID (dx, dy are direction ±1)
+func add_ball(x: float, y: float, dx: float, dy: float) -> int:
 	if not _initialized:
 		return -1
-	var result = _eval("addBall(%f, %f, %f, %f)" % [x, y, vx, vy])
+	var result = _eval("addBall(%f, %f, %f, %f)" % [x, y, dx, dy])
 	return int(result) if result != null else -1
 
 

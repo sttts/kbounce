@@ -18,9 +18,6 @@ var board: Board
 ## Direction this wall extends
 var direction: Direction = Direction.UP
 
-## Wall velocity in tiles per tick
-var wall_velocity := 0.125
-
 ## Starting tile position
 var start_x := 0
 var start_y := 0

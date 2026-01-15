@@ -17,6 +17,8 @@ const FREE = 1, BORDER = 2, WALL = 3;
 // Wall directions (match wall.gd Direction enum)
 const DIR_UP = 0, DIR_DOWN = 1, DIR_LEFT = 2, DIR_RIGHT = 3;
 
+// Ball velocity (tiles per tick)
+const BALL_VELOCITY = 0.125;
 // Wall velocity (tiles per tick)
 const WALL_VELOCITY = 0.125;
 
@@ -64,15 +66,15 @@ function clearBalls() {
   balls = [];
 }
 
-// Add a ball with position and velocity
-function addBall(x, y, vx, vy) {
+// Add a ball with position and direction (dx, dy are ±1)
+function addBall(x, y, dx, dy) {
   const id = balls.length;
   balls.push({
     id: id,
     x: x,
     y: y,
-    vx: vx,
-    vy: vy,
+    vx: Math.sign(dx) * BALL_VELOCITY,
+    vy: Math.sign(dy) * BALL_VELOCITY,
     reflectX: false,
     reflectY: false
   });

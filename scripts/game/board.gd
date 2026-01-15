@@ -30,12 +30,6 @@ var balls: Array = []
 ## Active walls (js_id → Wall node)
 var _walls: Dictionary = {}
 
-## Ball velocity (tiles per tick)
-var ball_velocity := 0.125
-
-## Wall velocity (tiles per tick)
-var wall_velocity := 0.125
-
 ## Reference to preloaded scenes
 var _ball_scene: PackedScene
 var _wall_scene: PackedScene
@@ -216,7 +210,7 @@ func new_level(level: int):
 		# Random direction: -1 or 1 for each axis
 		var dir_x := (randi() % 2) * 2 - 1
 		var dir_y := (randi() % 2) * 2 - 1
-		ball.velocity = Vector2(dir_x * ball_velocity, dir_y * ball_velocity)
+		ball.velocity = Vector2(dir_x, dir_y)
 
 		ball.set_random_frame()
 		ball.update_visuals()  # Set initial screen position
@@ -258,10 +252,10 @@ func add_ball():
 	var rand_y := 4 + randi() % (TILE_NUM_H - 8)
 	ball.set_relative_pos(rand_x, rand_y)
 
-	# Random direction
+	# Random direction: -1 or 1 for each axis
 	var dir_x := (randi() % 2) * 2 - 1
 	var dir_y := (randi() % 2) * 2 - 1
-	ball.velocity = Vector2(dir_x * ball_velocity, dir_y * ball_velocity)
+	ball.velocity = Vector2(dir_x, dir_y)
 
 	ball.set_random_frame()
 	ball.update_visuals()
@@ -349,7 +343,6 @@ func _tick_physics(actions: Array) -> Dictionary:
 
 		var wall: Wall = _wall_scene.instantiate()
 		wall.direction = direction
-		wall.wall_velocity = wall_velocity
 		wall.board = self
 		wall.resize(tile_size)
 		wall.died.connect(_on_wall_died.bind(wall))

@@ -312,8 +312,6 @@ func _on_level_changed(_level: int):
 
 ## Start/restart current level
 func _start_level():
-	board.ball_velocity = GameManager.ball_velocity
-	board.wall_velocity = GameManager.wall_velocity
 	board.new_level(GameManager.level)
 
 

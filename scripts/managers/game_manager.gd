@@ -37,11 +37,6 @@ enum GameState {
 const MIN_FILL_PERCENT := 75
 ## Base time per level in seconds
 const GAME_TIME_PER_LEVEL := 90
-## Ball velocity (tiles per tick) - matches original
-const BALL_VELOCITY := 0.125
-## Wall velocity (tiles per tick) - matches original
-const WALL_VELOCITY := 0.125
-
 ## Current game state
 var state := GameState.BEFORE_FIRST_GAME
 ## Current score
@@ -54,11 +49,6 @@ var time := GAME_TIME_PER_LEVEL
 var level := 1
 ## Current fill percentage
 var filled := 0
-
-## Ball velocity (for board access)
-var ball_velocity := BALL_VELOCITY
-## Wall velocity (for board access)
-var wall_velocity := WALL_VELOCITY
 
 ## Game over flow ID (incremented each game over, invalidates stale API responses)
 var _game_over_flow_id: int = 0
