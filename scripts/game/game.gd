@@ -40,6 +40,7 @@ var vertical_wall := true:
 var _swipe_start_pos := Vector2.ZERO
 var _swipe_active := false
 const SWIPE_THRESHOLD := 20.0  # Pixels to determine swipe direction
+const TAP_THRESHOLD := 7.0  # Max movement to count as a tap
 
 ## Physics time accumulator for fixed timestep
 var _physics_accumulator := 0.0
@@ -141,8 +142,11 @@ func _unhandled_input(event):
 				_swipe_start_pos = event.position
 				_swipe_active = true
 		else:
+			# On release: only build if it was a tap (small movement)
 			if _swipe_active and _swipe_start_pos != Vector2.ZERO:
-				_build_wall_at(_swipe_start_pos)
+				var release_delta: Vector2 = event.position - _swipe_start_pos
+				if release_delta.length() <= TAP_THRESHOLD:
+					_build_wall_at(_swipe_start_pos)
 			_swipe_start_pos = Vector2.ZERO
 			_swipe_active = false
 		return
