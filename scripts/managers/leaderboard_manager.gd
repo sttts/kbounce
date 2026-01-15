@@ -13,8 +13,8 @@ signal token_received(token: String)
 signal token_failed(error: String)
 ## Emitted when score is submitted (returns score_id and update_token for nickname updates)
 signal score_submitted(score_id: String, update_token: String, rank: int, stored: bool)
-## Emitted when score submission fails
-signal score_failed(error: String)
+## Emitted when score submission fails (request_id for bug reports)
+signal score_failed(error: String, request_id: String)
 ## Emitted when nickname is updated
 signal nickname_updated(success: bool, error: String)
 ## Emitted when leaderboard is loaded (entries around user, user_entries are all user's scores)
@@ -225,7 +225,8 @@ func update_nickname(new_nickname: String):
 func _on_nickname_update_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("nickname", 0))
 	var url: String = _request_urls.get("nickname", "/score")
-	print("----> PATCH %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
+	var request_id := _parse_request_id(headers)
+	print("----> PATCH %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -311,7 +312,8 @@ func request_game_token():
 func _on_token_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("token", 0))
 	var url: String = _request_urls.get("token", "/token")
-	print("----> POST %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
+	var request_id := _parse_request_id(headers)
+	print("----> POST %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -406,7 +408,7 @@ func submit_score(score: int, level: int):
 		return
 
 	if not is_token_valid():
-		score_failed.emit("No valid game token")
+		score_failed.emit("No valid game token", "")
 		return
 
 	if _http_score == null:
@@ -460,34 +462,35 @@ func submit_score(score: int, level: int):
 	var err := _http_score.request(url, _get_headers(), HTTPClient.METHOD_POST, body)
 
 	if err != OK:
-		score_failed.emit("HTTP request failed: %d" % err)
+		score_failed.emit("HTTP request failed: %d" % err, "")
 
 
 func _on_score_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("score", 0))
 	var url: String = _request_urls.get("score", "/score")
-	print("----> POST %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
+	var request_id := _parse_request_id(headers)
+	print("----> POST %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
-		score_failed.emit(error_msg)
+		score_failed.emit(error_msg, request_id)
 		return
 
 	if response_code == 429:
 		var retry_after := _parse_retry_after(headers)
 		rate_limited.emit(retry_after)
-		score_failed.emit("Rate limited")
+		score_failed.emit("Rate limited", request_id)
 		return
 
 	if response_code != 200:
 		var error_msg := _parse_error_response(body, response_code)
 		print("      ERROR: %s" % error_msg)
-		score_failed.emit(error_msg)
+		score_failed.emit(error_msg, request_id)
 		return
 
 	var json = _parse_json_response(body, "score")
 	if json == null:
-		score_failed.emit("Invalid response from server")
+		score_failed.emit("Invalid response from server", request_id)
 		return
 
 	var score_id: String = json.get("score_id", "")
@@ -549,7 +552,8 @@ func load_leaderboard(mode: String = "around_user", around_score: int = 0):
 func _on_leaderboard_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("leaderboard", 0))
 	var url: String = _request_urls.get("leaderboard", "/leaderboard")
-	print("----> GET %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
+	var request_id := _parse_request_id(headers)
+	print("----> GET %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -610,7 +614,8 @@ func report_score(score_id: String):
 func _on_report_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("report", 0))
 	var url: String = _request_urls.get("report", "/report")
-	print("----> POST %s rc=%d dur=%dms size=%d" % [url, response_code, duration, body.size()])
+	var request_id := _parse_request_id(headers)
+	print("----> POST %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
 	if result != HTTPRequest.RESULT_SUCCESS:
 		var error_msg := "Request failed: %s" % _http_result_to_string(result)
 		print("      ERROR: %s" % error_msg)
@@ -643,6 +648,17 @@ func _parse_retry_after(headers: PackedStringArray) -> int:
 			if value.is_valid_int():
 				return value.to_int()
 	return 60  # Default to 60 seconds
+
+
+## Parse X-Request-Id header value
+func _parse_request_id(headers: PackedStringArray) -> String:
+	for header in headers:
+		var lower := header.to_lower()
+		if lower.begins_with("x-request-id:"):
+			return header.substr(13).strip_edges()
+		if lower.begins_with("cf-ray:"):
+			return header.substr(7).strip_edges()
+	return ""
 
 
 ## Parse error response body to extract error message

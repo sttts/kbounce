@@ -62,6 +62,7 @@ var _report_button: Button = null
 var _upload_failed_network: bool = false
 var _upload_failed_rejected: bool = false
 var _rejection_error: String = ""
+var _rejection_request_id: String = ""
 
 ## Debug mode click counter
 var _debug_click_count := 0
@@ -538,7 +539,7 @@ func _on_score_submitted(_score_id: String, _update_token: String, _rank: int, _
 	# Note: leaderboard entries come with the score response, no need to request separately
 
 
-func _on_score_failed(error: String):
+func _on_score_failed(error: String, request_id: String):
 	# Rate limited errors are handled by _on_rate_limited with retry timer
 	if error == "Rate limited":
 		return
@@ -563,6 +564,7 @@ func _on_score_failed(error: String):
 		_upload_failed_network = false
 		_upload_failed_rejected = true
 		_rejection_error = error
+		_rejection_request_id = request_id
 		game_over_loading_label.text = "Score rejected"
 		game_over_loading_label.visible = true
 		_show_report_button()
@@ -870,7 +872,9 @@ func _on_retry_upload_pressed():
 func _on_report_rejection_pressed():
 	# Open GitHub issue with pre-filled title and body
 	var title := "Score rejected: " + _rejection_error
-	var body := "**Error:** " + _rejection_error + "\n\n"
+	var body := "**Error:** " + _rejection_error + "\n"
+	if not _rejection_request_id.is_empty():
+		body += "**Request ID:** " + _rejection_request_id + "\n"
 	body += "**Score:** " + str(GameManager.score) + "\n"
 	body += "**Level:** " + str(GameManager.level) + "\n"
 	body += "**Version:** " + BuildInfo.version_tag + "\n"
