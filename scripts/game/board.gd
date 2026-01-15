@@ -15,7 +15,7 @@ signal wall_died
 const TILE_NUM_W := 32
 const TILE_NUM_H := 20
 
-## Tile types
+## Tile types (values must match physics.js: FREE=1, BORDER=2, WALL=3)
 enum TileType { EMPTY, FREE, BORDER, WALL, TEMP }
 
 ## 2D array of tile states [x][y]
@@ -84,22 +84,23 @@ func _sync_tiles_from_js():
 			tiles[x][y] = int(js_tiles[x][y])
 
 
-## Show demo balls (animated but not moving) for start screen
-func show_demo(ball_count: int = 2):
-	clear()
-	hide_walls()
-
-	# Remove excess balls
-	while balls.size() > ball_count:
+## Adjust ball count to target (remove excess, add missing)
+func _adjust_ball_count(target: int):
+	while balls.size() > target:
 		var ball = balls.pop_back()
 		ball.queue_free()
-
-	# Add missing balls
-	while balls.size() < ball_count:
+	while balls.size() < target:
 		var ball: Ball = _ball_scene.instantiate()
 		ball.board = self
 		balls.append(ball)
 		add_child(ball)
+
+
+## Show demo balls (animated but not moving) for start screen
+func show_demo(ball_count: int = 2):
+	clear()
+	hide_walls()
+	_adjust_ball_count(ball_count)
 
 	# Position balls with zero velocity (just animate)
 	for i in range(balls.size()):
@@ -154,8 +155,8 @@ func clear():
 ## Fixed tile size
 const TILE_SIZE := 30
 
-## Resize the board (uses fixed tile size)
-func resize(_size: Vector2i) -> Vector2i:
+## Resize the board and return actual size in pixels
+func resize() -> Vector2i:
 	tile_size = Vector2i(TILE_SIZE, TILE_SIZE)
 
 	# Resize all balls
@@ -183,18 +184,7 @@ func new_level(level: int):
 
 	# Level determines ball count: level 1 = 2 balls, level 2 = 3 balls, etc.
 	var target_ball_count := level + 1
-
-	# Remove excess balls
-	while balls.size() > target_ball_count:
-		var ball = balls.pop_back()
-		ball.queue_free()
-
-	# Add missing balls
-	while balls.size() < target_ball_count:
-		var ball: Ball = _ball_scene.instantiate()
-		ball.board = self
-		balls.append(ball)
-		add_child(ball)
+	_adjust_ball_count(target_ball_count)
 
 	# Position and initialize balls
 	var ball_states: Array = []
@@ -484,4 +474,3 @@ func _draw():
 	var elapsed := (Time.get_ticks_usec() - start) / 1000.0
 	_draw_count += 1
 	_draw_times.append(elapsed)
-	print("Board._draw: %.2f ms" % elapsed)

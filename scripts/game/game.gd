@@ -83,7 +83,7 @@ func _resize_board():
 	var viewport_size := get_viewport_rect().size
 	const TOP_MARGIN := 26  # Space for HUD
 
-	var board_size := board.resize(Vector2i.ZERO)  # Fixed size, parameter ignored
+	var board_size := board.resize()
 
 	# Position board: left edge, centered vertically below HUD
 	board.position.x = 0
