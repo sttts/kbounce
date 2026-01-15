@@ -56,11 +56,6 @@ function init() {
   return VERSION;
 }
 
-// Get current version
-function getVersion() {
-  return VERSION;
-}
-
 // Add a ball with position and direction (dx, dy are ±1)
 function addBall(x, y, dx, dy) {
   const id = balls.length;
@@ -74,13 +69,6 @@ function addBall(x, y, dx, dy) {
     reflectY: false
   });
   return id;
-}
-
-// Set a tile type
-function setTile(x, y, type) {
-  if (x >= 0 && x < BOARD_W && y >= 0 && y < BOARD_H) {
-    tiles[x][y] = type;
-  }
 }
 
 // Get all tiles (for syncing to GDScript)
@@ -549,16 +537,6 @@ function checkBallCollisionTiles(ball) {
   };
 }
 
-// Check if ball rect intersects with a rect (for wall collision)
-function rectIntersects(ballId, rx, ry, rw, rh) {
-  if (ballId < 0 || ballId >= balls.length) return false;
-  const b = balls[ballId];
-  const nextX = b.x + b.vx;
-  const nextY = b.y + b.vy;
-  return !(nextX + BALL_SIZE <= rx || nextX >= rx + rw ||
-           nextY + BALL_SIZE <= ry || nextY >= ry + rh);
-}
-
 // Calculate collision normal between two rects
 function calculateNormal(ax, ay, aw, ah, bx, by, bw, bh) {
   const aCenterX = ax + aw / 2;
@@ -706,32 +684,6 @@ function moveBall(ballId) {
   ball.y += ball.vy;
   ball.reflectX = false;
   ball.reflectY = false;
-}
-
-// Single tick for one ball - returns collision info
-// Returns: { hit: bool, normalX: float, normalY: float }
-function tickBall(ballId) {
-  if (ballId < 0 || ballId >= balls.length) {
-    return { hit: false, normalX: 0, normalY: 0 };
-  }
-  return checkBallCollisionTiles(balls[ballId]);
-}
-
-// Tick all balls (collision check phase only)
-// Returns array of collision results per ball
-function tickCollisions() {
-  const results = [];
-  for (let i = 0; i < balls.length; i++) {
-    results.push(checkBallCollisionTiles(balls[i]));
-  }
-  return results;
-}
-
-// Move all balls (movement phase)
-function tickMovement() {
-  for (let i = 0; i < balls.length; i++) {
-    moveBall(i);
-  }
 }
 
 // Tick walls: check collisions and grow
@@ -1089,6 +1041,6 @@ if (typeof module !== 'undefined') {
     // Constants
     VERSION, BOARD_W, BOARD_H, BALL_SIZE, FREE, BORDER, WALL,
     // Public API (used by GDScript)
-    init, getVersion, addBall, tick, validateLevel, getTiles
+    init, addBall, tick, validateLevel, getTiles
   };
 }

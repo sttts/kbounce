@@ -78,16 +78,6 @@ func play(sound_name: String, throttle: bool = false):
 	players[0].play()
 
 
-## Play ball bounce sound with throttling
-func play_ball_bounce():
-	play("ball_bounce", true)
-
-
-## Play ball hitting wall sound with throttling
-func play_ball_wall():
-	play("ball_bounce_wall", true)
-
-
 ## Called each game tick to update sound delays
 func tick():
 	for key in _sound_delays.keys():
