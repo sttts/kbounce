@@ -55,10 +55,9 @@ var _user_entry: Node = null
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
 
-## Retry, report, and ignore buttons (created dynamically)
+## Retry and report buttons (created dynamically)
 var _retry_button: Button = null
 var _report_button: Button = null
-var _ignore_button: Button = null
 ## Track upload failure state
 var _upload_failed_network: bool = false
 var _upload_failed_rejected: bool = false
@@ -825,7 +824,6 @@ func _on_rate_limit_tick():
 func _show_retry_button():
 	_hide_retry_report_buttons()
 
-	# Create retry button
 	_retry_button = Button.new()
 	_retry_button.text = "Retry"
 	_retry_button.custom_minimum_size = Vector2(80, 48)
@@ -833,32 +831,16 @@ func _show_retry_button():
 	game_over_buttons_container.add_child(_retry_button)
 	game_over_buttons_container.move_child(_retry_button, 0)
 
-	# Create ignore button
-	_create_ignore_button()
-
 
 func _show_report_button():
 	_hide_retry_report_buttons()
 
-	# Create report button
 	_report_button = Button.new()
 	_report_button.text = "Report"
 	_report_button.custom_minimum_size = Vector2(80, 48)
 	_report_button.pressed.connect(_on_report_rejection_pressed)
 	game_over_buttons_container.add_child(_report_button)
 	game_over_buttons_container.move_child(_report_button, 0)
-
-	# Create ignore button
-	_create_ignore_button()
-
-
-func _create_ignore_button():
-	_ignore_button = Button.new()
-	_ignore_button.text = "Ignore"
-	_ignore_button.custom_minimum_size = Vector2(80, 48)
-	_ignore_button.pressed.connect(_on_ignore_failure_pressed)
-	game_over_buttons_container.add_child(_ignore_button)
-	game_over_buttons_container.move_child(_ignore_button, 1)
 
 
 func _hide_retry_report_buttons():
@@ -868,9 +850,6 @@ func _hide_retry_report_buttons():
 	if _report_button != null:
 		_report_button.queue_free()
 		_report_button = null
-	if _ignore_button != null:
-		_ignore_button.queue_free()
-		_ignore_button = null
 	_upload_failed_network = false
 	_upload_failed_rejected = false
 
@@ -886,11 +865,6 @@ func _on_retry_upload_pressed():
 	await LeaderboardManager.token_received
 	if GameManager.is_game_over():
 		LeaderboardManager.submit_score(GameManager.score, GameManager.level)
-
-
-func _on_ignore_failure_pressed():
-	_hide_retry_report_buttons()
-	game_over_loading_label.visible = false
 
 
 func _on_report_rejection_pressed():
