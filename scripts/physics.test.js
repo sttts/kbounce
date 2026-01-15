@@ -702,6 +702,98 @@ test('level completes at 75% fill', () => {
   // Note: May not complete if ball interferes - that's ok for this test
 });
 
+test('paired wall dies when partner is killed', () => {
+  physics.init();
+  // Ball heading right toward vertical wall
+  physics.addBall(10, 10, 1, 0);
+
+  // Place vertical wall in ball's path
+  physics.tick([{ x: 15, y: 8, vertical: true }]);
+
+  // Let wall grow a bit, then ball hits it
+  let dieEvent = false;
+  let diePairedEvent = false;
+  for (let i = 0; i < 60; i++) {
+    const result = physics.tick();
+    for (const e of result.wallEvents) {
+      if (e.event === 'die') dieEvent = true;
+      if (e.event === 'die_paired') diePairedEvent = true;
+    }
+    if (dieEvent) break;
+  }
+  assert.ok(dieEvent, 'Wall should die from ball hit');
+  assert.ok(diePairedEvent, 'Paired wall should also die');
+});
+
+test('addBall normalizes direction to velocity', () => {
+  physics.init();
+  // Pass arbitrary direction values, not just ±1
+  physics.addBall(10, 10, 5, -3);
+
+  const result = physics.tick();
+  const ball = result.balls[0];
+
+  // Should be normalized to ±BALL_VELOCITY (0.125)
+  approx(Math.abs(ball.vx), 0.125);
+  approx(Math.abs(ball.vy), 0.125);
+  assert.ok(ball.vx > 0, 'vx should be positive (from dx=5)');
+  assert.ok(ball.vy < 0, 'vy should be negative (from dy=-3)');
+});
+
+test('validateLevel detects velocity mismatch', () => {
+  physics.init();
+  physics.addBall(10, 10, 1, 1);
+
+  let result;
+  for (let i = 0; i < 50; i++) result = physics.tick();
+
+  // Record with wrong velocity
+  const levelData = {
+    balls: [{ x: 10, y: 10, vx: 1, vy: 1 }],
+    actions: [],
+    checkpoints: [{
+      t: 50,
+      balls: [{
+        x: result.balls[0].x,
+        y: result.balls[0].y,
+        vx: -0.125,  // Wrong velocity
+        vy: -0.125
+      }]
+    }],
+    result: { tick: 50 }
+  };
+
+  const validationResult = physics.validateLevel(levelData);
+  assert.ok(!validationResult.valid, 'Should fail on velocity mismatch');
+  assert.strictEqual(validationResult.error, 'Ball velocity mismatch');
+});
+
+test('validateLevel handles multiple checkpoints', () => {
+  physics.init();
+  physics.addBall(10, 10, 1, 0);  // Moving right only
+
+  // Record positions at tick 20 and 40
+  let pos20, pos40;
+  for (let i = 0; i < 50; i++) {
+    const result = physics.tick();
+    if (result.tick === 20) pos20 = { x: result.balls[0].x, y: result.balls[0].y };
+    if (result.tick === 40) pos40 = { x: result.balls[0].x, y: result.balls[0].y };
+  }
+
+  const levelData = {
+    balls: [{ x: 10, y: 10, vx: 1, vy: 0 }],
+    actions: [],
+    checkpoints: [
+      { t: 20, balls: [pos20] },
+      { t: 40, balls: [pos40] }
+    ],
+    result: { tick: 50 }
+  };
+
+  const result = physics.validateLevel(levelData);
+  assert.ok(result.valid, 'Multiple checkpoints should validate');
+});
+
 // =============================================================================
 // Summary
 // =============================================================================
