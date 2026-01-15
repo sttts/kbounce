@@ -40,7 +40,7 @@ func _ready():
 
 func share_score(score: int, level: int, screenshot: Image = null):
 	var balls := level + 1
-	var text := "I scored %s points with %d balls in KBounce! Can you beat my score?\n\nPlay now: https://kbounce.app" % [_format_score(score), balls]
+	var text := "I scored %s points with %d balls in KBounce! Can you beat my score?\n\nPlay now: https://kbounce.app\nApp Store: https://apps.apple.com/app/kbounce/id6757555544" % [_format_score(score), balls]
 
 	if OS.has_feature("web"):
 		_share_web(text, screenshot)
