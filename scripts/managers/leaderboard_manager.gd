@@ -448,8 +448,8 @@ func submit_score(score: int, level: int):
 			# Debug: modify replay score to trigger server rejection (score mismatch)
 			if debug_next_upload_taint_replay:
 				debug_next_upload_taint_replay = false
-				print("[API] DEBUG: Modifying replay score to cause mismatch")
-				replay["score"] = score + 1000
+				print("[API] DEBUG: Modifying replay final_score to cause mismatch")
+				replay["final_score"] = replay.get("final_score", 0) + 1000
 			data["replay"] = replay
 
 	# Dry-run mode for debug cheats (API processes but doesn't persist)
