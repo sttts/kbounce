@@ -96,13 +96,14 @@ func _adjust_ball_count(target: int):
 		add_child(ball)
 
 
-## Show demo balls (animated but not moving) for start screen
+## Show demo balls (moving and bouncing) for start screen
 func show_demo(ball_count: int = 2):
 	clear()
 	hide_walls()
+	_init_js_physics()
 	_adjust_ball_count(ball_count)
 
-	# Position balls with zero velocity (just animate)
+	# Position balls with random velocities
 	for i in range(balls.size()):
 		var ball: Ball = balls[i]
 		ball.resize(tile_size)
@@ -112,15 +113,34 @@ func show_demo(ball_count: int = 2):
 		var rand_y := 4 + randi() % (TILE_NUM_H - 8)
 		ball.set_relative_pos(rand_x, rand_y)
 
-		# Zero velocity - balls don't move in demo
-		ball.velocity = Vector2.ZERO
+		# Random direction: -1 or 1 for each axis
+		var dir_x := (randi() % 2) * 2 - 1
+		var dir_y := (randi() % 2) * 2 - 1
+		ball.velocity = Vector2(dir_x, dir_y)
 
 		ball.set_random_frame()
 		ball.update_visuals()
 		ball.visible = true
 
+		# Sync to JS physics
+		_sync_ball_to_js(ball, i)
 
-## Animate balls without moving them (for demo mode)
+
+## Run demo physics tick (balls move and bounce, no walls)
+func tick_demo():
+	var js_result: Dictionary = PhysicsManager.tick([])
+	var js_balls: Array = js_result.get("balls", [])
+
+	# Sync ball positions from JS
+	for i in range(balls.size()):
+		if i < js_balls.size():
+			var state: Dictionary = js_balls[i]
+			balls[i].velocity = Vector2(state.get("vx", 0), state.get("vy", 0))
+			balls[i].set_relative_pos(state.get("x", 0), state.get("y", 0))
+		balls[i].update_visuals()
+
+
+## Animate balls without moving them (for paused/game over states)
 func animate_balls():
 	for ball in balls:
 		ball.update_visuals()
@@ -225,7 +245,28 @@ func new_level(level: int):
 
 	balls_changed.emit(target_ball_count)
 
-	# Reset walls
+
+## Start game from current demo state (no reset, captures current ball positions)
+func start_from_demo(level: int):
+	# JS physics is already initialized and balls are synced from demo mode
+	# Just need to record the current state for replay
+
+	var level_seed := randi()
+
+	# Capture current ball states for replay
+	var ball_states: Array = []
+	for ball in balls:
+		ball_states.append({
+			"x": ball.relative_pos.x,
+			"y": ball.relative_pos.y,
+			"vx": ball.velocity.x,
+			"vy": ball.velocity.y
+		})
+
+	# Record level start for replay with current positions
+	ReplayManager.start_level(level, level_seed, ball_states)
+
+	balls_changed.emit(balls.size())
 
 
 ## Add a ball to the board (for debug)

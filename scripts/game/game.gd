@@ -44,6 +44,9 @@ const SWIPE_THRESHOLD := 20.0  # Pixels to determine swipe direction
 ## Physics time accumulator for fixed timestep
 var _physics_accumulator := 0.0
 
+## Flag to track if starting from demo state
+var _starting_from_demo := false
+
 
 
 func _ready():
@@ -175,6 +178,9 @@ func _update_cursor():
 
 ## Start a new game
 func new_game():
+	# Track if transitioning from demo (to preserve ball positions)
+	_starting_from_demo = (GameManager.state == GameManager.GameState.BEFORE_FIRST_GAME)
+
 	# Request game token for leaderboard submission
 	LeaderboardManager.request_game_token()
 	ReplayManager.start_game()
@@ -204,8 +210,14 @@ func _physics_process(delta: float):
 			if result.get("levelComplete", false):
 				GameManager.level_complete()
 				break  # Stop processing more ticks this frame
+	elif GameManager.state == GameManager.GameState.BEFORE_FIRST_GAME:
+		# Demo mode: balls move and bounce (no walls, no replay)
+		_physics_accumulator += delta
+		while _physics_accumulator >= PHYSICS_TICK_TIME:
+			board.tick_demo()
+			_physics_accumulator -= PHYSICS_TICK_TIME
 	else:
-		# Animate balls in all non-running states (demo, paused, game over, etc.)
+		# Paused/game over: just animate balls (no movement)
 		board.animate_balls()
 
 
@@ -275,7 +287,13 @@ func _on_level_changed(_level: int):
 
 ## Start/restart current level
 func _start_level():
-	board.new_level(GameManager.level)
+	if _starting_from_demo:
+		# Transition from demo: preserve ball positions
+		_starting_from_demo = false
+		board.start_from_demo(GameManager.level)
+	else:
+		# Normal level start/restart
+		board.new_level(GameManager.level)
 
 
 ## Debug UI active flag

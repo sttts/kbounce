@@ -185,6 +185,19 @@ func set_suspended(suspended: bool):
 
 ## Close current game
 func close_game():
+	# Reset game values to initial state
+	score = 0
+	level = 1
+	lives = level + 1
+	time = GAME_TIME_PER_LEVEL
+	filled = 0
+
+	# Emit UI updates (but not level_changed - we're not starting a level)
+	score_changed.emit(score)
+	lives_changed.emit(lives)
+	time_changed.emit(time)
+	fill_changed.emit(filled)
+
 	_change_state(GameState.BEFORE_FIRST_GAME)
 
 
