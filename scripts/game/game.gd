@@ -47,6 +47,9 @@ var _physics_accumulator := 0.0
 ## Flag to track if starting from demo state
 var _starting_from_demo := false
 
+## Flag to pause physics during level restart (timeout/life lost)
+var _restart_freeze := false
+
 
 
 func _ready():
@@ -195,6 +198,11 @@ func _start_demo():
 ## Physics process - accumulates time and calls tick() to maintain constant physics rate
 func _physics_process(delta: float):
 	if GameManager.state == GameManager.GameState.RUNNING:
+		# Freeze physics during restart delay (timeout/life lost)
+		if _restart_freeze:
+			board.animate_balls()
+			return
+
 		# Accumulate elapsed time
 		_physics_accumulator += delta
 
@@ -241,8 +249,12 @@ func _on_time_tick():
 		AudioManager.play("timeout")
 		GameManager.lose_life()
 		if GameManager.state == GameManager.GameState.RUNNING:
-			# Still have lives, restart level
-			_start_level()
+			# Still have lives - freeze briefly then restart level
+			_restart_freeze = true
+			await get_tree().create_timer(0.5).timeout
+			_restart_freeze = false
+			if GameManager.state == GameManager.GameState.RUNNING:
+				_start_level()
 
 
 ## Wall destroyed by ball
