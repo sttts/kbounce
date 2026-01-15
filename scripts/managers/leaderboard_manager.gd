@@ -249,9 +249,9 @@ func _on_nickname_update_completed(result: int, response_code: int, headers: Pac
 	_pending_nickname = ""
 
 	# Update local country/city from response
-	var json = JSON.parse_string(body.get_string_from_utf8())
-	print("      response: %s" % JSON.stringify(json))
+	var json = _parse_json_response(body, "nickname")
 	if json != null:
+		print("      response: %s" % JSON.stringify(json))
 		if json.has("country"):
 			country = json["country"]
 		if json.has("city"):
@@ -330,11 +330,11 @@ func _on_token_request_completed(result: int, response_code: int, headers: Packe
 		token_failed.emit(error_msg)
 		return
 
-	var json = JSON.parse_string(body.get_string_from_utf8())
-	print("      response: %s" % JSON.stringify(json))
+	var json = _parse_json_response(body, "token")
 	if json == null or not json.has("token"):
-		token_failed.emit("Invalid response")
+		token_failed.emit("Invalid response from server")
 		return
+	print("      response: %s" % JSON.stringify(json))
 
 	_game_token = json["token"]
 	var expires_in: int = json.get("expires_in", 1800)
@@ -485,9 +485,9 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 		score_failed.emit(error_msg)
 		return
 
-	var json = JSON.parse_string(body.get_string_from_utf8())
+	var json = _parse_json_response(body, "score")
 	if json == null:
-		score_failed.emit("Invalid response")
+		score_failed.emit("Invalid response from server")
 		return
 
 	var score_id: String = json.get("score_id", "")
@@ -568,9 +568,9 @@ func _on_leaderboard_request_completed(result: int, response_code: int, headers:
 		leaderboard_failed.emit(error_msg)
 		return
 
-	var json = JSON.parse_string(body.get_string_from_utf8())
+	var json = _parse_json_response(body, "leaderboard")
 	if json == null or not json.has("entries"):
-		leaderboard_failed.emit("Invalid response")
+		leaderboard_failed.emit("Invalid response from server")
 		return
 
 	var entries: Array = json["entries"]
@@ -629,8 +629,9 @@ func _on_report_request_completed(result: int, response_code: int, headers: Pack
 		report_failed.emit(error_msg)
 		return
 
-	var json = JSON.parse_string(body.get_string_from_utf8())
-	print("      response: %s" % JSON.stringify(json))
+	var json = _parse_json_response(body, "report")
+	if json != null:
+		print("      response: %s" % JSON.stringify(json))
 	report_submitted.emit()
 
 
@@ -646,14 +647,35 @@ func _parse_retry_after(headers: PackedStringArray) -> int:
 
 ## Parse error response body to extract error message
 func _parse_error_response(body: PackedByteArray, response_code: int) -> String:
-	var json = JSON.parse_string(body.get_string_from_utf8())
+	var text := body.get_string_from_utf8()
+	var json = JSON.parse_string(text)
 	if json != null and json is Dictionary and json.has("error"):
 		var error: String = json["error"]
 		# Return user-friendly messages for known errors
 		if error == "Nickname contains inappropriate content":
 			return "Nickname not allowed"
 		return error
+
+	# Log non-JSON error response for debugging (e.g. HTML error pages from proxies)
+	if not text.is_empty():
+		var snippet := text.substr(0, 200)
+		if text.length() > 200:
+			snippet += "..."
+		print("      Non-JSON error body: %s" % snippet)
 	return "Server error: %d" % response_code
+
+
+## Parse JSON response body, logging non-JSON content for debugging
+func _parse_json_response(body: PackedByteArray, endpoint: String) -> Variant:
+	var text := body.get_string_from_utf8()
+	var json = JSON.parse_string(text)
+	if json == null and not text.is_empty():
+		# Log snippet of non-JSON response for debugging (e.g. HTML error pages)
+		var snippet := text.substr(0, 200)
+		if text.length() > 200:
+			snippet += "..."
+		print("      WARNING: Non-JSON response from %s: %s" % [endpoint, snippet])
+	return json
 
 
 ## Convert HTTPRequest.Result to human-readable string
