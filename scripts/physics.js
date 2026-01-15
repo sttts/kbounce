@@ -33,6 +33,7 @@ let balls = [];
 let walls = [];  // Array of wall objects (max 4 active building walls)
 let ballGrid = [];  // 2D array of ball index lists
 let tickCounter = 0;  // Global tick counter, incremented at end of tick()
+let currentFillPercent = 0;  // Track fill percentage between ticks
 
 // Maximum active building walls (2 half-wall slots)
 const MAX_WALLS = 2;
@@ -46,6 +47,7 @@ function init() {
   balls = [];
   walls = [];
   tickCounter = 0;
+  currentFillPercent = 0;
   for (let x = 0; x < BOARD_W; x++) {
     tiles[x] = [];
     for (let y = 0; y < BOARD_H; y++) {
@@ -940,17 +942,16 @@ function tick(actions) {
 
   // Fill enclosed areas AFTER balls move
   let levelComplete = false;
-  let fillPercent = 0;
   const anyWallFinished = wallTickResult.anyWallFinished || ballCausedWallFinish;
   if (anyWallFinished) {
-    fillPercent = fillEnclosedAreas();
+    currentFillPercent = fillEnclosedAreas();
     // Add fill percentage to all finish events
     for (const event of wallEvents) {
       if (event.event === 'finish') {
-        event.fillPercent = fillPercent;
+        event.fillPercent = currentFillPercent;
       }
     }
-    if (fillPercent >= 75) {
+    if (currentFillPercent >= 75) {
       levelComplete = true;
     }
   }
@@ -973,7 +974,7 @@ function tick(actions) {
     activeWalls,
     tilesChanged: anyWallFinished,
     levelComplete,
-    fillPercent
+    fillPercent: currentFillPercent
   };
 }
 
