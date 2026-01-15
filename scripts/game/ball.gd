@@ -60,12 +60,6 @@ func set_relative_pos(x: float, y: float):
 	relative_pos = Vector2(x, y)
 
 
-## Get bounding rectangle in tile coordinates
-func ball_bounding_rect() -> Rect2:
-	return Rect2(relative_pos.x, relative_pos.y,
-				 BALL_RELATIVE_SIZE, BALL_RELATIVE_SIZE)
-
-
 ## Resize ball to match tile size
 func resize(tile_size: Vector2i):
 	_tile_size = tile_size

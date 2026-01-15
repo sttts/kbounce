@@ -61,11 +61,6 @@ function getVersion() {
   return VERSION;
 }
 
-// Clear all balls
-function clearBalls() {
-  balls = [];
-}
-
 // Add a ball with position and direction (dx, dy are ±1)
 function addBall(x, y, dx, dy) {
   const id = balls.length;
@@ -88,50 +83,9 @@ function setTile(x, y, type) {
   }
 }
 
-// Get a tile type
-function getTile(x, y) {
-  if (x >= 0 && x < BOARD_W && y >= 0 && y < BOARD_H) {
-    return tiles[x][y];
-  }
-  return BORDER;
-}
-
 // Get all tiles (for syncing to GDScript)
 function getTiles() {
   return tiles;
-}
-
-// Set tiles in a rectangle
-function setTileRect(x1, y1, x2, y2, type) {
-  for (let x = x1; x < x2; x++) {
-    for (let y = y1; y < y2; y++) {
-      setTile(x, y, type);
-    }
-  }
-}
-
-// Get ball state
-function getBall(id) {
-  if (id >= 0 && id < balls.length) {
-    const b = balls[id];
-    return { x: b.x, y: b.y, vx: b.vx, vy: b.vy };
-  }
-  return null;
-}
-
-// Get all balls state
-function getBalls() {
-  return balls.map(b => ({ id: b.id, x: b.x, y: b.y, vx: b.vx, vy: b.vy }));
-}
-
-// Get ball count
-function getBallCount() {
-  return balls.length;
-}
-
-// Clear all walls
-function clearWalls() {
-  walls = [];
 }
 
 // Add a wall at position with direction
@@ -975,14 +929,6 @@ function tick(actions) {
     levelComplete,
     fillPercent
   };
-}
-
-// Simulate N ticks and return final state (for testing)
-function simulate(ticks) {
-  for (let i = 0; i < ticks; i++) {
-    tick();
-  }
-  return getBalls();
 }
 
 // Start replay validation mode - sets up state for step-by-step replay
