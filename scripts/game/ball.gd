@@ -87,24 +87,20 @@ func set_random_frame():
 
 
 ## Handle collision response (sound effects only - JS handles physics)
-func collide(collision: Array):
+func collide(hit: bool, hit_wall: bool):
 	# Decrement sound delay
 	if _sound_delay > 0:
 		_sound_delay -= 1
 
-	for hit in collision:
-		var h := hit as Collision.Hit
-		if not h:
-			continue
+	if not hit or _sound_delay > 0:
+		return
 
-		# Play sound if not in cooldown
-		if _sound_delay <= 0:
-			if h.type == Collision.Type.WALL:
-				AudioManager.play("ball_bounce_wall")
-				_sound_delay = SOUND_DELAY
-			elif h.type == Collision.Type.TILE:
-				AudioManager.play("ball_bounce")
-				_sound_delay = SOUND_DELAY
+	# Play sound based on what was hit
+	if hit_wall:
+		AudioManager.play("ball_bounce_wall")
+	else:
+		AudioManager.play("ball_bounce")
+	_sound_delay = SOUND_DELAY
 
 
 ## Update visual representation

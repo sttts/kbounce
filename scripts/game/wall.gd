@@ -21,9 +21,6 @@ var direction: Direction = Direction.UP
 ## Wall velocity in tiles per tick
 var wall_velocity := 0.125
 
-## Whether wall is currently being built
-var _building := false
-
 ## Starting tile position
 var start_x := 0
 var start_y := 0
@@ -45,12 +42,8 @@ func _ready():
 
 ## Start building wall from a tile position
 func build(x: int, y: int):
-	if _building:
-		return  # Already building
-
 	start_x = x
 	start_y = y
-	_building = true
 	visible = true
 
 	# Initialize bounding rect covering the full starting tile.
@@ -74,7 +67,7 @@ func resize(tile_size: Vector2i):
 
 ## Update visual representation
 func update_visuals():
-	if not _building or not board:
+	if not board:
 		return
 
 	# Update position (floor to avoid wobbling with pixel calculations)
@@ -87,9 +80,6 @@ func update_visuals():
 
 ## Custom drawing for the wall
 func _draw():
-	if not _building:
-		return
-
 	var wall_h := ThemeManager.get_texture("wall_h")  # Inner tile for LEFT/RIGHT
 	var wall_v := ThemeManager.get_texture("wall_v")  # Inner tile for UP/DOWN
 	var wall_end := ThemeManager.get_texture("wall_end")  # Tip tile for all directions
