@@ -355,6 +355,8 @@ func _setup_debug_ui():
 		["+life", func():
 			GameManager.lives += 1
 			GameManager.lives_changed.emit(GameManager.lives)],
+		["net.err", func():
+			LeaderboardManager.score_failed.emit("Request failed: Can't connect to host")],
 	]
 
 	for btn_data in buttons:
