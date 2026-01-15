@@ -290,6 +290,22 @@ test('ball hitting wall tip causes wall to finish shortened', () => {
   assert.ok(wallFinishedShortened, 'Wall should finish shortened from tip hit');
 });
 
+test('tilesChanged is true when ball hits wall tip', () => {
+  physics.init();
+  physics.addBall(15, 14, 0, -1);  // Ball moving up toward wall tip
+  physics.tick([{ x: 15, y: 10, vertical: true }]);
+
+  let tilesChangedOnFinish = false;
+  for (let i = 0; i < 50; i++) {
+    const result = physics.tick();
+    if (result.wallEvents.some(e => e.event === 'finish' && e.shortened)) {
+      tilesChangedOnFinish = result.tilesChanged;
+      break;
+    }
+  }
+  assert.ok(tilesChangedOnFinish, 'tilesChanged should be true when ball-tip hit finishes wall');
+});
+
 // Note: Testing "ball hits tip from side (normal doesn't match)" is tricky because
 // the tip is very small (0.1 tiles) and side hits usually classify as body hits.
 // The KDE normal check is mainly for edge cases at glancing angles.

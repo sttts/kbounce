@@ -851,6 +851,7 @@ function tick(actions) {
 
   const ballCollisions = [];
   const wallEvents = [];
+  let ballCausedWallFinish = false;
 
   // Check ball vs wall collisions first
   for (let i = 0; i < balls.length; i++) {
@@ -904,6 +905,7 @@ function tick(actions) {
           const bounds = wallMaterialize(wallResult.wallId, pairedBuilding);
           wallStop(wallResult.wallId);
           wallEvents.push({ wallId: wallResult.wallId, event: 'finish', bounds: bounds, shortened: true });
+          ballCausedWallFinish = true;
         }
         // If wall is too short to shrink, it just reflects (no finish)
       }
@@ -939,7 +941,8 @@ function tick(actions) {
   // Fill enclosed areas AFTER balls move
   let levelComplete = false;
   let fillPercent = 0;
-  if (wallTickResult.anyWallFinished) {
+  const anyWallFinished = wallTickResult.anyWallFinished || ballCausedWallFinish;
+  if (anyWallFinished) {
     fillPercent = fillEnclosedAreas();
     // Add fill percentage to all finish events
     for (const event of wallEvents) {
@@ -968,7 +971,7 @@ function tick(actions) {
     wallEvents,
     newWalls,
     activeWalls,
-    tilesChanged: wallTickResult.anyWallFinished,
+    tilesChanged: anyWallFinished,
     levelComplete,
     fillPercent
   };

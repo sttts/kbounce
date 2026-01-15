@@ -246,14 +246,11 @@ func new_level(level: int):
 	balls_changed.emit(target_ball_count)
 
 
-## Start game from current demo state (no reset, captures current ball positions)
+## Start game from current demo state (preserves ball positions, resets tick counter)
 func start_from_demo(level: int):
-	# JS physics is already initialized and balls are synced from demo mode
-	# Just need to record the current state for replay
-
 	var level_seed := randi()
 
-	# Capture current ball states for replay
+	# Capture current ball states before resetting physics
 	var ball_states: Array = []
 	for ball in balls:
 		ball_states.append({
@@ -263,7 +260,14 @@ func start_from_demo(level: int):
 			"vy": ball.velocity.y
 		})
 
-	# Record level start for replay with current positions
+	# Reset JS physics to get clean tick counter (required for replay validation)
+	_init_js_physics()
+
+	# Re-add balls at their current positions
+	for i in range(balls.size()):
+		_sync_ball_to_js(balls[i], i)
+
+	# Record level start for replay
 	ReplayManager.start_level(level, level_seed, ball_states)
 
 	balls_changed.emit(balls.size())
