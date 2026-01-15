@@ -151,10 +151,11 @@ func _unhandled_input(event):
 	# Requires 2:1 ratio between axes for clearer intent detection
 	var is_drag: bool = event is InputEventMouseMotion or event is InputEventScreenDrag
 	if is_drag and _swipe_active and _swipe_start_pos != Vector2.ZERO:
-		var delta: Vector2 = event.position - _swipe_start_pos
-		var abs_x := abs(delta.x)
-		var abs_y := abs(delta.y)
-		var max_delta := maxf(abs_x, abs_y)
+		var event_pos: Vector2 = (event as InputEventMouseMotion).position if event is InputEventMouseMotion else (event as InputEventScreenDrag).position
+		var delta: Vector2 = event_pos - _swipe_start_pos
+		var abs_x: float = absf(delta.x)
+		var abs_y: float = absf(delta.y)
+		var max_delta: float = maxf(abs_x, abs_y)
 		if max_delta >= SWIPE_THRESHOLD:
 			# Require 2:1 ratio for direction detection
 			if abs_y > 2.0 * abs_x:
@@ -244,8 +245,8 @@ func _on_time_tick():
 
 	var time_up := GameManager.tick_time()
 
-	# Warning sound at 5 seconds
-	if GameManager.time <= 5 and GameManager.time > 0:
+	# Warning sound at 10 seconds
+	if GameManager.time <= 10 and GameManager.time > 0:
 		AudioManager.play("seconds")
 
 	# Time ran out - game over
