@@ -267,8 +267,8 @@ var _pending_actions: Array = []
 
 ## Queue a wall placement for the next tick
 func build_wall(pos: Vector2, vertical: bool):
-	# Max 4 active walls (2 placements × 2 directions each)
-	if _walls.size() >= 4:
+	# Max 2 active walls (2 half-wall slots)
+	if _walls.size() >= 2:
 		return
 
 	# Convert pixel position to tile coordinates
@@ -357,8 +357,6 @@ func _tick_physics(actions: Array) -> Dictionary:
 		match event_type:
 			"die":
 				wall.die()
-			"die_paired", "wall_collision":
-				wall.die_from_wall()
 			"finish":
 				wall._finish()
 		_walls.erase(js_id)

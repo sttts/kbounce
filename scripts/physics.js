@@ -30,9 +30,12 @@ const GRID_H = Math.ceil(BOARD_H / GRID_CELL_SIZE);  // 5 cells
 // Game state
 let tiles = [];
 let balls = [];
-let walls = [];  // Array of wall objects
+let walls = [];  // Array of wall objects (max 4 active building walls)
 let ballGrid = [];  // 2D array of ball index lists
 let tickCounter = 0;  // Global tick counter, incremented at end of tick()
+
+// Maximum active building walls (2 half-wall slots)
+const MAX_WALLS = 2;
 
 // Replay validation state (null when not validating)
 let replay = null;
@@ -230,6 +233,33 @@ function wallStop(wallId) {
   walls[wallId].building = false;
 }
 
+// Shrink wall by 1 tile in growth direction (for safe edge hit)
+function wallShrink(wallId) {
+  if (wallId < 0 || wallId >= walls.length) return;
+  const wall = walls[wallId];
+
+  switch (wall.direction) {
+    case DIR_UP:
+      wall.y += 1;
+      wall.h -= 1;
+      break;
+    case DIR_DOWN:
+      wall.h -= 1;
+      break;
+    case DIR_LEFT:
+      wall.x += 1;
+      wall.w -= 1;
+      break;
+    case DIR_RIGHT:
+      wall.w -= 1;
+      break;
+  }
+
+  // Ensure minimum size
+  if (wall.w < 1) wall.w = 1;
+  if (wall.h < 1) wall.h = 1;
+}
+
 // Check wall vs tile collision (tip only)
 // Returns: { hit: bool, materialize: bool }
 function checkWallTileCollision(wallId) {
@@ -254,8 +284,8 @@ function checkWallTileCollision(wallId) {
   return { hit: false };
 }
 
-// Check wall vs wall collision
-// Returns: { hit: bool, otherWallId: int, bothDie: bool }
+// Check wall vs wall collision (simplified: any collision → finish)
+// Returns: { hit: bool, otherWallId: int }
 function checkWallWallCollision(wallId) {
   if (wallId < 0 || wallId >= walls.length) return { hit: false };
   const wall = walls[wallId];
@@ -263,7 +293,6 @@ function checkWallWallCollision(wallId) {
 
   const myTipTile = wallTipTile(wall);
   const myTipRect = wallTipRect(wall);
-  const myNextRect = wallNextRect(wall);
 
   // Skip if tip is still in start tile
   if (myTipTile.x === wall.startX && myTipTile.y === wall.startY) {
@@ -278,19 +307,11 @@ function checkWallWallCollision(wallId) {
     // Skip paired walls
     if (arePairedWalls(wall, other)) continue;
 
-    const otherNextRect = { x: other.x, y: other.y, w: other.w, h: other.h };
+    const otherRect = { x: other.x, y: other.y, w: other.w, h: other.h };
 
-    // Check if my tip intersects other wall
-    if (rectsIntersect(myTipRect, otherNextRect)) {
-      const otherTipRect = wallTipRect(other);
-
-      // If tips share a tile, both walls die
-      if (rectsShareTile(myTipRect, otherTipRect)) {
-        return { hit: true, otherWallId: i, bothDie: true };
-      } else {
-        // My tip hits other wall's body - I materialize
-        return { hit: true, otherWallId: i, bothDie: false };
-      }
+    // If my tip intersects other wall → I finish (simple KDE behavior)
+    if (rectsIntersect(myTipRect, otherRect)) {
+      return { hit: true, otherWallId: i };
     }
   }
 
@@ -298,7 +319,7 @@ function checkWallWallCollision(wallId) {
 }
 
 // Check ball vs wall collision
-// Returns: { hit: bool, wallId: int, normal: {x, y}, killsWall: bool }
+// Returns: { hit: bool, wallId: int, normal: {x, y}, killsWall: bool, hitTipOnly: bool }
 function checkBallWallCollision(ballId) {
   if (ballId < 0 || ballId >= balls.length) return { hit: false };
   const ball = balls[ballId];
@@ -323,11 +344,12 @@ function checkBallWallCollision(ballId) {
         wallRect.x, wallRect.y, wallRect.w, wallRect.h
       );
 
-      // Check if ball hits inner rect (kills wall) or just tip (reflects only)
+      // Check if ball hits inner rect (kills wall) or just tip (finishes shortened)
       const innerRect = wallInnerRect(wall);
       const killsWall = innerRect && rectsIntersect(ballNextRect, innerRect);
+      const hitTipOnly = !killsWall;
 
-      return { hit: true, wallId: i, normal: normal, killsWall: killsWall };
+      return { hit: true, wallId: i, normal: normal, killsWall: killsWall, hitTipOnly: hitTipOnly };
     }
   }
 
@@ -687,7 +709,7 @@ function moveBall(ballId) {
 }
 
 // Tick walls: check collisions and grow
-// Returns array of wall events: { wallId, event: 'die'|'finish'|'wall_collision', ... }
+// Returns array of wall events: { wallId, event: 'die'|'finish', ... }
 function tickWalls() {
   const events = [];
   let anyWallFinished = false;
@@ -716,38 +738,22 @@ function tickWalls() {
       continue;
     }
 
-    // Check wall vs wall collision
+    // Check wall vs wall collision (simplified: collision → finish)
     const wallResult = checkWallWallCollision(i);
     if (wallResult.hit) {
-      if (wallResult.bothDie) {
-        // Both walls die - find and kill paired walls too
-        wallStop(i);
-        wallStop(wallResult.otherWallId);
-
-        // Kill paired walls
-        for (let j = 0; j < walls.length; j++) {
-          if (walls[j].building) {
-            if (arePairedWalls(wall, walls[j])) wallStop(j);
-            if (arePairedWalls(walls[wallResult.otherWallId], walls[j])) wallStop(j);
-          }
+      // Wall hits another wall → finish (simple KDE behavior)
+      let pairedBuilding = false;
+      for (let j = 0; j < walls.length; j++) {
+        if (j !== i && walls[j].building && arePairedWalls(wall, walls[j])) {
+          pairedBuilding = true;
+          break;
         }
-
-        events.push({ wallId: i, event: 'wall_collision', otherWallId: wallResult.otherWallId });
-      } else {
-        // I materialize (hit other wall's body)
-        let pairedBuilding = false;
-        for (let j = 0; j < walls.length; j++) {
-          if (j !== i && walls[j].building && arePairedWalls(wall, walls[j])) {
-            pairedBuilding = true;
-            break;
-          }
-        }
-
-        const bounds = wallMaterialize(i, pairedBuilding);
-        wallStop(i);
-        events.push({ wallId: i, event: 'finish', bounds: bounds });
-        anyWallFinished = true;
       }
+
+      const bounds = wallMaterialize(i, pairedBuilding);
+      wallStop(i);
+      events.push({ wallId: i, event: 'finish', bounds: bounds });
+      anyWallFinished = true;
       continue;
     }
   }
@@ -763,24 +769,82 @@ function tickWalls() {
   return { events, anyWallFinished };
 }
 
+// Get currently building walls
+function getBuildingWalls() {
+  return walls.filter(w => w.building);
+}
+
+// Get opposite direction (UP↔DOWN, LEFT↔RIGHT)
+function oppositeDirection(dir) {
+  switch (dir) {
+    case DIR_UP: return DIR_DOWN;
+    case DIR_DOWN: return DIR_UP;
+    case DIR_LEFT: return DIR_RIGHT;
+    case DIR_RIGHT: return DIR_LEFT;
+  }
+  return dir;
+}
+
+// Get corresponding direction when orientation changes (UP↔LEFT, DOWN↔RIGHT)
+function correspondingDirection(dir) {
+  switch (dir) {
+    case DIR_UP: return DIR_LEFT;
+    case DIR_DOWN: return DIR_RIGHT;
+    case DIR_LEFT: return DIR_UP;
+    case DIR_RIGHT: return DIR_DOWN;
+  }
+  return dir;
+}
+
+// Check if direction is vertical
+function isVerticalDirection(dir) {
+  return dir === DIR_UP || dir === DIR_DOWN;
+}
+
 // Full tick: process actions, check collisions, apply, and move
 // Input: actions - array of wall placements [{x, y, vertical}, ...]
 // Returns { balls, collisions, walls, newWalls, levelComplete, fillPercent }
 function tick(actions) {
-  // Process wall placement actions at start of tick
+  // Process wall placement actions at start of tick (2-slot model)
   const newWalls = [];
   if (actions && actions.length > 0) {
     for (const action of actions) {
-      if (action.vertical) {
-        const id1 = addWall(action.x, action.y, DIR_UP);
-        const id2 = addWall(action.x, action.y, DIR_DOWN);
-        newWalls.push({ id: id1, startX: action.x, startY: action.y, direction: DIR_UP });
-        newWalls.push({ id: id2, startX: action.x, startY: action.y, direction: DIR_DOWN });
-      } else {
-        const id1 = addWall(action.x, action.y, DIR_LEFT);
-        const id2 = addWall(action.x, action.y, DIR_RIGHT);
-        newWalls.push({ id: id1, startX: action.x, startY: action.y, direction: DIR_LEFT });
-        newWalls.push({ id: id2, startX: action.x, startY: action.y, direction: DIR_RIGHT });
+      const building = getBuildingWalls();
+
+      // 2 slots taken: nothing
+      if (building.length >= MAX_WALLS) break;
+
+      // 0 slots taken: create 2 paired walls (opposite directions)
+      if (building.length === 0) {
+        if (action.vertical) {
+          const id1 = addWall(action.x, action.y, DIR_UP);
+          const id2 = addWall(action.x, action.y, DIR_DOWN);
+          newWalls.push({ id: id1, startX: action.x, startY: action.y, direction: DIR_UP });
+          newWalls.push({ id: id2, startX: action.x, startY: action.y, direction: DIR_DOWN });
+        } else {
+          const id1 = addWall(action.x, action.y, DIR_LEFT);
+          const id2 = addWall(action.x, action.y, DIR_RIGHT);
+          newWalls.push({ id: id1, startX: action.x, startY: action.y, direction: DIR_LEFT });
+          newWalls.push({ id: id2, startX: action.x, startY: action.y, direction: DIR_RIGHT });
+        }
+      }
+      // 1 slot taken: create 1 wall (direction based on building wall + orientation)
+      else if (building.length === 1) {
+        const existingDir = building[0].direction;
+        const existingIsVertical = isVerticalDirection(existingDir);
+        const actionIsVertical = action.vertical;
+
+        let newDir;
+        if (actionIsVertical === existingIsVertical) {
+          // Same orientation: opposite direction
+          newDir = oppositeDirection(existingDir);
+        } else {
+          // Different orientation: corresponding direction (UP↔LEFT, DOWN↔RIGHT)
+          newDir = correspondingDirection(existingDir);
+        }
+
+        const id = addWall(action.x, action.y, newDir);
+        newWalls.push({ id: id, startX: action.x, startY: action.y, direction: newDir });
       }
     }
   }
@@ -802,19 +866,46 @@ function tick(actions) {
         wallId: wallResult.wallId
       });
 
-      // Kill wall if hit inner area
+      // Inner hit: wall dies
       if (wallResult.killsWall) {
-        const wall = walls[wallResult.wallId];
         wallStop(wallResult.wallId);
         wallEvents.push({ wallId: wallResult.wallId, event: 'die', ballId: i });
+      }
+      // Tip-only hit: wall finishes shortened (KDE safeEdgeHit behavior)
+      // Only finish if collision normal matches wall orientation
+      else if (wallResult.hitTipOnly) {
+        const wall = walls[wallResult.wallId];
+        const normal = wallResult.normal;
 
-        // Kill paired wall too (emits 'die_paired' - no life loss)
-        for (let j = 0; j < walls.length; j++) {
-          if (j !== wallResult.wallId && walls[j].building && arePairedWalls(wall, walls[j])) {
-            wallStop(j);
-            wallEvents.push({ wallId: j, event: 'die_paired' });
-          }
+        // KDE check: normal direction must match wall orientation
+        const isVerticalNormal = Math.abs(normal.x) < Math.abs(normal.y);
+        const isVerticalWall = wall.direction === DIR_UP || wall.direction === DIR_DOWN;
+        const normalMatchesWall = isVerticalNormal === isVerticalWall;
+
+        if (!normalMatchesWall) {
+          // Ball hit from the side - wall continues building (just reflects)
+          continue;
         }
+
+        // Check if wall is long enough to shrink (more than 1 tile)
+        const canShrink = isVerticalWall ? wall.h > 1 : wall.w > 1;
+
+        if (canShrink) {
+          // Find paired wall to check if we should skip start tile
+          let pairedBuilding = false;
+          for (let j = 0; j < walls.length; j++) {
+            if (j !== wallResult.wallId && walls[j].building && arePairedWalls(wall, walls[j])) {
+              pairedBuilding = true;
+              break;
+            }
+          }
+
+          wallShrink(wallResult.wallId);
+          const bounds = wallMaterialize(wallResult.wallId, pairedBuilding);
+          wallStop(wallResult.wallId);
+          wallEvents.push({ wallId: wallResult.wallId, event: 'finish', bounds: bounds, shortened: true });
+        }
+        // If wall is too short to shrink, it just reflects (no finish)
       }
       continue;
     }

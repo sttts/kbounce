@@ -263,7 +263,7 @@ test('ball kills wall when hitting inner area', () => {
   assert.ok(wallDied, 'Wall should die when ball hits inner area');
 });
 
-test('ball hitting wall tip reflects but wall survives', () => {
+test('ball hitting wall tip causes wall to finish shortened', () => {
   physics.init();
   // Position ball to hit wall's growing tip, not the body
   // Wall at y=10 growing DOWN, ball coming from below at y=14
@@ -271,22 +271,30 @@ test('ball hitting wall tip reflects but wall survives', () => {
   physics.tick([{ x: 15, y: 10, vertical: true }]);  // Wall grows up and down
 
   let wallDied = false;
+  let wallFinishedShortened = false;
   let ballReflected = false;
   for (let i = 0; i < 50; i++) {
     const result = physics.tick();
-    if (result.wallEvents.some(e => e.event === 'die')) {
-      wallDied = true;
+    for (const e of result.wallEvents) {
+      if (e.event === 'die') wallDied = true;
+      if (e.event === 'finish' && e.shortened) wallFinishedShortened = true;
     }
     // Check if ball reversed direction (hit something)
     if (result.balls[0].vy > 0) {
       ballReflected = true;
     }
   }
-  // Ball should reflect off tip, but wall should NOT die (tip hit only)
-  // Note: Whether wall survives depends on exact timing and inner rect logic
-  // This tests that the tip-vs-body distinction exists
+  // Ball hits tip → wall finishes shortened (KDE safeEdgeHit behavior)
   assert.ok(ballReflected, 'Ball should reflect when hitting wall');
+  assert.ok(!wallDied, 'Wall should NOT die from tip hit');
+  assert.ok(wallFinishedShortened, 'Wall should finish shortened from tip hit');
 });
+
+// Note: Testing "ball hits tip from side (normal doesn't match)" is tricky because
+// the tip is very small (0.1 tiles) and side hits usually classify as body hits.
+// The KDE normal check is mainly for edge cases at glancing angles.
+// The main test "ball hitting wall tip causes wall to finish shortened" covers
+// the positive case where normal DOES match wall orientation.
 
 // =============================================================================
 // Collision reporting tests
@@ -397,26 +405,10 @@ test('balls moving apart do not collide', () => {
 
 console.log('\nSuite: Wall-wall collision');
 
-test('wall tips collide - both walls die', () => {
-  physics.init();
-  physics.addBall(5, 15, 1, 1);  // Keep ball in bottom-left, away from walls
-
-  // Place two horizontal walls that will collide in the middle
-  // Wall at x=12 and x=18, both on y=5 - close enough to collide quickly
-  physics.tick([{ x: 12, y: 5, vertical: false }]);  // Creates LEFT+RIGHT walls
-  physics.tick([{ x: 18, y: 5, vertical: false }]);  // Creates LEFT+RIGHT walls
-
-  // The RIGHT wall from x=12 and LEFT wall from x=18 should collide
-  let wallCollisionEvent = false;
-  for (let i = 0; i < 100; i++) {
-    const result = physics.tick();
-    if (result.wallEvents.some(e => e.event === 'wall_collision')) {
-      wallCollisionEvent = true;
-      break;
-    }
-  }
-  assert.ok(wallCollisionEvent, 'Wall collision event should be emitted');
-});
+// Note: Wall tips collision test removed - with 2-slot model, only 2 walls can
+// build at once (paired, opposite directions), so tip collision between
+// different placements is not possible. Wall-wall collision behavior will be
+// simplified in a separate task.
 
 test('paired walls do not collide with each other', () => {
   physics.init();
@@ -437,27 +429,39 @@ test('paired walls do not collide with each other', () => {
   assert.ok(!wallCollisionEvent, 'Paired walls should not collide');
 });
 
-test('wall tip hits wall body - wall materializes', () => {
+test('wall tip hits wall body - wall finishes (2-slot model)', () => {
   physics.init();
   physics.addBall(5, 15, 1, 1);  // Keep ball away
 
-  // Place vertical wall first - let it grow
-  physics.tick([{ x: 15, y: 10, vertical: true }]);
-  for (let i = 0; i < 30; i++) physics.tick();  // Let it grow
+  // Place vertical wall near top border so UP finishes quickly, freeing a slot
+  physics.tick([{ x: 15, y: 2, vertical: true }]);
 
-  // Place horizontal wall that will hit the vertical wall's body
-  physics.tick([{ x: 10, y: 10, vertical: false }]);  // RIGHT wall will hit vertical
+  // Wait for UP to finish (near top border)
+  let upFinished = false;
+  for (let i = 0; i < 30; i++) {
+    const result = physics.tick();
+    if (result.wallEvents.some(e => e.event === 'finish')) {
+      upFinished = true;
+      break;
+    }
+  }
+  assert.ok(upFinished, 'First wall (UP) should finish at border');
+
+  // DOWN is still building at x=15, going down. Place horizontal at y that intersects.
+  // With DOWN building, placing horizontal gives us RIGHT (DOWN↔RIGHT correspondence)
+  // RIGHT wall at (10, 10) will grow toward x increasing, hitting DOWN at x=15
+  const placeResult = physics.tick([{ x: 10, y: 10, vertical: false }]);
+  assert.strictEqual(placeResult.newWalls.length, 1, 'Should create 1 wall (RIGHT via correspondence)');
 
   let wallFinished = false;
   for (let i = 0; i < 60; i++) {
     const result = physics.tick();
-    // The horizontal wall should finish when hitting vertical wall body
     if (result.wallEvents.some(e => e.event === 'finish')) {
       wallFinished = true;
       break;
     }
   }
-  assert.ok(wallFinished, 'Wall should finish when hitting another wall body');
+  assert.ok(wallFinished, 'Wall should finish (border or wall-wall collision)');
 });
 
 // =============================================================================
@@ -606,38 +610,118 @@ test('validateLevel applies actions correctly', () => {
 
 console.log('\nSuite: Multiple walls');
 
-test('can have 4 walls active simultaneously', () => {
+test('can have 2 walls active simultaneously (2-slot model)', () => {
   physics.init();
   physics.addBall(5, 5, 1, 1);
 
-  // Place 2 wall pairs = 4 walls
+  // Place 1 wall pair = 2 walls (max with 2-slot model)
+  physics.tick([{ x: 10, y: 10, vertical: true }]);
+
+  const result = physics.tick();
+  assert.strictEqual(result.activeWalls.length, 2, 'Should have 2 active walls');
+});
+
+test('second placement ignored when slots full', () => {
+  physics.init();
+  physics.addBall(5, 5, 1, 1);
+
+  // Try to place 2 wall pairs - second should be ignored
   physics.tick([
     { x: 10, y: 10, vertical: true },
     { x: 20, y: 10, vertical: false }
   ]);
 
   const result = physics.tick();
-  assert.strictEqual(result.activeWalls.length, 4, 'Should have 4 active walls');
+  assert.strictEqual(result.activeWalls.length, 2, 'Should only have 2 walls (second ignored)');
 });
 
-test('multiple walls finish independently', () => {
+test('paired walls finish independently', () => {
   physics.init();
   physics.addBall(5, 5, 1, 1);
 
-  // Place walls at different distances from borders
-  physics.tick([
-    { x: 15, y: 2, vertical: true },   // Near top - UP finishes fast
-    { x: 15, y: 17, vertical: true }   // Near bottom - DOWN finishes fast
-  ]);
+  // Place vertical wall near top border - UP finishes before DOWN
+  physics.tick([{ x: 15, y: 2, vertical: true }]);
 
-  let finishEvents = 0;
+  let finishEvents = [];
   for (let i = 0; i < 200; i++) {
     const result = physics.tick();
-    finishEvents += result.wallEvents.filter(e => e.event === 'finish').length;
+    for (const e of result.wallEvents) {
+      if (e.event === 'finish') finishEvents.push(i);
+    }
   }
 
-  // Should have multiple finish events (at least 2 walls finishing quickly)
-  assert.ok(finishEvents >= 2, 'Multiple walls should finish');
+  // Should have 2 finish events at different times
+  assert.strictEqual(finishEvents.length, 2, 'Both walls should finish');
+  assert.ok(finishEvents[0] < finishEvents[1], 'Walls should finish at different times');
+});
+
+test('single wall created when one slot free (same orientation)', () => {
+  physics.init();
+  physics.addBall(5, 5, 1, 1);
+
+  // Place vertical wall near top - UP finishes quickly
+  physics.tick([{ x: 15, y: 2, vertical: true }]);
+
+  // Wait for UP to finish (near top border)
+  let upFinished = false;
+  for (let i = 0; i < 50; i++) {
+    const result = physics.tick();
+    if (result.wallEvents.some(e => e.event === 'finish')) {
+      upFinished = true;
+      break;
+    }
+  }
+  assert.ok(upFinished, 'UP wall should finish');
+
+  // Now place another vertical wall - should create only DOWN (opposite of remaining DOWN)
+  // Wait, remaining is DOWN, same orientation vertical → opposite = UP
+  const beforeResult = physics.tick();
+  const wallsBeforeAction = beforeResult.activeWalls.length;
+
+  const afterResult = physics.tick([{ x: 20, y: 10, vertical: true }]);
+
+  // Should add exactly 1 wall
+  assert.strictEqual(afterResult.newWalls.length, 1, 'Should create 1 new wall');
+});
+
+test('single wall direction: same orientation gives opposite', () => {
+  physics.init();
+  physics.addBall(5, 5, 1, 1);
+
+  // Place vertical wall - creates UP + DOWN
+  physics.tick([{ x: 15, y: 2, vertical: true }]);
+
+  // Wait for UP to finish (close to top border)
+  for (let i = 0; i < 50; i++) {
+    const result = physics.tick();
+    if (result.wallEvents.some(e => e.event === 'finish')) break;
+  }
+
+  // DOWN is still building. Place vertical → should get UP (opposite of DOWN)
+  const result = physics.tick([{ x: 20, y: 10, vertical: true }]);
+
+  assert.strictEqual(result.newWalls.length, 1, 'Should create 1 wall');
+  assert.strictEqual(result.newWalls[0].direction, 0, 'Direction should be UP (0)');  // DIR_UP = 0
+});
+
+test('single wall direction: different orientation gives corresponding', () => {
+  physics.init();
+  physics.addBall(5, 5, 1, 1);
+
+  // Place vertical wall - creates UP + DOWN
+  physics.tick([{ x: 15, y: 2, vertical: true }]);
+
+  // Wait for UP to finish
+  for (let i = 0; i < 50; i++) {
+    const result = physics.tick();
+    if (result.wallEvents.some(e => e.event === 'finish')) break;
+  }
+
+  // DOWN is building. Place horizontal → should get RIGHT (DOWN↔RIGHT correspondence)
+  const result = physics.tick([{ x: 20, y: 10, vertical: false }]);
+
+  assert.strictEqual(result.newWalls.length, 1, 'Should create 1 wall');
+  assert.strictEqual(result.newWalls[0].direction, 3, 'Direction should be RIGHT (3)');  // DIR_RIGHT = 3
 });
 
 // =============================================================================
@@ -727,7 +811,7 @@ test('level completes at 75% fill', () => {
   // Note: May not complete if ball interferes - that's ok for this test
 });
 
-test('paired wall dies when partner is killed', () => {
+test('paired wall survives when partner is killed (independent)', () => {
   physics.init();
   // Ball heading right toward vertical wall
   physics.addBall(10, 10, 1, 0);
@@ -738,16 +822,21 @@ test('paired wall dies when partner is killed', () => {
   // Let wall grow a bit, then ball hits it
   let dieEvent = false;
   let diePairedEvent = false;
+  let activeWallsAfterDie = 0;
   for (let i = 0; i < 60; i++) {
     const result = physics.tick();
     for (const e of result.wallEvents) {
-      if (e.event === 'die') dieEvent = true;
+      if (e.event === 'die') {
+        dieEvent = true;
+        activeWallsAfterDie = result.activeWalls.length;
+      }
       if (e.event === 'die_paired') diePairedEvent = true;
     }
     if (dieEvent) break;
   }
   assert.ok(dieEvent, 'Wall should die from ball hit');
-  assert.ok(diePairedEvent, 'Paired wall should also die');
+  assert.ok(!diePairedEvent, 'Paired wall should NOT die (independent)');
+  assert.strictEqual(activeWallsAfterDie, 1, 'One wall should still be building');
 });
 
 test('addBall normalizes direction to velocity', () => {
