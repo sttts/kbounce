@@ -682,12 +682,16 @@ func _parse_request_id(headers: PackedStringArray) -> String:
 func _parse_error_response(body: PackedByteArray, response_code: int) -> String:
 	var text := body.get_string_from_utf8()
 	var json = JSON.parse_string(text)
-	if json != null and json is Dictionary and json.has("error"):
-		var error: String = json["error"]
-		# Return user-friendly messages for known errors
-		if error == "Nickname contains inappropriate content":
-			return "Nickname not allowed"
-		return error
+	if json != null and json is Dictionary:
+		# Log full error response for debugging
+		print("      error body: %s" % JSON.stringify(json))
+		if json.has("error"):
+			var error: String = json["error"]
+			# Return user-friendly messages for known errors
+			if error == "Nickname contains inappropriate content":
+				return "Nickname not allowed"
+			return error
+		return "Server error: %d" % response_code
 
 	# Log non-JSON error response for debugging (e.g. HTML error pages from proxies)
 	if not text.is_empty():
