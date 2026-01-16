@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Mentions légales"
 
-msgid "Report Bug"
-msgstr "Signaler un bug"
+msgid "Report\\nBug"
+msgstr "Signaler\\nun bug"
 
 msgid "Close"
 msgstr "Fermer"

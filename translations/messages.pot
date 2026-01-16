@@ -42,7 +42,7 @@ msgstr ""
 msgid "Impressum"
 msgstr ""
 
-msgid "Report Bug"
+msgid "Report\\nBug"
 msgstr ""
 
 msgid "Close"

@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "版权信息"
 
-msgid "Report Bug"
-msgstr "报告错误"
+msgid "Report\\nBug"
+msgstr "报告\\n错误"
 
 msgid "Close"
 msgstr "关闭"

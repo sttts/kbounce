@@ -48,7 +48,7 @@ func show_rejection_error(detail: String = ""):
 	var message := tr("Your score could not be verified.")
 	if not detail.is_empty():
 		message = detail
-	show_error(ErrorType.REJECTION, tr("Score Rejected"), message, tr("Report"))
+	show_error(ErrorType.REJECTION, tr("Score Rejected"), message, tr("Report\nBug"))
 
 
 func get_error_type() -> ErrorType:

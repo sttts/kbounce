@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Impressum"
 
-msgid "Report Bug"
-msgstr "Ilmoita virhe"
+msgid "Report\\nBug"
+msgstr "Ilmoita\\nvirhe"
 
 msgid "Close"
 msgstr "Sulje"

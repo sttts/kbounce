@@ -795,7 +795,8 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_button_default")
 theme_override_styles/hover = SubResource("StyleBoxFlat_button_default_hover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_button_default")
 theme_override_styles/focus = SubResource("StyleBoxFlat_button_default")
-text = "Report Bug"
+text = "Report
+Bug"
 
 [node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
 custom_minimum_size = Vector2(120, 48)

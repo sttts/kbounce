@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Impressum"
 
-msgid "Report Bug"
-msgstr "Nahlásit chybu"
+msgid "Report\\nBug"
+msgstr "Nahlásit\\nchybu"
 
 msgid "Close"
 msgstr "Zavřít"

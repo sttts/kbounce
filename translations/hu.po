@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Impressum"
 
-msgid "Report Bug"
-msgstr "Hiba jelentése"
+msgid "Report\\nBug"
+msgstr "Hiba\\njelentése"
 
 msgid "Close"
 msgstr "Bezárás"

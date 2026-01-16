@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Kolofon"
 
-msgid "Report Bug"
-msgstr "Rapporter fejl"
+msgid "Report\\nBug"
+msgstr "Rapporter\\nfejl"
 
 msgid "Close"
 msgstr "Luk"

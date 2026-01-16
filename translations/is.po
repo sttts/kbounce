@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Upplýsingar"
 
-msgid "Report Bug"
-msgstr "Tilkynna villu"
+msgid "Report\\nBug"
+msgstr "Tilkynna\\nvillu"
 
 msgid "Close"
 msgstr "Loka"

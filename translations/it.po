@@ -45,8 +45,8 @@ msgstr ""
 msgid "Impressum"
 msgstr "Impressum"
 
-msgid "Report Bug"
-msgstr "Segnala bug"
+msgid "Report\\nBug"
+msgstr "Segnala\\nbug"
 
 msgid "Close"
 msgstr "Chiudi"
