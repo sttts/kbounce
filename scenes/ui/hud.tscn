@@ -766,8 +766,7 @@ size_flags_horizontal = 3
 [node name="ReportBugButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
 custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
-text = "Report
-Bug"
+text = "Report Bug"
 
 [node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
 custom_minimum_size = Vector2(120, 48)

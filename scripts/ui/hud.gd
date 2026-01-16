@@ -268,7 +268,7 @@ func _on_version_label_input(event: InputEvent):
 			var game = get_tree().get_first_node_in_group("game")
 			if game and game.has_method("_setup_debug_ui"):
 				game._setup_debug_ui()
-				help_version_label.text = BuildInfo.version_tag + " " + tr("DEBUG_INDICATOR")
+				help_version_label.text = BuildInfo.version_tag + " " + tr("[DEBUG]")
 
 
 func _on_share_logs_pressed():
@@ -731,7 +731,7 @@ var _share_notification_dialog: AcceptDialog = null
 func _on_share_notification(message: String):
 	if _share_notification_dialog == null:
 		_share_notification_dialog = AcceptDialog.new()
-		_share_notification_dialog.title = tr("SHARED")
+		_share_notification_dialog.title = tr("Shared")
 		add_child(_share_notification_dialog)
 	_share_notification_dialog.dialog_text = message
 	_share_notification_dialog.popup_centered()
@@ -742,7 +742,7 @@ var _error_notification_dialog: AcceptDialog = null
 func _show_error_notification(message: String):
 	if _error_notification_dialog == null:
 		_error_notification_dialog = AcceptDialog.new()
-		_error_notification_dialog.title = tr("ERROR")
+		_error_notification_dialog.title = tr("Error")
 		add_child(_error_notification_dialog)
 	_error_notification_dialog.dialog_text = message
 	_error_notification_dialog.popup_centered()
@@ -783,7 +783,7 @@ func _on_error_popup_closed():
 
 
 func _show_offline_mode():
-	game_over_loading_label.text = tr("OFFLINE_MODE")
+	game_over_loading_label.text = tr("Offline mode")
 	game_over_loading_label.visible = true
 	_clear_game_over_entries()
 
@@ -826,7 +826,7 @@ func _clear_game_over_entries():
 
 func _on_rate_limited(retry_after: int):
 	_rate_limit_remaining = retry_after
-	game_over_loading_label.text = tr("RATE_LIMITED") % retry_after
+	game_over_loading_label.text = tr("Rate limited. Retry in %ds...") % retry_after
 	game_over_loading_label.visible = true
 
 	# Create timer if not exists
@@ -849,7 +849,7 @@ func _on_rate_limit_tick():
 
 	if _rate_limit_remaining <= 0:
 		_rate_limit_timer.stop()
-		game_over_loading_label.text = tr("RETRYING")
+		game_over_loading_label.text = tr("Retrying...")
 
 		# Retry score submission or load leaderboard
 		if LeaderboardManager.is_token_valid():
@@ -857,7 +857,7 @@ func _on_rate_limit_tick():
 		else:
 			LeaderboardManager.load_leaderboard()
 	else:
-		game_over_loading_label.text = tr("RATE_LIMITED") % _rate_limit_remaining
+		game_over_loading_label.text = tr("Rate limited. Retry in %ds...") % _rate_limit_remaining
 
 
 func _reset_loading_label():

@@ -7,146 +7,154 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-msgid "GAME_TITLE"
-msgstr "KBounce"
-
-msgid "GAME_SUBTITLE"
-msgstr "Fill 75% of the board without getting hit!"
-
-msgid "LEADERBOARD"
-msgstr "Leaderboard"
-
-msgid "LOADING"
-msgstr "Loading..."
-
-msgid "OFFLINE"
-msgstr "Offline"
-
-msgid "YOUR_BEST_SCORES"
-msgstr "Your Best Scores"
-
-msgid "PAUSED"
-msgstr "Paused"
-
-msgid "GAME_OVER"
-msgstr "Game Over"
-
-msgid "VOLUME"
-msgstr "Volume"
-
-msgid "SHARE_SCORE"
-msgstr "Share my score"
-
-msgid "IMPRESSUM"
-msgstr "Impressum"
-
-msgid "REPORT_BUG"
-msgstr "Report Bug"
-
-msgid "CLOSE"
-msgstr "Close"
-
-msgid "LOGS"
-msgstr "Logs"
-
-msgid "LEVEL_COMPLETE"
-msgstr "Level %d Complete!"
-
-msgid "RULES_TITLE"
-msgstr "Rules"
-
-msgid "RULES_TEXT"
+msgid "KBounce"
 msgstr ""
-"Fill 75% of the board to advance to the next level.\n"
-"\n"
-"Tap or click anywhere to build a wall in that direction.\n"
-"Swipe to choose the wall direction.\n"
-"\n"
-"Walls start from the edge of the board or from an existing wall.\n"
-"\n"
-"Don't let the ball hit a wall while it's still being built!\n"
-"\n"
-"You have three spare lives per level, one live recovers each level.\n"
-"\n"
-"You get bonus points for\n"
-"- filling more than 75%\n"
-"- each life you keep."
 
-msgid "BUILT_WITH"
-msgstr "Built with: Godot Engine Copyright (c) 2014-present Godot Engine contributors. License: MIT (godotengine.org/license)"
-
-msgid "IMPRESSUM_ADDRESS"
+msgid "Fill 75% of the board without getting hit!"
 msgstr ""
+
+msgid " Leaderboard"
+msgstr ""
+
+msgid "Loading..."
+msgstr ""
+
+msgid "Offline"
+msgstr ""
+
+msgid "Your Best Scores"
+msgstr ""
+
+msgid "Paused"
+msgstr ""
+
+msgid "Game Over"
+msgstr ""
+
+msgid "Volume"
+msgstr ""
+
+msgid ""
+"Share\n"
+"my score"
+msgstr ""
+
+msgid "Impressum"
+msgstr ""
+
+msgid "Report Bug"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Logs"
+msgstr ""
+
+msgid "Level %d Complete!"
+msgstr ""
+
+msgid "Rules"
+msgstr ""
+
+msgid ""
+"Game\n"
+"1. Fill 75% of the field to advance.\n"
+"2. Game over when lives reach zero or time runs out.\n"
+"\n"
+"Lives\n"
+"3. Start with one life per ball.\n"
+"4. Lose a life if a ball hits the inner part of a building wall.\n"
+"\n"
+"Balls\n"
+"5. Each level adds one more ball.\n"
+"6. Balls reflect off borders, filled walls, and building walls.\n"
+"\n"
+"Walls\n"
+"7. Tap/click to build a wall. Swipe to change direction.\n"
+"8. Two wall halves can build at once.\n"
+"9. A wall half finishes when its tip reaches a border, filled wall, or another building wall.\n"
+"10. Ball hitting the tip finishes the wall shortened.\n"
+"11. A wall half is removed if a ball hits the inner part (non-tip).\n"
+"\n"
+"Built with:\n"
+"Godot Engine\n"
+"Copyright (c) 2014-present Godot Engine contributors.\n"
+"License: MIT (godotengine.org/license)"
+msgstr ""
+
+msgid ""
 "Stefan Schimanski\n"
 "Gehmerweg 9a\n"
 "64291 Darmstadt\n"
 "E-Mail: kbounce@1stein.org"
+msgstr ""
 
-msgid "IMPRESSUM_DESCRIPTION"
-msgstr "Recreation of the KDE KBounce using Godot 4.5."
+msgid "Recreation of the KDE KBounce using Godot 4.5."
+msgstr ""
 
-msgid "IMPRESSUM_WEBSITE"
-msgstr "kbounce.app"
+msgid "kbounce.app"
+msgstr ""
 
-msgid "SCORE_UPLOAD_FAILED"
-msgstr "Score upload failed"
+msgid "Score upload failed"
+msgstr ""
 
-msgid "NETWORK_ERROR"
-msgstr "Could not connect to the server."
+msgid "Could not connect to the server."
+msgstr ""
 
-msgid "SCORE_REJECTED"
-msgstr "Score Rejected"
+msgid "Score Rejected"
+msgstr ""
 
-msgid "REJECTION_ERROR"
-msgstr "Your score could not be verified."
+msgid "Your score could not be verified."
+msgstr ""
 
-msgid "RETRY"
-msgstr "Retry"
+msgid "Retry"
+msgstr ""
 
-msgid "REPORT"
-msgstr "Report"
+msgid "Report"
+msgstr ""
 
-msgid "IGNORE"
-msgstr "Ignore"
+msgid "Ignore"
+msgstr ""
 
-msgid "RATE_LIMITED"
-msgstr "Rate limited. Retry in %ds..."
+msgid "Rate limited. Retry in %ds..."
+msgstr ""
 
-msgid "RETRYING"
-msgstr "Retrying..."
+msgid "Retrying..."
+msgstr ""
 
-msgid "OFFLINE_MODE"
-msgstr "Offline mode"
+msgid "Offline mode"
+msgstr ""
 
-msgid "SHARED"
-msgstr "Shared"
+msgid "Shared"
+msgstr ""
 
-msgid "ERROR"
-msgstr "Error"
+msgid "Error"
+msgstr ""
 
-msgid "DEBUG_INDICATOR"
-msgstr "[DEBUG]"
+msgid "[DEBUG]"
+msgstr ""
 
-msgid "ENTER_NAME"
-msgstr "Enter your name:"
+msgid "Enter your name:"
+msgstr ""
 
-msgid "YOUR_NICKNAME"
-msgstr "Your nickname"
+msgid "Your nickname"
+msgstr ""
 
-msgid "CONTINUE"
-msgstr "Continue"
+msgid "Continue"
+msgstr ""
 
-msgid "ENTER_YOUR_NAME"
-msgstr "Enter your name"
+msgid "Enter your name"
+msgstr ""
 
-msgid "REPORT_CONTENT"
-msgstr "Report Content"
+msgid "Report Content"
+msgstr ""
 
-msgid "REPORT_SCREENSHOT"
-msgstr "Report this screenshot for inappropriate content?"
+msgid "Report this screenshot for inappropriate content?"
+msgstr ""
 
-msgid "REPORTED"
-msgstr "Reported"
+msgid "Reported"
+msgstr ""
 
-msgid "SHARE"
-msgstr "Share"
+msgid "Share"
+msgstr ""

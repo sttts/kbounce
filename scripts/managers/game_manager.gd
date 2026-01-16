@@ -71,6 +71,12 @@ func _ready():
 			platform_info += ", " + str(ua)
 	print("KBounce %s (%s)" % [BuildInfo.version_tag, platform_info])
 
+	# Debug: print locale info
+	print("[i18n] Locale: %s" % TranslationServer.get_locale())
+	print("[i18n] Loaded translations: %d" % TranslationServer.get_loaded_locales().size())
+	print("[i18n] Loaded locales: %s" % str(TranslationServer.get_loaded_locales()))
+	print("[i18n] Test tr('Loading...'): %s" % tr("Loading..."))
+
 
 ## Start a new game
 func new_game():

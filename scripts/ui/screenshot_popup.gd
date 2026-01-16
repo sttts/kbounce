@@ -69,7 +69,7 @@ func _update_buttons():
 	# Report button only for other users' entries
 	report_button.visible = not _current_score_id.is_empty()
 	report_button.disabled = false
-	report_button.text = tr("REPORT")
+	report_button.text = tr("Report")
 
 
 func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
@@ -112,4 +112,4 @@ func _on_report_confirmed():
 	if not _current_score_id.is_empty():
 		LeaderboardManager.report_score(_current_score_id)
 		report_button.disabled = true
-		report_button.text = tr("REPORTED")
+		report_button.text = tr("Reported")
