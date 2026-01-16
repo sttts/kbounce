@@ -7,7 +7,7 @@ extends Node
 
 # Defaults for development
 var version_tag := "dev"
-var leaderboard_api_url := "http://localhost:8787"
+var config_url := ""
 
 const VERSION_OVERRIDE := "res://scripts/version.gd"
 const CONFIG_OVERRIDE := "res://scripts/config.gd"
@@ -30,5 +30,5 @@ func _load_config_override() -> void:
 	if not ResourceLoader.exists(CONFIG_OVERRIDE):
 		return
 	var script = load(CONFIG_OVERRIDE)
-	if script and "LEADERBOARD_API_URL" in script:
-		leaderboard_api_url = script.LEADERBOARD_API_URL
+	if script and "CONFIG_URL" in script:
+		config_url = script.CONFIG_URL

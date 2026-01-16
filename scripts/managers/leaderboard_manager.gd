@@ -28,9 +28,9 @@ signal report_failed(error: String)
 ## Emitted when rate limited (retry_after in seconds)
 signal rate_limited(retry_after: int)
 
-## API base URL (from BuildInfo with dev defaults)
+## API base URL (from ConfigManager with caching and remote config support)
 var API_URL: String:
-	get: return BuildInfo.leaderboard_api_url
+	get: return ConfigManager.api_url
 
 ## Config file path for user identity
 const CONFIG_PATH := "user://leaderboard.cfg"

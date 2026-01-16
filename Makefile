@@ -2,7 +2,7 @@
 #
 # The project works out of the box with dev defaults from BuildInfo autoload.
 # These env vars generate override files for release builds:
-#   LEADERBOARD_API_URL - Leaderboard API base URL (optional, overrides default)
+#   CONFIG_URL - Remote config URL for API discovery (optional, enables remote config)
 #   VERSION - Version tag (optional, defaults to git describe)
 #
 # Required for Apple builds:
@@ -79,7 +79,7 @@ $(CONFIG_FILE): config ;
 config:
 	@mkdir -p $(dir $(CONFIG_FILE))
 	@echo 'class_name Config' > $(CONFIG_FILE).tmp
-	@echo 'const LEADERBOARD_API_URL = "$(LEADERBOARD_API_URL)"' >> $(CONFIG_FILE).tmp
+	@echo 'const CONFIG_URL = "$(CONFIG_URL)"' >> $(CONFIG_FILE).tmp
 	@if ! cmp -s $(CONFIG_FILE).tmp $(CONFIG_FILE); then \
 		echo "==> Updating config file..."; \
 		mv $(CONFIG_FILE).tmp $(CONFIG_FILE); \
