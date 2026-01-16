@@ -50,8 +50,12 @@ func _ready():
 	if _cached_entries.size() > 0:
 		_display_leaderboard(_cached_entries, _cached_user_entries)
 
-	# Then fetch fresh data in background
-	LeaderboardManager.load_leaderboard("top")
+	# Fetch fresh data once config is ready
+	if ConfigManager.is_ready:
+		LeaderboardManager.load_leaderboard("top")
+	else:
+		await ConfigManager.config_ready
+		LeaderboardManager.load_leaderboard("top")
 
 
 func _on_new_game_pressed():
@@ -84,7 +88,11 @@ func _on_state_changed(state: GameManager.GameState):
 		# Show cached data instantly, then refresh in background
 		if _cached_entries.size() > 0:
 			_display_leaderboard(_cached_entries, _cached_user_entries)
-		LeaderboardManager.load_leaderboard("top")
+		if ConfigManager.is_ready:
+			LeaderboardManager.load_leaderboard("top")
+		else:
+			await ConfigManager.config_ready
+			LeaderboardManager.load_leaderboard("top")
 
 
 func _load_start_screen_leaderboard():
@@ -92,7 +100,11 @@ func _load_start_screen_leaderboard():
 	if _cached_entries.size() == 0:
 		_clear_entries()
 		_add_loading_label()
-	LeaderboardManager.load_leaderboard("top")
+	if ConfigManager.is_ready:
+		LeaderboardManager.load_leaderboard("top")
+	else:
+		await ConfigManager.config_ready
+		LeaderboardManager.load_leaderboard("top")
 
 
 func _add_loading_label():
