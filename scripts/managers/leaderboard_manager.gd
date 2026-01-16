@@ -479,7 +479,7 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var duration: int = Time.get_ticks_msec() - int(_request_start_times.get("score", 0))
 	var url: String = _request_urls.get("score", "/score")
 	var request_id := _parse_request_id(headers)
-	print("----> POST %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
+	print("----> POST %s rc=%d dur=%dms size=%d req=%s debug_net_err=%s" % [url, response_code, duration, body.size(), request_id, debug_next_upload_fail_network])
 
 	# Debug: simulate network failure after real request completes (stays on until toggled off)
 	if debug_next_upload_fail_network:
