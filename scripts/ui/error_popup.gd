@@ -37,8 +37,11 @@ func show_error(type: ErrorType, title: String, message: String, action_text: St
 	visible = true
 
 
-func show_network_error():
-	show_error(ErrorType.NETWORK, "Upload Failed", "Could not connect to the server.", "Retry")
+func show_network_error(detail: String = ""):
+	var message := "Could not connect to the server."
+	if not detail.is_empty():
+		message = detail
+	show_error(ErrorType.NETWORK, "Score upload failed", message, "Retry")
 
 
 func show_rejection_error(detail: String = ""):
@@ -53,7 +56,10 @@ func get_error_type() -> ErrorType:
 
 
 func _on_action():
-	visible = false
+	# For network errors (Retry), hide popup
+	# For rejections (Report), keep popup open so user can see error while reporting
+	if _error_type == ErrorType.NETWORK:
+		visible = false
 	action_pressed.emit()
 
 

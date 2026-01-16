@@ -58,13 +58,7 @@ var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_p
 var _error_popup: Control = null
 var _error_popup_scene: PackedScene = preload("res://scenes/ui/error_popup.tscn")
 
-## Retry and report buttons (for cleanup in _hide_retry_report_buttons)
-var _retry_button: Button = null
-var _report_button: Button = null
-
-## Track upload failure state
-var _upload_failed_network: bool = false
-var _upload_failed_rejected: bool = false
+## Track rejection details for report
 var _rejection_error: String = ""
 var _rejection_request_id: String = ""
 
@@ -514,8 +508,8 @@ func _on_game_over_for_leaderboard():
 	# Reset nickname rejection state
 	_nickname_rejected = false
 
-	# Reset upload failure state and hide any retry/report buttons
-	_hide_retry_report_buttons()
+	# Reset loading label state
+	_reset_loading_label()
 
 	# Clear previous entries
 	_clear_game_over_entries()
@@ -538,8 +532,8 @@ func _on_game_over_for_leaderboard():
 
 
 func _on_score_submitted(_score_id: String, _update_token: String, _rank: int, _stored: bool):
-	# Hide retry/report buttons on successful submission
-	_hide_retry_report_buttons()
+	# Reset loading label on successful submission
+	_reset_loading_label()
 	# Note: leaderboard entries come with the score response, no need to request separately
 
 
@@ -558,19 +552,13 @@ func _on_score_failed(error: String, request_id: String):
 	var is_network_error := error.begins_with("Request failed:") or error.contains("connect") or error.contains("timeout")
 
 	if is_network_error:
-		_upload_failed_network = true
-		_upload_failed_rejected = false
-		_show_error_popup_network()
+		_show_error_popup_network(error)
 	else:
 		# Server rejected the score (validation failed, etc.)
-		_upload_failed_network = false
-		_upload_failed_rejected = true
 		_rejection_error = error
 		_rejection_request_id = request_id
 		_show_error_popup_rejection(error)
-
-	# Load leaderboard as fallback
-	LeaderboardManager.load_leaderboard()
+	# Leaderboard loads after popup is dismissed (see _on_error_popup_closed)
 
 
 func _on_nickname_updated(success: bool, error: String):
@@ -598,9 +586,7 @@ func _on_game_over_leaderboard_loaded(entries: Array, _user_rank: int, _user_ent
 	# Only handle during game over (either sub-state)
 	if not GameManager.is_game_over():
 		return
-	# Keep failure message visible if retry/report button is showing
-	if not _upload_failed_network and not _upload_failed_rejected:
-		game_over_loading_label.visible = false
+	game_over_loading_label.visible = false
 	_clear_game_over_entries()
 
 	const MAX_VISIBLE := 9
@@ -673,18 +659,7 @@ func _on_game_over_leaderboard_failed(error: String):
 	if error == "Rate limited":
 		return
 
-	game_over_loading_label.text = "Offline mode"
-	game_over_loading_label.visible = true
-	_clear_game_over_entries()
-
-	# Show user's score as editable entry (rank 0 shows as "—")
-	if GameManager.score > 0:
-		_create_user_entry(0)
-
-	_update_game_over_button_state()
-
-	# Notify GameManager that API is ready (it will validate flow_id)
-	GameManager.on_api_ready(_pending_flow_id)
+	_show_offline_mode()
 
 
 func _create_user_entry(rank: int):
@@ -778,17 +753,46 @@ func _get_error_popup() -> Control:
 		_error_popup = _error_popup_scene.instantiate()
 		add_child(_error_popup)
 		_error_popup.action_pressed.connect(_on_error_popup_action)
+		_error_popup.closed.connect(_on_error_popup_closed)
 	return _error_popup
 
 
-func _show_error_popup_network():
+func _show_error_popup_network(detail: String):
 	var popup := _get_error_popup()
-	popup.show_network_error()
+	move_child(popup, -1)  # Ensure popup is on top
+	popup.show_network_error(detail)
 
 
 func _show_error_popup_rejection(detail: String):
 	var popup := _get_error_popup()
+	move_child(popup, -1)  # Ensure popup is on top
 	popup.show_rejection_error(detail)
+
+
+func _on_error_popup_closed():
+	var popup := _get_error_popup()
+	var error_type = popup.get_error_type()
+	const ErrorType = preload("res://scripts/ui/error_popup.gd").ErrorType
+
+	if error_type == ErrorType.REJECTION:
+		# Rejection ignored - go directly to start screen
+		GameManager.close_game()
+	else:
+		# Network error ignored - show offline mode
+		_show_offline_mode()
+
+
+func _show_offline_mode():
+	game_over_loading_label.text = "Offline mode"
+	game_over_loading_label.visible = true
+	_clear_game_over_entries()
+
+	# Show user's score as editable entry (rank 0 shows as "—")
+	if GameManager.score > 0:
+		_create_user_entry(0)
+
+	_update_game_over_button_state()
+	GameManager.on_api_ready(_pending_flow_id)
 
 
 func _on_error_popup_action():
@@ -856,42 +860,14 @@ func _on_rate_limit_tick():
 		game_over_loading_label.text = "Rate limited. Retry in %ds..." % _rate_limit_remaining
 
 
-func _show_retry_button():
-	_retry_button = Button.new()
-	_retry_button.text = "Retry"
-	_retry_button.custom_minimum_size = Vector2(80, 48)
-	_retry_button.pressed.connect(_on_retry_upload_pressed)
-	game_over_buttons_container.add_child(_retry_button)
-	game_over_buttons_container.move_child(_retry_button, 0)
-
-
-func _show_report_button():
-	_report_button = Button.new()
-	_report_button.text = "Report"
-	_report_button.custom_minimum_size = Vector2(80, 48)
-	_report_button.pressed.connect(_on_report_rejection_pressed)
-	game_over_buttons_container.add_child(_report_button)
-	game_over_buttons_container.move_child(_report_button, 0)
-
-
-func _hide_retry_report_buttons():
-	if _retry_button != null:
-		_retry_button.queue_free()
-		_retry_button = null
-	if _report_button != null:
-		_report_button.queue_free()
-		_report_button = null
-	_upload_failed_network = false
-	_upload_failed_rejected = false
+func _reset_loading_label():
 	# Reset label styling to default
 	game_over_loading_label.add_theme_color_override("font_color", Color(0.4, 0.4, 0.4))
 	game_over_loading_label.remove_theme_font_size_override("font_size")
 
 
 func _on_retry_upload_pressed():
-	_hide_retry_report_buttons()
-	game_over_loading_label.text = "Retrying..."
-	game_over_loading_label.visible = true
+	_reset_loading_label()
 
 	# Request new token and resubmit
 	LeaderboardManager.request_game_token()

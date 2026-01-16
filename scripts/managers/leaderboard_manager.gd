@@ -481,9 +481,8 @@ func _on_score_request_completed(result: int, response_code: int, headers: Packe
 	var request_id := _parse_request_id(headers)
 	print("----> POST %s rc=%d dur=%dms size=%d req=%s" % [url, response_code, duration, body.size(), request_id])
 
-	# Debug: simulate network failure after real request completes
+	# Debug: simulate network failure after real request completes (stays on until toggled off)
 	if debug_next_upload_fail_network:
-		debug_next_upload_fail_network = false
 		print("[API] DEBUG: Simulating network failure")
 		var error_msg := "Request failed: Can't connect to host"
 		score_failed.emit(error_msg, request_id)
