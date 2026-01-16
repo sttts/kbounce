@@ -55,9 +55,13 @@ var _user_entry: Node = null
 var _screenshot_popup: Control = null
 var _screenshot_popup_scene: PackedScene = preload("res://scenes/ui/screenshot_popup.tscn")
 
-## Retry and report buttons (created dynamically)
+var _error_popup: Control = null
+var _error_popup_scene: PackedScene = preload("res://scenes/ui/error_popup.tscn")
+
+## Retry and report buttons (for cleanup in _hide_retry_report_buttons)
 var _retry_button: Button = null
 var _report_button: Button = null
+
 ## Track upload failure state
 var _upload_failed_network: bool = false
 var _upload_failed_rejected: bool = false
@@ -556,22 +560,14 @@ func _on_score_failed(error: String, request_id: String):
 	if is_network_error:
 		_upload_failed_network = true
 		_upload_failed_rejected = false
-		game_over_loading_label.text = "Upload failed!"
-		game_over_loading_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
-		game_over_loading_label.add_theme_font_size_override("font_size", 18)
-		game_over_loading_label.visible = true
-		_show_retry_button()
+		_show_error_popup_network()
 	else:
 		# Server rejected the score (validation failed, etc.)
 		_upload_failed_network = false
 		_upload_failed_rejected = true
 		_rejection_error = error
 		_rejection_request_id = request_id
-		game_over_loading_label.text = "Score rejected!"
-		game_over_loading_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
-		game_over_loading_label.add_theme_font_size_override("font_size", 18)
-		game_over_loading_label.visible = true
-		_show_report_button()
+		_show_error_popup_rejection(error)
 
 	# Load leaderboard as fallback
 	LeaderboardManager.load_leaderboard()
@@ -775,6 +771,37 @@ func _show_error_notification(message: String):
 		add_child(_error_notification_dialog)
 	_error_notification_dialog.dialog_text = message
 	_error_notification_dialog.popup_centered()
+
+
+func _get_error_popup() -> Control:
+	if _error_popup == null:
+		_error_popup = _error_popup_scene.instantiate()
+		add_child(_error_popup)
+		_error_popup.action_pressed.connect(_on_error_popup_action)
+	return _error_popup
+
+
+func _show_error_popup_network():
+	var popup := _get_error_popup()
+	popup.show_network_error()
+
+
+func _show_error_popup_rejection(detail: String):
+	var popup := _get_error_popup()
+	popup.show_rejection_error(detail)
+
+
+func _on_error_popup_action():
+	var popup := _get_error_popup()
+	var error_type = popup.get_error_type()
+
+	# Import enum from error_popup script
+	const ErrorType = preload("res://scripts/ui/error_popup.gd").ErrorType
+
+	if error_type == ErrorType.NETWORK:
+		_on_retry_upload_pressed()
+	elif error_type == ErrorType.REJECTION:
+		_on_report_rejection_pressed()
 
 
 func _update_game_over_button_state():
