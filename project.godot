@@ -64,6 +64,10 @@ pause={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://translations/translations.en.translation")
+
 [rendering]
 
 renderer/rendering_method="mobile"

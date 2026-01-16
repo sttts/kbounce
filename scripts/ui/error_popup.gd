@@ -38,17 +38,17 @@ func show_error(type: ErrorType, title: String, message: String, action_text: St
 
 
 func show_network_error(detail: String = ""):
-	var message := "Could not connect to the server."
+	var message := tr("NETWORK_ERROR")
 	if not detail.is_empty():
 		message = detail
-	show_error(ErrorType.NETWORK, "Score upload failed", message, "Retry")
+	show_error(ErrorType.NETWORK, tr("SCORE_UPLOAD_FAILED"), message, tr("RETRY"))
 
 
 func show_rejection_error(detail: String = ""):
-	var message := "Your score could not be verified."
+	var message := tr("REJECTION_ERROR")
 	if not detail.is_empty():
 		message = detail
-	show_error(ErrorType.REJECTION, "Score Rejected", message, "Report")
+	show_error(ErrorType.REJECTION, tr("SCORE_REJECTED"), message, tr("REPORT"))
 
 
 func get_error_type() -> ErrorType:

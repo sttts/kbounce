@@ -1,0 +1,59 @@
+keys,en
+GAME_TITLE,KBounce
+GAME_SUBTITLE,Fill 75% of the board without getting hit!
+LEADERBOARD,Leaderboard
+LOADING,Loading...
+OFFLINE,Offline
+YOUR_BEST_SCORES,Your Best Scores
+PAUSED,Paused
+GAME_OVER,Game Over
+VOLUME,Volume
+SHARE_SCORE,Share my score
+IMPRESSUM,Impressum
+REPORT_BUG,Report Bug
+CLOSE,Close
+LOGS,Logs
+LEVEL_COMPLETE,Level %d Complete!
+RULES_TITLE,Rules
+RULES_TEXT,"Fill 75% of the board to advance to the next level.
+
+Tap or click anywhere to build a wall in that direction.
+Swipe to choose the wall direction.
+
+Walls start from the edge of the board or from an existing wall.
+
+Don't let the ball hit a wall while it's still being built!
+
+You have three spare lives per level, one live recovers each level.
+
+You get bonus points for
+- filling more than 75%
+- each life you keep."
+BUILT_WITH,Built with: Godot Engine Copyright (c) 2014-present Godot Engine contributors. License: MIT (godotengine.org/license)
+IMPRESSUM_ADDRESS,"Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org"
+IMPRESSUM_DESCRIPTION,Recreation of the KDE KBounce using Godot 4.5.
+IMPRESSUM_WEBSITE,kbounce.app
+SCORE_UPLOAD_FAILED,Score upload failed
+NETWORK_ERROR,Could not connect to the server.
+SCORE_REJECTED,Score Rejected
+REJECTION_ERROR,Your score could not be verified.
+RETRY,Retry
+REPORT,Report
+IGNORE,Ignore
+RATE_LIMITED,Rate limited. Retry in %ds...
+RETRYING,Retrying...
+OFFLINE_MODE,Offline mode
+SHARED,Shared
+ERROR,Error
+DEBUG_INDICATOR,[DEBUG]
+ENTER_NAME,Enter your name:
+YOUR_NICKNAME,Your nickname
+CONTINUE,Continue
+ENTER_YOUR_NAME,Enter your name
+REPORT_CONTENT,Report Content
+REPORT_SCREENSHOT,Report this screenshot for inappropriate content?
+REPORTED,Reported
+SHARE,Share

@@ -109,7 +109,7 @@ func _load_start_screen_leaderboard():
 
 func _add_loading_label():
 	var label := Label.new()
-	label.text = "Loading..."
+	label.text = tr("LOADING")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 	entries_container.add_child(label)
@@ -211,7 +211,7 @@ func _on_start_screen_leaderboard_failed(_error: String):
 	else:
 		_clear_entries()
 		var label := Label.new()
-		label.text = "Offline"
+		label.text = tr("OFFLINE")
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_color_override("font_color", Color(0.5, 0.5, 0.5))
 		entries_container.add_child(label)
@@ -223,7 +223,7 @@ func _add_separator():
 	entries_container.add_child(sep)
 
 	var label := Label.new()
-	label.text = "Your Best Scores"
+	label.text = tr("YOUR_BEST_SCORES")
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.add_theme_color_override("font_color", Color(0.3, 0.3, 0.3))
 	label.add_theme_font_size_override("font_size", 12)
