@@ -110,6 +110,22 @@ func test_all_po_files_have_same_msgids():
 	return ""
 
 
+func test_all_msgids_are_used():
+	# Check that all msgids in messages.pot are actually referenced in code or scenes
+	var template_ids := _get_msgids("res://translations/messages.pot")
+	var used_strings := _scan_code_for_strings()
+	var unused := []
+
+	for msgid in template_ids:
+		if msgid not in used_strings:
+			unused.append(msgid.substr(0, 50))
+
+	if unused.size() > 0:
+		return "Unused translations:\n    " + "\n    ".join(unused.slice(0, 10)) + \
+			("\n    ... and %d more" % (unused.size() - 10) if unused.size() > 10 else "")
+	return ""
+
+
 # =============================================================================
 # Helper functions
 # =============================================================================
@@ -188,6 +204,109 @@ func _get_msgids(path: String) -> Dictionary:
 		if not msgid.is_empty():
 			ids[msgid] = true
 	return ids
+
+
+## Scan all .gd and .tscn files for translatable strings
+func _scan_code_for_strings() -> Dictionary:
+	var strings := {}
+
+	# Scan .gd files for tr("...") calls
+	var gd_files := _find_files("res://scripts", ".gd")
+	for path in gd_files:
+		var file := FileAccess.open(path, FileAccess.READ)
+		if file == null:
+			continue
+		var content := file.get_as_text()
+		file.close()
+
+		# Find tr("...") patterns
+		var regex := RegEx.new()
+		regex.compile('tr\\s*\\(\\s*"([^"]*)"\\s*\\)')
+		var matches := regex.search_all(content)
+		for m in matches:
+			var s: String = m.get_string(1)
+			# Handle escape sequences like in .po files
+			s = s.replace("\\n", "\n")
+			s = s.replace("\\\"", "\"")
+			s = s.replace("\\\\", "\\")
+			strings[s] = true
+
+	# Scan .tscn files for translatable properties
+	# Properties: text, title, dialog_text, ok_button_text, placeholder_text
+	var tscn_files := _find_files("res://scenes", ".tscn")
+	for path in tscn_files:
+		var file := FileAccess.open(path, FileAccess.READ)
+		if file == null:
+			continue
+		var content := file.get_as_text()
+		file.close()
+
+		# Extract strings from translatable properties
+		_extract_tscn_strings(content, strings)
+
+	return strings
+
+
+## Extract translatable strings from .tscn content
+func _extract_tscn_strings(content: String, strings: Dictionary):
+	# Properties that contain translatable text
+	var props := ["text", "title", "dialog_text", "ok_button_text", "placeholder_text"]
+
+	var lines := content.split("\n")
+	var i := 0
+	while i < lines.size():
+		var line: String = lines[i]
+		for prop in props:
+			var prefix: String = prop + " = \""
+			var idx := line.find(prefix)
+			if idx >= 0:
+				# Extract string value, may span multiple lines
+				var start := idx + prefix.length()
+				var rest := line.substr(start)
+
+				# Check if string ends on this line
+				var end_quote := rest.find("\"")
+				if end_quote >= 0:
+					# Single line string
+					strings[rest.substr(0, end_quote)] = true
+				else:
+					# Multiline string - collect until closing quote
+					var value := rest
+					i += 1
+					while i < lines.size():
+						var next_line: String = lines[i]
+						var close_idx := next_line.find("\"")
+						if close_idx >= 0:
+							value += "\n" + next_line.substr(0, close_idx)
+							break
+						else:
+							value += "\n" + next_line
+						i += 1
+					strings[value] = true
+				break  # Found property, move to next line
+		i += 1
+
+
+## Recursively find files with given extension
+func _find_files(base_path: String, extension: String) -> Array:
+	var files := []
+	var dir := DirAccess.open(base_path)
+	if dir == null:
+		return files
+
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while file_name != "":
+		var full_path := base_path + "/" + file_name
+		if dir.current_is_dir():
+			if not file_name.begins_with("."):
+				files.append_array(_find_files(full_path, extension))
+		elif file_name.ends_with(extension):
+			files.append(full_path)
+		file_name = dir.get_next()
+	dir.list_dir_end()
+
+	return files
 
 
 ## Check a .po file for missing translations, returns list of missing msgids

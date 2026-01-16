@@ -45,17 +45,14 @@ msgstr ""
 msgid "Impressum"
 msgstr "版权信息"
 
-msgid "Report\\nBug"
-msgstr "报告\\n错误"
+msgid "Report\nBug"
+msgstr "报告\n错误"
 
 msgid "Close"
 msgstr "关闭"
 
 msgid "Logs"
 msgstr "日志"
-
-msgid "Level %d Complete!"
-msgstr "第%d关完成！"
 
 msgid "Rules"
 msgstr "规则"
@@ -108,20 +105,6 @@ msgstr ""
 "Godot引擎\n"
 "版权所有 (c) 2014至今 Godot引擎贡献者。\n"
 "许可证：MIT (godotengine.org/license)"
-
-msgid ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-msgstr ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-
-msgid "Recreation of the KDE KBounce using Godot 4.5."
-msgstr "使用Godot 4.5重制的KDE KBounce。"
 
 msgid "kbounce.app"
 msgstr "kbounce.app"

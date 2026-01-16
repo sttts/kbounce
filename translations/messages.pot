@@ -42,16 +42,13 @@ msgstr ""
 msgid "Impressum"
 msgstr ""
 
-msgid "Report\\nBug"
+msgid "Report\nBug"
 msgstr ""
 
 msgid "Close"
 msgstr ""
 
 msgid "Logs"
-msgstr ""
-
-msgid "Level %d Complete!"
 msgstr ""
 
 msgid "Rules"
@@ -81,16 +78,6 @@ msgid ""
 "Godot Engine\n"
 "Copyright (c) 2014-present Godot Engine contributors.\n"
 "License: MIT (godotengine.org/license)"
-msgstr ""
-
-msgid ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-msgstr ""
-
-msgid "Recreation of the KDE KBounce using Godot 4.5."
 msgstr ""
 
 msgid "kbounce.app"

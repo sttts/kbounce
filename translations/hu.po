@@ -45,17 +45,14 @@ msgstr ""
 msgid "Impressum"
 msgstr "Impressum"
 
-msgid "Report\\nBug"
-msgstr "Hiba\\njelentése"
+msgid "Report\nBug"
+msgstr "Hiba\njelentése"
 
 msgid "Close"
 msgstr "Bezárás"
 
 msgid "Logs"
 msgstr "Naplók"
-
-msgid "Level %d Complete!"
-msgstr "%d. szint teljesítve!"
 
 msgid "Rules"
 msgstr "Szabályok"
@@ -108,20 +105,6 @@ msgstr ""
 "Godot Engine\n"
 "Copyright (c) 2014-jelen Godot Engine közreműködők.\n"
 "Licenc: MIT (godotengine.org/license)"
-
-msgid ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-msgstr ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-
-msgid "Recreation of the KDE KBounce using Godot 4.5."
-msgstr "A KDE KBounce újraalkotása Godot 4.5-tel."
 
 msgid "kbounce.app"
 msgstr "kbounce.app"

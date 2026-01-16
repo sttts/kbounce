@@ -45,17 +45,14 @@ msgstr ""
 msgid "Impressum"
 msgstr "Impressum"
 
-msgid "Report\\nBug"
-msgstr "Rapportera\\nfel"
+msgid "Report\nBug"
+msgstr "Rapportera\nfel"
 
 msgid "Close"
 msgstr "Stäng"
 
 msgid "Logs"
 msgstr "Loggar"
-
-msgid "Level %d Complete!"
-msgstr "Nivå %d klar!"
 
 msgid "Rules"
 msgstr "Regler"
@@ -108,20 +105,6 @@ msgstr ""
 "Godot Engine\n"
 "Copyright (c) 2014-nutid Godot Engine-bidragsgivare.\n"
 "Licens: MIT (godotengine.org/license)"
-
-msgid ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-msgstr ""
-"Stefan Schimanski\n"
-"Gehmerweg 9a\n"
-"64291 Darmstadt\n"
-"E-Mail: kbounce@1stein.org"
-
-msgid "Recreation of the KDE KBounce using Godot 4.5."
-msgstr "Återskapande av KDE KBounce med Godot 4.5."
 
 msgid "kbounce.app"
 msgstr "kbounce.app"
