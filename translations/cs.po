@@ -1,0 +1,153 @@
+# Czech translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: cs\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Vyplňte 75% desky aniž byste byli zasaženi!"
+
+msgid "LEADERBOARD"
+msgstr "Žebříček"
+
+msgid "LOADING"
+msgstr "Načítání..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Vaše nejlepší skóre"
+
+msgid "PAUSED"
+msgstr "Pozastaveno"
+
+msgid "GAME_OVER"
+msgstr "Konec hry"
+
+msgid "VOLUME"
+msgstr "Hlasitost"
+
+msgid "SHARE_SCORE"
+msgstr "Sdílet skóre"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Nahlásit chybu"
+
+msgid "CLOSE"
+msgstr "Zavřít"
+
+msgid "LOGS"
+msgstr "Logy"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Úroveň %d dokončena!"
+
+msgid "RULES_TITLE"
+msgstr "Pravidla"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Vyplňte 75% desky pro postup na další úroveň.\n"
+"\n"
+"Klepněte nebo klikněte kamkoli pro stavbu zdi v daném směru.\n"
+"Přejeďte pro výběr směru zdi.\n"
+"\n"
+"Zdi začínají od okraje desky nebo od existující zdi.\n"
+"\n"
+"Nenechte míč narazit do zdi během její stavby!\n"
+"\n"
+"Máte tři životy navíc na úroveň, jeden život se obnoví každou úroveň.\n"
+"\n"
+"Získáte bonusové body za\n"
+"- vyplnění více než 75%\n"
+"- každý zachovaný život."
+
+msgid "BUILT_WITH"
+msgstr "Vytvořeno s: Godot Engine Copyright (c) 2014-současnost přispěvatelé Godot Engine. Licence: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Znovuvytvoření KDE KBounce pomocí Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Nahrání skóre selhalo"
+
+msgid "NETWORK_ERROR"
+msgstr "Nelze se připojit k serveru."
+
+msgid "SCORE_REJECTED"
+msgstr "Skóre odmítnuto"
+
+msgid "REJECTION_ERROR"
+msgstr "Vaše skóre nebylo možné ověřit."
+
+msgid "RETRY"
+msgstr "Zkusit znovu"
+
+msgid "REPORT"
+msgstr "Nahlásit"
+
+msgid "IGNORE"
+msgstr "Ignorovat"
+
+msgid "RATE_LIMITED"
+msgstr "Limit dosažen. Opakování za %ds..."
+
+msgid "RETRYING"
+msgstr "Opakuji..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline režim"
+
+msgid "SHARED"
+msgstr "Sdíleno"
+
+msgid "ERROR"
+msgstr "Chyba"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Zadejte své jméno:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Vaše přezdívka"
+
+msgid "CONTINUE"
+msgstr "Pokračovat"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Zadejte své jméno"
+
+msgid "REPORT_CONTENT"
+msgstr "Nahlásit obsah"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Nahlásit tento snímek obrazovky za nevhodný obsah?"
+
+msgid "REPORTED"
+msgstr "Nahlášeno"
+
+msgid "SHARE"
+msgstr "Sdílet"

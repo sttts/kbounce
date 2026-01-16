@@ -1,0 +1,152 @@
+# KBounce Translation Template
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Fill 75% of the board without getting hit!"
+
+msgid "LEADERBOARD"
+msgstr "Leaderboard"
+
+msgid "LOADING"
+msgstr "Loading..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Your Best Scores"
+
+msgid "PAUSED"
+msgstr "Paused"
+
+msgid "GAME_OVER"
+msgstr "Game Over"
+
+msgid "VOLUME"
+msgstr "Volume"
+
+msgid "SHARE_SCORE"
+msgstr "Share my score"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Report Bug"
+
+msgid "CLOSE"
+msgstr "Close"
+
+msgid "LOGS"
+msgstr "Logs"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Level %d Complete!"
+
+msgid "RULES_TITLE"
+msgstr "Rules"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Fill 75% of the board to advance to the next level.\n"
+"\n"
+"Tap or click anywhere to build a wall in that direction.\n"
+"Swipe to choose the wall direction.\n"
+"\n"
+"Walls start from the edge of the board or from an existing wall.\n"
+"\n"
+"Don't let the ball hit a wall while it's still being built!\n"
+"\n"
+"You have three spare lives per level, one live recovers each level.\n"
+"\n"
+"You get bonus points for\n"
+"- filling more than 75%\n"
+"- each life you keep."
+
+msgid "BUILT_WITH"
+msgstr "Built with: Godot Engine Copyright (c) 2014-present Godot Engine contributors. License: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Recreation of the KDE KBounce using Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Score upload failed"
+
+msgid "NETWORK_ERROR"
+msgstr "Could not connect to the server."
+
+msgid "SCORE_REJECTED"
+msgstr "Score Rejected"
+
+msgid "REJECTION_ERROR"
+msgstr "Your score could not be verified."
+
+msgid "RETRY"
+msgstr "Retry"
+
+msgid "REPORT"
+msgstr "Report"
+
+msgid "IGNORE"
+msgstr "Ignore"
+
+msgid "RATE_LIMITED"
+msgstr "Rate limited. Retry in %ds..."
+
+msgid "RETRYING"
+msgstr "Retrying..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline mode"
+
+msgid "SHARED"
+msgstr "Shared"
+
+msgid "ERROR"
+msgstr "Error"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Enter your name:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Your nickname"
+
+msgid "CONTINUE"
+msgstr "Continue"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Enter your name"
+
+msgid "REPORT_CONTENT"
+msgstr "Report Content"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Report this screenshot for inappropriate content?"
+
+msgid "REPORTED"
+msgstr "Reported"
+
+msgid "SHARE"
+msgstr "Share"

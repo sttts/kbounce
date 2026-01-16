@@ -66,7 +66,7 @@ pause={
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://translations/translations.en.translation", "res://translations/translations.de.translation", "res://translations/translations.fr.translation", "res://translations/translations.it.translation", "res://translations/translations.es.translation", "res://translations/translations.zh.translation", "res://translations/translations.is.translation", "res://translations/translations.pt.translation", "res://translations/translations.fi.translation", "res://translations/translations.sv.translation", "res://translations/translations.da.translation", "res://translations/translations.nl.translation", "res://translations/translations.pl.translation", "res://translations/translations.cs.translation", "res://translations/translations.ro.translation", "res://translations/translations.hu.translation")
+locale/translations=PackedStringArray("res://translations/messages.pot", "res://translations/de.po", "res://translations/fr.po", "res://translations/it.po", "res://translations/es.po", "res://translations/zh.po", "res://translations/is.po", "res://translations/pt.po", "res://translations/fi.po", "res://translations/sv.po", "res://translations/da.po", "res://translations/nl.po", "res://translations/pl.po", "res://translations/cs.po", "res://translations/ro.po", "res://translations/hu.po")
 
 [rendering]
 

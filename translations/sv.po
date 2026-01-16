@@ -1,0 +1,153 @@
+# Swedish translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: sv\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Fyll 75% av brädet utan att bli träffad!"
+
+msgid "LEADERBOARD"
+msgstr "Topplista"
+
+msgid "LOADING"
+msgstr "Laddar..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Dina bästa poäng"
+
+msgid "PAUSED"
+msgstr "Pausad"
+
+msgid "GAME_OVER"
+msgstr "Spelet slut"
+
+msgid "VOLUME"
+msgstr "Volym"
+
+msgid "SHARE_SCORE"
+msgstr "Dela min poäng"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Rapportera fel"
+
+msgid "CLOSE"
+msgstr "Stäng"
+
+msgid "LOGS"
+msgstr "Loggar"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Nivå %d klar!"
+
+msgid "RULES_TITLE"
+msgstr "Regler"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Fyll 75% av brädet för att gå vidare till nästa nivå.\n"
+"\n"
+"Tryck eller klicka var som helst för att bygga en vägg i den riktningen.\n"
+"Svep för att välja väggriktning.\n"
+"\n"
+"Väggar startar från brädets kant eller från en befintlig vägg.\n"
+"\n"
+"Låt inte bollen träffa en vägg medan den fortfarande byggs!\n"
+"\n"
+"Du har tre extra liv per nivå, ett liv återställs varje nivå.\n"
+"\n"
+"Du får bonuspoäng för\n"
+"- att fylla mer än 75%\n"
+"- varje liv du behåller."
+
+msgid "BUILT_WITH"
+msgstr "Byggd med: Godot Engine Copyright (c) 2014-nutid Godot Engine-bidragsgivare. Licens: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Återskapande av KDE KBounce med Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Poänguppladdning misslyckades"
+
+msgid "NETWORK_ERROR"
+msgstr "Kunde inte ansluta till servern."
+
+msgid "SCORE_REJECTED"
+msgstr "Poäng avvisad"
+
+msgid "REJECTION_ERROR"
+msgstr "Din poäng kunde inte verifieras."
+
+msgid "RETRY"
+msgstr "Försök igen"
+
+msgid "REPORT"
+msgstr "Rapportera"
+
+msgid "IGNORE"
+msgstr "Ignorera"
+
+msgid "RATE_LIMITED"
+msgstr "Gräns nådd. Försöker igen om %ds..."
+
+msgid "RETRYING"
+msgstr "Försöker igen..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offlineläge"
+
+msgid "SHARED"
+msgstr "Delat"
+
+msgid "ERROR"
+msgstr "Fel"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Ange ditt namn:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Ditt smeknamn"
+
+msgid "CONTINUE"
+msgstr "Fortsätt"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Ange ditt namn"
+
+msgid "REPORT_CONTENT"
+msgstr "Rapportera innehåll"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Rapportera denna skärmbild för olämpligt innehåll?"
+
+msgid "REPORTED"
+msgstr "Rapporterad"
+
+msgid "SHARE"
+msgstr "Dela"

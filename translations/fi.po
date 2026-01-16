@@ -1,0 +1,153 @@
+# Finnish translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: fi\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Täytä 75% laudasta osumatta!"
+
+msgid "LEADERBOARD"
+msgstr "Tuloslista"
+
+msgid "LOADING"
+msgstr "Ladataan..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Parhaat pisteesi"
+
+msgid "PAUSED"
+msgstr "Tauolla"
+
+msgid "GAME_OVER"
+msgstr "Peli päättyi"
+
+msgid "VOLUME"
+msgstr "Äänenvoimakkuus"
+
+msgid "SHARE_SCORE"
+msgstr "Jaa pisteeni"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Ilmoita virhe"
+
+msgid "CLOSE"
+msgstr "Sulje"
+
+msgid "LOGS"
+msgstr "Lokit"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Taso %d läpäisty!"
+
+msgid "RULES_TITLE"
+msgstr "Säännöt"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Täytä 75% laudasta päästäksesi seuraavalle tasolle.\n"
+"\n"
+"Napauta tai klikkaa minne tahansa rakentaaksesi seinän siihen suuntaan.\n"
+"Pyyhkäise valitaksesi seinän suunnan.\n"
+"\n"
+"Seinät alkavat laudan reunasta tai olemassa olevasta seinästä.\n"
+"\n"
+"Älä anna pallon osua seinään sen ollessa rakenteilla!\n"
+"\n"
+"Sinulla on kolme ylimääräistä elämää per taso, yksi elämä palautuu joka tasolla.\n"
+"\n"
+"Saat bonuspisteitä\n"
+"- täyttämällä yli 75%\n"
+"- jokaisesta säilytetystä elämästä."
+
+msgid "BUILT_WITH"
+msgstr "Tehty: Godot Engine Copyright (c) 2014-nykyhetki Godot Engine -avustajat. Lisenssi: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "KDE KBounce -pelin uudelleentoteutus Godot 4.5:llä."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Pisteiden lähetys epäonnistui"
+
+msgid "NETWORK_ERROR"
+msgstr "Yhteyttä palvelimeen ei voitu muodostaa."
+
+msgid "SCORE_REJECTED"
+msgstr "Pisteet hylätty"
+
+msgid "REJECTION_ERROR"
+msgstr "Pisteitäsi ei voitu vahvistaa."
+
+msgid "RETRY"
+msgstr "Yritä uudelleen"
+
+msgid "REPORT"
+msgstr "Ilmoita"
+
+msgid "IGNORE"
+msgstr "Ohita"
+
+msgid "RATE_LIMITED"
+msgstr "Rajaa saavutettu. Yritetään uudelleen %ds..."
+
+msgid "RETRYING"
+msgstr "Yritetään uudelleen..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline-tila"
+
+msgid "SHARED"
+msgstr "Jaettu"
+
+msgid "ERROR"
+msgstr "Virhe"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Syötä nimesi:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Nimimerkkisi"
+
+msgid "CONTINUE"
+msgstr "Jatka"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Syötä nimesi"
+
+msgid "REPORT_CONTENT"
+msgstr "Ilmoita sisältö"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Ilmoita tämä kuvakaappaus sopimattomasta sisällöstä?"
+
+msgid "REPORTED"
+msgstr "Ilmoitettu"
+
+msgid "SHARE"
+msgstr "Jaa"

@@ -1,0 +1,153 @@
+# Polish translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: pl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Wypełnij 75% planszy nie dając się trafić!"
+
+msgid "LEADERBOARD"
+msgstr "Tabela wyników"
+
+msgid "LOADING"
+msgstr "Ładowanie..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Twoje najlepsze wyniki"
+
+msgid "PAUSED"
+msgstr "Wstrzymano"
+
+msgid "GAME_OVER"
+msgstr "Koniec gry"
+
+msgid "VOLUME"
+msgstr "Głośność"
+
+msgid "SHARE_SCORE"
+msgstr "Udostępnij wynik"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Zgłoś błąd"
+
+msgid "CLOSE"
+msgstr "Zamknij"
+
+msgid "LOGS"
+msgstr "Logi"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Poziom %d ukończony!"
+
+msgid "RULES_TITLE"
+msgstr "Zasady"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Wypełnij 75% planszy aby przejść do następnego poziomu.\n"
+"\n"
+"Dotknij lub kliknij gdziekolwiek aby zbudować ścianę w tym kierunku.\n"
+"Przesuń aby wybrać kierunek ściany.\n"
+"\n"
+"Ściany zaczynają się od krawędzi planszy lub od istniejącej ściany.\n"
+"\n"
+"Nie pozwól piłce uderzyć w ścianę podczas jej budowy!\n"
+"\n"
+"Masz trzy dodatkowe życia na poziom, jedno życie odnawia się każdego poziomu.\n"
+"\n"
+"Dostajesz punkty bonusowe za\n"
+"- wypełnienie ponad 75%\n"
+"- każde zachowane życie."
+
+msgid "BUILT_WITH"
+msgstr "Zbudowano z: Godot Engine Copyright (c) 2014-obecnie współtwórcy Godot Engine. Licencja: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Odtworzenie KDE KBounce przy użyciu Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Przesyłanie wyniku nie powiodło się"
+
+msgid "NETWORK_ERROR"
+msgstr "Nie można połączyć się z serwerem."
+
+msgid "SCORE_REJECTED"
+msgstr "Wynik odrzucony"
+
+msgid "REJECTION_ERROR"
+msgstr "Twój wynik nie mógł zostać zweryfikowany."
+
+msgid "RETRY"
+msgstr "Ponów próbę"
+
+msgid "REPORT"
+msgstr "Zgłoś"
+
+msgid "IGNORE"
+msgstr "Ignoruj"
+
+msgid "RATE_LIMITED"
+msgstr "Limit osiągnięty. Ponowna próba za %ds..."
+
+msgid "RETRYING"
+msgstr "Ponawiam próbę..."
+
+msgid "OFFLINE_MODE"
+msgstr "Tryb offline"
+
+msgid "SHARED"
+msgstr "Udostępniono"
+
+msgid "ERROR"
+msgstr "Błąd"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Wpisz swoje imię:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Twój pseudonim"
+
+msgid "CONTINUE"
+msgstr "Kontynuuj"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Wpisz swoje imię"
+
+msgid "REPORT_CONTENT"
+msgstr "Zgłoś treść"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Zgłosić ten zrzut ekranu za nieodpowiednią treść?"
+
+msgid "REPORTED"
+msgstr "Zgłoszono"
+
+msgid "SHARE"
+msgstr "Udostępnij"

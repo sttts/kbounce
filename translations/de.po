@@ -1,0 +1,153 @@
+# German translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: de\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Fülle 75% des Spielfelds ohne getroffen zu werden!"
+
+msgid "LEADERBOARD"
+msgstr "Bestenliste"
+
+msgid "LOADING"
+msgstr "Laden..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Deine besten Punkte"
+
+msgid "PAUSED"
+msgstr "Pausiert"
+
+msgid "GAME_OVER"
+msgstr "Spiel vorbei"
+
+msgid "VOLUME"
+msgstr "Lautstärke"
+
+msgid "SHARE_SCORE"
+msgstr "Punktzahl teilen"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Fehler melden"
+
+msgid "CLOSE"
+msgstr "Schließen"
+
+msgid "LOGS"
+msgstr "Logs"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Level %d abgeschlossen!"
+
+msgid "RULES_TITLE"
+msgstr "Regeln"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Fülle 75% des Spielfelds um ins nächste Level zu kommen.\n"
+"\n"
+"Tippe oder klicke irgendwo um eine Mauer in diese Richtung zu bauen.\n"
+"Wische um die Mauerrichtung zu wählen.\n"
+"\n"
+"Mauern starten vom Rand des Spielfelds oder von einer bestehenden Mauer.\n"
+"\n"
+"Lass den Ball keine Mauer treffen während sie noch gebaut wird!\n"
+"\n"
+"Du hast drei Extraleben pro Level, ein Leben wird pro Level wiederhergestellt.\n"
+"\n"
+"Du bekommst Bonuspunkte für\n"
+"- mehr als 75% füllen\n"
+"- jedes Leben das du behältst."
+
+msgid "BUILT_WITH"
+msgstr "Erstellt mit: Godot Engine Copyright (c) 2014-heute Godot Engine Mitwirkende. Lizenz: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Neuauflage des KDE KBounce mit Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Punktestand-Upload fehlgeschlagen"
+
+msgid "NETWORK_ERROR"
+msgstr "Verbindung zum Server fehlgeschlagen."
+
+msgid "SCORE_REJECTED"
+msgstr "Punktestand abgelehnt"
+
+msgid "REJECTION_ERROR"
+msgstr "Dein Punktestand konnte nicht verifiziert werden."
+
+msgid "RETRY"
+msgstr "Erneut versuchen"
+
+msgid "REPORT"
+msgstr "Melden"
+
+msgid "IGNORE"
+msgstr "Ignorieren"
+
+msgid "RATE_LIMITED"
+msgstr "Limit erreicht. Erneuter Versuch in %ds..."
+
+msgid "RETRYING"
+msgstr "Erneuter Versuch..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline-Modus"
+
+msgid "SHARED"
+msgstr "Geteilt"
+
+msgid "ERROR"
+msgstr "Fehler"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Gib deinen Namen ein:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Dein Spitzname"
+
+msgid "CONTINUE"
+msgstr "Weiter"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Gib deinen Namen ein"
+
+msgid "REPORT_CONTENT"
+msgstr "Inhalt melden"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Diesen Screenshot wegen unangemessenem Inhalt melden?"
+
+msgid "REPORTED"
+msgstr "Gemeldet"
+
+msgid "SHARE"
+msgstr "Teilen"

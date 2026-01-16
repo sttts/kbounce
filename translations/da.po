@@ -1,0 +1,153 @@
+# Danish translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: da\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Fyld 75% af brættet uden at blive ramt!"
+
+msgid "LEADERBOARD"
+msgstr "Rangliste"
+
+msgid "LOADING"
+msgstr "Indlæser..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Dine bedste resultater"
+
+msgid "PAUSED"
+msgstr "Pauset"
+
+msgid "GAME_OVER"
+msgstr "Spillet slut"
+
+msgid "VOLUME"
+msgstr "Lydstyrke"
+
+msgid "SHARE_SCORE"
+msgstr "Del min score"
+
+msgid "IMPRESSUM"
+msgstr "Kolofon"
+
+msgid "REPORT_BUG"
+msgstr "Rapporter fejl"
+
+msgid "CLOSE"
+msgstr "Luk"
+
+msgid "LOGS"
+msgstr "Logs"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Niveau %d gennemført!"
+
+msgid "RULES_TITLE"
+msgstr "Regler"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Fyld 75% af brættet for at komme videre til næste niveau.\n"
+"\n"
+"Tryk eller klik hvor som helst for at bygge en væg i den retning.\n"
+"Stryg for at vælge vægretning.\n"
+"\n"
+"Vægge starter fra kanten af brættet eller fra en eksisterende væg.\n"
+"\n"
+"Lad ikke bolden ramme en væg mens den stadig bygges!\n"
+"\n"
+"Du har tre ekstra liv per niveau, et liv gendannes hvert niveau.\n"
+"\n"
+"Du får bonuspoint for\n"
+"- at fylde mere end 75%\n"
+"- hvert liv du beholder."
+
+msgid "BUILT_WITH"
+msgstr "Bygget med: Godot Engine Copyright (c) 2014-nu Godot Engine-bidragydere. Licens: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Genskabelse af KDE KBounce med Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Score-upload mislykkedes"
+
+msgid "NETWORK_ERROR"
+msgstr "Kunne ikke oprette forbindelse til serveren."
+
+msgid "SCORE_REJECTED"
+msgstr "Score afvist"
+
+msgid "REJECTION_ERROR"
+msgstr "Din score kunne ikke bekræftes."
+
+msgid "RETRY"
+msgstr "Prøv igen"
+
+msgid "REPORT"
+msgstr "Rapporter"
+
+msgid "IGNORE"
+msgstr "Ignorer"
+
+msgid "RATE_LIMITED"
+msgstr "Grænse nået. Prøver igen om %ds..."
+
+msgid "RETRYING"
+msgstr "Prøver igen..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline-tilstand"
+
+msgid "SHARED"
+msgstr "Delt"
+
+msgid "ERROR"
+msgstr "Fejl"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Indtast dit navn:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Dit kaldenavn"
+
+msgid "CONTINUE"
+msgstr "Fortsæt"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Indtast dit navn"
+
+msgid "REPORT_CONTENT"
+msgstr "Rapporter indhold"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Rapporter dette screenshot for upassende indhold?"
+
+msgid "REPORTED"
+msgstr "Rapporteret"
+
+msgid "SHARE"
+msgstr "Del"

@@ -1,0 +1,153 @@
+# Chinese (Simplified) translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: zh\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "在不被击中的情况下填满75%的棋盘！"
+
+msgid "LEADERBOARD"
+msgstr "排行榜"
+
+msgid "LOADING"
+msgstr "加载中..."
+
+msgid "OFFLINE"
+msgstr "离线"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "你的最佳成绩"
+
+msgid "PAUSED"
+msgstr "已暂停"
+
+msgid "GAME_OVER"
+msgstr "游戏结束"
+
+msgid "VOLUME"
+msgstr "音量"
+
+msgid "SHARE_SCORE"
+msgstr "分享我的分数"
+
+msgid "IMPRESSUM"
+msgstr "版权信息"
+
+msgid "REPORT_BUG"
+msgstr "报告错误"
+
+msgid "CLOSE"
+msgstr "关闭"
+
+msgid "LOGS"
+msgstr "日志"
+
+msgid "LEVEL_COMPLETE"
+msgstr "第%d关完成！"
+
+msgid "RULES_TITLE"
+msgstr "规则"
+
+msgid "RULES_TEXT"
+msgstr ""
+"填满75%的棋盘即可进入下一关。\n"
+"\n"
+"点击任意位置即可在该方向建造墙壁。\n"
+"滑动选择墙壁方向。\n"
+"\n"
+"墙壁从棋盘边缘或现有墙壁开始。\n"
+"\n"
+"不要让球在墙壁建造时撞到它！\n"
+"\n"
+"每关有三条备用生命，每关恢复一条生命。\n"
+"\n"
+"额外得分：\n"
+"- 填充超过75%\n"
+"- 保留的每条生命。"
+
+msgid "BUILT_WITH"
+msgstr "使用Godot引擎构建 版权所有 (c) 2014至今 Godot引擎贡献者。许可证：MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "使用Godot 4.5重制的KDE KBounce。"
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "分数上传失败"
+
+msgid "NETWORK_ERROR"
+msgstr "无法连接到服务器。"
+
+msgid "SCORE_REJECTED"
+msgstr "分数被拒绝"
+
+msgid "REJECTION_ERROR"
+msgstr "您的分数无法验证。"
+
+msgid "RETRY"
+msgstr "重试"
+
+msgid "REPORT"
+msgstr "举报"
+
+msgid "IGNORE"
+msgstr "忽略"
+
+msgid "RATE_LIMITED"
+msgstr "请求过于频繁。%d秒后重试..."
+
+msgid "RETRYING"
+msgstr "正在重试..."
+
+msgid "OFFLINE_MODE"
+msgstr "离线模式"
+
+msgid "SHARED"
+msgstr "已分享"
+
+msgid "ERROR"
+msgstr "错误"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[调试]"
+
+msgid "ENTER_NAME"
+msgstr "输入你的名字："
+
+msgid "YOUR_NICKNAME"
+msgstr "你的昵称"
+
+msgid "CONTINUE"
+msgstr "继续"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "输入你的名字"
+
+msgid "REPORT_CONTENT"
+msgstr "举报内容"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "举报此截图包含不当内容？"
+
+msgid "REPORTED"
+msgstr "已举报"
+
+msgid "SHARE"
+msgstr "分享"

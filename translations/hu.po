@@ -1,0 +1,153 @@
+# Hungarian translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: hu\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Töltsd ki a tábla 75%-át anélkül hogy eltalálnának!"
+
+msgid "LEADERBOARD"
+msgstr "Ranglista"
+
+msgid "LOADING"
+msgstr "Betöltés..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Legjobb pontjaid"
+
+msgid "PAUSED"
+msgstr "Szüneteltetve"
+
+msgid "GAME_OVER"
+msgstr "Játék vége"
+
+msgid "VOLUME"
+msgstr "Hangerő"
+
+msgid "SHARE_SCORE"
+msgstr "Pontszám megosztása"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Hiba jelentése"
+
+msgid "CLOSE"
+msgstr "Bezárás"
+
+msgid "LOGS"
+msgstr "Naplók"
+
+msgid "LEVEL_COMPLETE"
+msgstr "%d. szint teljesítve!"
+
+msgid "RULES_TITLE"
+msgstr "Szabályok"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Töltsd ki a tábla 75%-át a következő szintre lépéshez.\n"
+"\n"
+"Koppints vagy kattints bárhová hogy falat építs abba az irányba.\n"
+"Húzd az ujjad a fal irányának kiválasztásához.\n"
+"\n"
+"A falak a tábla szélétől vagy egy meglévő faltól indulnak.\n"
+"\n"
+"Ne engedd hogy a labda eltaláljon egy épülő falat!\n"
+"\n"
+"Három tartalék életed van szintenként, egy élet visszatöltődik minden szinten.\n"
+"\n"
+"Bónuszpontokat kapsz\n"
+"- 75% feletti kitöltésért\n"
+"- minden megtartott életért."
+
+msgid "BUILT_WITH"
+msgstr "Készült: Godot Engine Copyright (c) 2014-jelen Godot Engine közreműködők. Licenc: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "A KDE KBounce újraalkotása Godot 4.5-tel."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Pontszám feltöltése sikertelen"
+
+msgid "NETWORK_ERROR"
+msgstr "Nem sikerült csatlakozni a szerverhez."
+
+msgid "SCORE_REJECTED"
+msgstr "Pontszám elutasítva"
+
+msgid "REJECTION_ERROR"
+msgstr "A pontszámod nem ellenőrizhető."
+
+msgid "RETRY"
+msgstr "Újra"
+
+msgid "REPORT"
+msgstr "Jelentés"
+
+msgid "IGNORE"
+msgstr "Mellőzés"
+
+msgid "RATE_LIMITED"
+msgstr "Korlát elérve. Újrapróbálkozás %d másodperc múlva..."
+
+msgid "RETRYING"
+msgstr "Újrapróbálkozás..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline mód"
+
+msgid "SHARED"
+msgstr "Megosztva"
+
+msgid "ERROR"
+msgstr "Hiba"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Add meg a neved:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Beceneved"
+
+msgid "CONTINUE"
+msgstr "Tovább"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Add meg a neved"
+
+msgid "REPORT_CONTENT"
+msgstr "Tartalom jelentése"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Jelenteni ezt a képernyőképet nem megfelelő tartalomért?"
+
+msgid "REPORTED"
+msgstr "Jelentve"
+
+msgid "SHARE"
+msgstr "Megosztás"

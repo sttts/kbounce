@@ -1,0 +1,153 @@
+# French translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: fr\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Remplissez 75% du plateau sans vous faire toucher!"
+
+msgid "LEADERBOARD"
+msgstr "Classement"
+
+msgid "LOADING"
+msgstr "Chargement..."
+
+msgid "OFFLINE"
+msgstr "Hors ligne"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Vos meilleurs scores"
+
+msgid "PAUSED"
+msgstr "En pause"
+
+msgid "GAME_OVER"
+msgstr "Partie terminée"
+
+msgid "VOLUME"
+msgstr "Volume"
+
+msgid "SHARE_SCORE"
+msgstr "Partager mon score"
+
+msgid "IMPRESSUM"
+msgstr "Mentions légales"
+
+msgid "REPORT_BUG"
+msgstr "Signaler un bug"
+
+msgid "CLOSE"
+msgstr "Fermer"
+
+msgid "LOGS"
+msgstr "Journaux"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Niveau %d terminé!"
+
+msgid "RULES_TITLE"
+msgstr "Règles"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Remplissez 75% du plateau pour passer au niveau suivant.\n"
+"\n"
+"Touchez ou cliquez n'importe où pour construire un mur dans cette direction.\n"
+"Balayez pour choisir la direction du mur.\n"
+"\n"
+"Les murs partent du bord du plateau ou d'un mur existant.\n"
+"\n"
+"Ne laissez pas la balle toucher un mur en construction!\n"
+"\n"
+"Vous avez trois vies supplémentaires par niveau, une vie se régénère à chaque niveau.\n"
+"\n"
+"Vous gagnez des points bonus pour\n"
+"- remplir plus de 75%\n"
+"- chaque vie conservée."
+
+msgid "BUILT_WITH"
+msgstr "Créé avec: Godot Engine Copyright (c) 2014-présent contributeurs Godot Engine. Licence: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Recréation du KDE KBounce avec Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Échec du téléchargement du score"
+
+msgid "NETWORK_ERROR"
+msgstr "Impossible de se connecter au serveur."
+
+msgid "SCORE_REJECTED"
+msgstr "Score rejeté"
+
+msgid "REJECTION_ERROR"
+msgstr "Votre score n'a pas pu être vérifié."
+
+msgid "RETRY"
+msgstr "Réessayer"
+
+msgid "REPORT"
+msgstr "Signaler"
+
+msgid "IGNORE"
+msgstr "Ignorer"
+
+msgid "RATE_LIMITED"
+msgstr "Limite atteinte. Réessai dans %ds..."
+
+msgid "RETRYING"
+msgstr "Nouvelle tentative..."
+
+msgid "OFFLINE_MODE"
+msgstr "Mode hors ligne"
+
+msgid "SHARED"
+msgstr "Partagé"
+
+msgid "ERROR"
+msgstr "Erreur"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Entrez votre nom:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Votre pseudo"
+
+msgid "CONTINUE"
+msgstr "Continuer"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Entrez votre nom"
+
+msgid "REPORT_CONTENT"
+msgstr "Signaler le contenu"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Signaler cette capture d'écran pour contenu inapproprié?"
+
+msgid "REPORTED"
+msgstr "Signalé"
+
+msgid "SHARE"
+msgstr "Partager"

@@ -1,0 +1,153 @@
+# Dutch translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: nl\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Vul 75% van het bord zonder geraakt te worden!"
+
+msgid "LEADERBOARD"
+msgstr "Scorebord"
+
+msgid "LOADING"
+msgstr "Laden..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Je beste scores"
+
+msgid "PAUSED"
+msgstr "Gepauzeerd"
+
+msgid "GAME_OVER"
+msgstr "Spel voorbij"
+
+msgid "VOLUME"
+msgstr "Volume"
+
+msgid "SHARE_SCORE"
+msgstr "Deel mijn score"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Bug melden"
+
+msgid "CLOSE"
+msgstr "Sluiten"
+
+msgid "LOGS"
+msgstr "Logs"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Level %d voltooid!"
+
+msgid "RULES_TITLE"
+msgstr "Regels"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Vul 75% van het bord om naar het volgende level te gaan.\n"
+"\n"
+"Tik of klik ergens om een muur in die richting te bouwen.\n"
+"Veeg om de muurrichting te kiezen.\n"
+"\n"
+"Muren starten vanaf de rand van het bord of vanaf een bestaande muur.\n"
+"\n"
+"Laat de bal geen muur raken terwijl deze nog gebouwd wordt!\n"
+"\n"
+"Je hebt drie extra levens per level, één leven herstelt elk level.\n"
+"\n"
+"Je krijgt bonuspunten voor\n"
+"- meer dan 75% vullen\n"
+"- elk leven dat je behoudt."
+
+msgid "BUILT_WITH"
+msgstr "Gemaakt met: Godot Engine Copyright (c) 2014-heden Godot Engine-bijdragers. Licentie: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Herschepping van KDE KBounce met Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Score uploaden mislukt"
+
+msgid "NETWORK_ERROR"
+msgstr "Kon geen verbinding maken met de server."
+
+msgid "SCORE_REJECTED"
+msgstr "Score afgewezen"
+
+msgid "REJECTION_ERROR"
+msgstr "Je score kon niet worden geverifieerd."
+
+msgid "RETRY"
+msgstr "Opnieuw proberen"
+
+msgid "REPORT"
+msgstr "Melden"
+
+msgid "IGNORE"
+msgstr "Negeren"
+
+msgid "RATE_LIMITED"
+msgstr "Limiet bereikt. Opnieuw proberen over %ds..."
+
+msgid "RETRYING"
+msgstr "Opnieuw proberen..."
+
+msgid "OFFLINE_MODE"
+msgstr "Offline modus"
+
+msgid "SHARED"
+msgstr "Gedeeld"
+
+msgid "ERROR"
+msgstr "Fout"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Voer je naam in:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Je bijnaam"
+
+msgid "CONTINUE"
+msgstr "Doorgaan"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Voer je naam in"
+
+msgid "REPORT_CONTENT"
+msgstr "Inhoud melden"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Dit screenshot melden voor ongepaste inhoud?"
+
+msgid "REPORTED"
+msgstr "Gemeld"
+
+msgid "SHARE"
+msgstr "Delen"

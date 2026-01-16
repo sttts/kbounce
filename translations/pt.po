@@ -1,0 +1,153 @@
+# Portuguese translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: pt\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Preencha 75% do tabuleiro sem ser atingido!"
+
+msgid "LEADERBOARD"
+msgstr "Placar"
+
+msgid "LOADING"
+msgstr "Carregando..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Suas melhores pontuações"
+
+msgid "PAUSED"
+msgstr "Pausado"
+
+msgid "GAME_OVER"
+msgstr "Fim de jogo"
+
+msgid "VOLUME"
+msgstr "Volume"
+
+msgid "SHARE_SCORE"
+msgstr "Compartilhar pontuação"
+
+msgid "IMPRESSUM"
+msgstr "Informações legais"
+
+msgid "REPORT_BUG"
+msgstr "Reportar erro"
+
+msgid "CLOSE"
+msgstr "Fechar"
+
+msgid "LOGS"
+msgstr "Logs"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Nível %d completo!"
+
+msgid "RULES_TITLE"
+msgstr "Regras"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Preencha 75% do tabuleiro para avançar para o próximo nível.\n"
+"\n"
+"Toque ou clique em qualquer lugar para construir uma parede nessa direção.\n"
+"Deslize para escolher a direção da parede.\n"
+"\n"
+"As paredes começam na borda do tabuleiro ou em uma parede existente.\n"
+"\n"
+"Não deixe a bola atingir uma parede enquanto está sendo construída!\n"
+"\n"
+"Você tem três vidas extras por nível, uma vida se recupera a cada nível.\n"
+"\n"
+"Você ganha pontos bônus por\n"
+"- preencher mais de 75%\n"
+"- cada vida que mantiver."
+
+msgid "BUILT_WITH"
+msgstr "Feito com: Godot Engine Copyright (c) 2014-presente colaboradores do Godot Engine. Licença: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Recriação do KDE KBounce usando Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Falha no envio da pontuação"
+
+msgid "NETWORK_ERROR"
+msgstr "Não foi possível conectar ao servidor."
+
+msgid "SCORE_REJECTED"
+msgstr "Pontuação rejeitada"
+
+msgid "REJECTION_ERROR"
+msgstr "Sua pontuação não pôde ser verificada."
+
+msgid "RETRY"
+msgstr "Tentar novamente"
+
+msgid "REPORT"
+msgstr "Denunciar"
+
+msgid "IGNORE"
+msgstr "Ignorar"
+
+msgid "RATE_LIMITED"
+msgstr "Limite atingido. Tentando novamente em %ds..."
+
+msgid "RETRYING"
+msgstr "Tentando novamente..."
+
+msgid "OFFLINE_MODE"
+msgstr "Modo offline"
+
+msgid "SHARED"
+msgstr "Compartilhado"
+
+msgid "ERROR"
+msgstr "Erro"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Digite seu nome:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Seu apelido"
+
+msgid "CONTINUE"
+msgstr "Continuar"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Digite seu nome"
+
+msgid "REPORT_CONTENT"
+msgstr "Denunciar conteúdo"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Denunciar esta captura por conteúdo inapropriado?"
+
+msgid "REPORTED"
+msgstr "Denunciado"
+
+msgid "SHARE"
+msgstr "Compartilhar"

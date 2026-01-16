@@ -1,0 +1,153 @@
+# Italian translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: it\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Riempi il 75% del tabellone senza farti colpire!"
+
+msgid "LEADERBOARD"
+msgstr "Classifica"
+
+msgid "LOADING"
+msgstr "Caricamento..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "I tuoi migliori punteggi"
+
+msgid "PAUSED"
+msgstr "In pausa"
+
+msgid "GAME_OVER"
+msgstr "Partita finita"
+
+msgid "VOLUME"
+msgstr "Volume"
+
+msgid "SHARE_SCORE"
+msgstr "Condividi il mio punteggio"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Segnala bug"
+
+msgid "CLOSE"
+msgstr "Chiudi"
+
+msgid "LOGS"
+msgstr "Log"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Livello %d completato!"
+
+msgid "RULES_TITLE"
+msgstr "Regole"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Riempi il 75% del tabellone per avanzare al livello successivo.\n"
+"\n"
+"Tocca o clicca ovunque per costruire un muro in quella direzione.\n"
+"Scorri per scegliere la direzione del muro.\n"
+"\n"
+"I muri partono dal bordo del tabellone o da un muro esistente.\n"
+"\n"
+"Non far colpire la palla contro un muro mentre è in costruzione!\n"
+"\n"
+"Hai tre vite extra per livello, una vita si recupera ad ogni livello.\n"
+"\n"
+"Ottieni punti bonus per\n"
+"- riempire più del 75%\n"
+"- ogni vita che conservi."
+
+msgid "BUILT_WITH"
+msgstr "Creato con: Godot Engine Copyright (c) 2014-presente contributori Godot Engine. Licenza: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Ricreazione di KDE KBounce usando Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Caricamento punteggio fallito"
+
+msgid "NETWORK_ERROR"
+msgstr "Impossibile connettersi al server."
+
+msgid "SCORE_REJECTED"
+msgstr "Punteggio rifiutato"
+
+msgid "REJECTION_ERROR"
+msgstr "Il tuo punteggio non è stato verificato."
+
+msgid "RETRY"
+msgstr "Riprova"
+
+msgid "REPORT"
+msgstr "Segnala"
+
+msgid "IGNORE"
+msgstr "Ignora"
+
+msgid "RATE_LIMITED"
+msgstr "Limite raggiunto. Riprova tra %ds..."
+
+msgid "RETRYING"
+msgstr "Riprovo..."
+
+msgid "OFFLINE_MODE"
+msgstr "Modalità offline"
+
+msgid "SHARED"
+msgstr "Condiviso"
+
+msgid "ERROR"
+msgstr "Errore"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Inserisci il tuo nome:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Il tuo nickname"
+
+msgid "CONTINUE"
+msgstr "Continua"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Inserisci il tuo nome"
+
+msgid "REPORT_CONTENT"
+msgstr "Segnala contenuto"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Segnalare questo screenshot per contenuto inappropriato?"
+
+msgid "REPORTED"
+msgstr "Segnalato"
+
+msgid "SHARE"
+msgstr "Condividi"

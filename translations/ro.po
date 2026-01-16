@@ -1,0 +1,153 @@
+# Romanian translation for KBounce
+# Copyright (c) 2025 Stefan Schimanski
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#
+msgid ""
+msgstr ""
+"Language: ro\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "GAME_TITLE"
+msgstr "KBounce"
+
+msgid "GAME_SUBTITLE"
+msgstr "Umple 75% din tablă fără să fii lovit!"
+
+msgid "LEADERBOARD"
+msgstr "Clasament"
+
+msgid "LOADING"
+msgstr "Se încarcă..."
+
+msgid "OFFLINE"
+msgstr "Offline"
+
+msgid "YOUR_BEST_SCORES"
+msgstr "Cele mai bune scoruri"
+
+msgid "PAUSED"
+msgstr "Pauză"
+
+msgid "GAME_OVER"
+msgstr "Joc terminat"
+
+msgid "VOLUME"
+msgstr "Volum"
+
+msgid "SHARE_SCORE"
+msgstr "Distribuie scorul"
+
+msgid "IMPRESSUM"
+msgstr "Impressum"
+
+msgid "REPORT_BUG"
+msgstr "Raportează eroare"
+
+msgid "CLOSE"
+msgstr "Închide"
+
+msgid "LOGS"
+msgstr "Jurnale"
+
+msgid "LEVEL_COMPLETE"
+msgstr "Nivelul %d complet!"
+
+msgid "RULES_TITLE"
+msgstr "Reguli"
+
+msgid "RULES_TEXT"
+msgstr ""
+"Umple 75% din tablă pentru a avansa la nivelul următor.\n"
+"\n"
+"Atinge sau fă clic oriunde pentru a construi un zid în acea direcție.\n"
+"Glisează pentru a alege direcția zidului.\n"
+"\n"
+"Zidurile încep de la marginea tablei sau de la un zid existent.\n"
+"\n"
+"Nu lăsa mingea să lovească un zid în timp ce este în construcție!\n"
+"\n"
+"Ai trei vieți suplimentare pe nivel, o viață se recuperează la fiecare nivel.\n"
+"\n"
+"Primești puncte bonus pentru\n"
+"- umplerea a mai mult de 75%\n"
+"- fiecare viață păstrată."
+
+msgid "BUILT_WITH"
+msgstr "Construit cu: Godot Engine Copyright (c) 2014-prezent contribuitori Godot Engine. Licență: MIT (godotengine.org/license)"
+
+msgid "IMPRESSUM_ADDRESS"
+msgstr ""
+"Stefan Schimanski\n"
+"Gehmerweg 9a\n"
+"64291 Darmstadt\n"
+"E-Mail: kbounce@1stein.org"
+
+msgid "IMPRESSUM_DESCRIPTION"
+msgstr "Recreere a KDE KBounce folosind Godot 4.5."
+
+msgid "IMPRESSUM_WEBSITE"
+msgstr "kbounce.app"
+
+msgid "SCORE_UPLOAD_FAILED"
+msgstr "Încărcarea scorului a eșuat"
+
+msgid "NETWORK_ERROR"
+msgstr "Nu s-a putut conecta la server."
+
+msgid "SCORE_REJECTED"
+msgstr "Scor respins"
+
+msgid "REJECTION_ERROR"
+msgstr "Scorul tău nu a putut fi verificat."
+
+msgid "RETRY"
+msgstr "Reîncearcă"
+
+msgid "REPORT"
+msgstr "Raportează"
+
+msgid "IGNORE"
+msgstr "Ignoră"
+
+msgid "RATE_LIMITED"
+msgstr "Limită atinsă. Reîncercare în %ds..."
+
+msgid "RETRYING"
+msgstr "Se reîncearcă..."
+
+msgid "OFFLINE_MODE"
+msgstr "Mod offline"
+
+msgid "SHARED"
+msgstr "Distribuit"
+
+msgid "ERROR"
+msgstr "Eroare"
+
+msgid "DEBUG_INDICATOR"
+msgstr "[DEBUG]"
+
+msgid "ENTER_NAME"
+msgstr "Introdu numele tău:"
+
+msgid "YOUR_NICKNAME"
+msgstr "Porecla ta"
+
+msgid "CONTINUE"
+msgstr "Continuă"
+
+msgid "ENTER_YOUR_NAME"
+msgstr "Introdu numele tău"
+
+msgid "REPORT_CONTENT"
+msgstr "Raportează conținut"
+
+msgid "REPORT_SCREENSHOT"
+msgstr "Raportezi această captură pentru conținut nepotrivit?"
+
+msgid "REPORTED"
+msgstr "Raportat"
+
+msgid "SHARE"
+msgstr "Distribuie"
