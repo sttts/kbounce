@@ -1,20 +1,20 @@
-keys,en
-GAME_TITLE,KBounce
-GAME_SUBTITLE,Fill 75% of the board without getting hit!
-LEADERBOARD,Leaderboard
-LOADING,Loading...
-OFFLINE,Offline
-YOUR_BEST_SCORES,Your Best Scores
-PAUSED,Paused
-GAME_OVER,Game Over
-VOLUME,Volume
-SHARE_SCORE,Share my score
-IMPRESSUM,Impressum
-REPORT_BUG,Report Bug
-CLOSE,Close
-LOGS,Logs
-LEVEL_COMPLETE,Level %d Complete!
-RULES_TITLE,Rules
+keys,en,de,fr,it,es,zh,is,pt,fi,sv,da,nl,pl,cs,ro,hu
+GAME_TITLE,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce,KBounce
+GAME_SUBTITLE,Fill 75% of the board without getting hit!,Fülle 75% des Spielfelds ohne getroffen zu werden!,Remplissez 75% du plateau sans vous faire toucher!,Riempi il 75% del tabellone senza farti colpire!,¡Llena el 75% del tablero sin que te golpeen!,在不被击中的情况下填满75%的棋盘！,Fylltu 75% borðsins án þess að verða fyrir höggi!,Preencha 75% do tabuleiro sem ser atingido!,Täytä 75% laudasta osumatta!,Fyll 75% av brädet utan att bli träffad!,Fyld 75% af brættet uden at blive ramt!,Vul 75% van het bord zonder geraakt te worden!,Wypełnij 75% planszy nie dając się trafić!,Vyplňte 75% desky aniž byste byli zasaženi!,Umple 75% din tablă fără să fii lovit!,Töltsd ki a tábla 75%-át anélkül hogy eltalálnának!
+LEADERBOARD,Leaderboard,Bestenliste,Classement,Classifica,Clasificación,排行榜,Stigatafla,Placar,Tuloslista,Topplista,Rangliste,Scorebord,Tabela wyników,Žebříček,Clasament,Ranglista
+LOADING,Loading...,Laden...,Chargement...,Caricamento...,Cargando...,加载中...,Hleður...,Carregando...,Ladataan...,Laddar...,Indlæser...,Laden...,Ładowanie...,Načítání...,Se încarcă...,Betöltés...
+OFFLINE,Offline,Offline,Hors ligne,Offline,Sin conexión,离线,Ótengdur,Offline,Offline,Offline,Offline,Offline,Offline,Offline,Offline,Offline
+YOUR_BEST_SCORES,Your Best Scores,Deine besten Punkte,Vos meilleurs scores,I tuoi migliori punteggi,Tus mejores puntuaciones,你的最佳成绩,Þín bestu stig,Suas melhores pontuações,Parhaat pisteesi,Dina bästa poäng,Dine bedste resultater,Je beste scores,Twoje najlepsze wyniki,Vaše nejlepší skóre,Cele mai bune scoruri,Legjobb pontjaid
+PAUSED,Paused,Pausiert,En pause,In pausa,Pausado,已暂停,Í bið,Pausado,Tauolla,Pausad,Pauset,Gepauzeerd,Wstrzymano,Pozastaveno,Pauză,Szüneteltetve
+GAME_OVER,Game Over,Spiel vorbei,Partie terminée,Partita finita,Fin del juego,游戏结束,Leik lokið,Fim de jogo,Peli päättyi,Spelet slut,Spillet slut,Spel voorbij,Koniec gry,Konec hry,Joc terminat,Játék vége
+VOLUME,Volume,Lautstärke,Volume,Volume,Volumen,音量,Hljóðstyrkur,Volume,Äänenvoimakkuus,Volym,Lydstyrke,Volume,Głośność,Hlasitost,Volum,Hangerő
+SHARE_SCORE,Share my score,Punktzahl teilen,Partager mon score,Condividi il mio punteggio,Compartir mi puntuación,分享我的分数,Deila stigum,Compartilhar pontuação,Jaa pisteeni,Dela min poäng,Del min score,Deel mijn score,Udostępnij wynik,Sdílet skóre,Distribuie scorul,Pontszám megosztása
+IMPRESSUM,Impressum,Impressum,Mentions légales,Impressum,Aviso legal,版权信息,Upplýsingar,Informações legais,Impressum,Impressum,Kolofon,Impressum,Impressum,Impressum,Impressum,Impressum
+REPORT_BUG,Report Bug,Fehler melden,Signaler un bug,Segnala bug,Reportar error,报告错误,Tilkynna villu,Reportar erro,Ilmoita virhe,Rapportera fel,Rapporter fejl,Bug melden,Zgłoś błąd,Nahlásit chybu,Raportează eroare,Hiba jelentése
+CLOSE,Close,Schließen,Fermer,Chiudi,Cerrar,关闭,Loka,Fechar,Sulje,Stäng,Luk,Sluiten,Zamknij,Zavřít,Închide,Bezárás
+LOGS,Logs,Logs,Journaux,Log,Registros,日志,Skrár,Logs,Lokit,Loggar,Logs,Logs,Logi,Logy,Jurnale,Naplók
+LEVEL_COMPLETE,Level %d Complete!,Level %d abgeschlossen!,Niveau %d terminé!,Livello %d completato!,¡Nivel %d completado!,第%d关完成！,Borð %d klárað!,Nível %d completo!,Taso %d läpäisty!,Nivå %d klar!,Niveau %d gennemført!,Level %d voltooid!,Poziom %d ukończony!,Úroveň %d dokončena!,Nivelul %d complet!,%d. szint teljesítve!
+RULES_TITLE,Rules,Regeln,Règles,Regole,Reglas,规则,Reglur,Regras,Säännöt,Regler,Regler,Regels,Zasady,Pravidla,Reguli,Szabályok
 RULES_TEXT,"Fill 75% of the board to advance to the next level.
 
 Tap or click anywhere to build a wall in that direction.
@@ -28,32 +28,272 @@ You have three spare lives per level, one live recovers each level.
 
 You get bonus points for
 - filling more than 75%
-- each life you keep."
-BUILT_WITH,Built with: Godot Engine Copyright (c) 2014-present Godot Engine contributors. License: MIT (godotengine.org/license)
+- each life you keep.","Fülle 75% des Spielfelds um ins nächste Level zu kommen.
+
+Tippe oder klicke irgendwo um eine Mauer in diese Richtung zu bauen.
+Wische um die Mauerrichtung zu wählen.
+
+Mauern starten vom Rand des Spielfelds oder von einer bestehenden Mauer.
+
+Lass den Ball keine Mauer treffen während sie noch gebaut wird!
+
+Du hast drei Extraleben pro Level, ein Leben wird pro Level wiederhergestellt.
+
+Du bekommst Bonuspunkte für
+- mehr als 75% füllen
+- jedes Leben das du behältst.","Remplissez 75% du plateau pour passer au niveau suivant.
+
+Touchez ou cliquez n'importe où pour construire un mur dans cette direction.
+Balayez pour choisir la direction du mur.
+
+Les murs partent du bord du plateau ou d'un mur existant.
+
+Ne laissez pas la balle toucher un mur en construction!
+
+Vous avez trois vies supplémentaires par niveau, une vie se régénère à chaque niveau.
+
+Vous gagnez des points bonus pour
+- remplir plus de 75%
+- chaque vie conservée.","Riempi il 75% del tabellone per avanzare al livello successivo.
+
+Tocca o clicca ovunque per costruire un muro in quella direzione.
+Scorri per scegliere la direzione del muro.
+
+I muri partono dal bordo del tabellone o da un muro esistente.
+
+Non far colpire la palla contro un muro mentre è in costruzione!
+
+Hai tre vite extra per livello, una vita si recupera ad ogni livello.
+
+Ottieni punti bonus per
+- riempire più del 75%
+- ogni vita che conservi.","Llena el 75% del tablero para avanzar al siguiente nivel.
+
+Toca o haz clic en cualquier lugar para construir un muro en esa dirección.
+Desliza para elegir la dirección del muro.
+
+Los muros comienzan desde el borde del tablero o desde un muro existente.
+
+¡No dejes que la pelota golpee un muro mientras se está construyendo!
+
+Tienes tres vidas extra por nivel, una vida se recupera en cada nivel.
+
+Obtienes puntos bonus por
+- llenar más del 75%
+- cada vida que conserves.","填满75%的棋盘即可进入下一关。
+
+点击任意位置即可在该方向建造墙壁。
+滑动选择墙壁方向。
+
+墙壁从棋盘边缘或现有墙壁开始。
+
+不要让球在墙壁建造时撞到它！
+
+每关有三条备用生命，每关恢复一条生命。
+
+额外得分：
+- 填充超过75%
+- 保留的每条生命。","Fylltu 75% borðsins til að komast á næsta stig.
+
+Pikkaðu eða smelltu hvar sem er til að byggja vegg í þá átt.
+Strjúktu til að velja veggátt.
+
+Veggir byrja frá brún borðsins eða frá núverandi vegg.
+
+Ekki láta boltann rekast á vegg meðan hann er enn í byggingu!
+
+Þú hefur þrjú aukalíf á hverju stigi, eitt líf endurheimtist á hverju stigi.
+
+Þú færð bónusstig fyrir
+- að fylla meira en 75%
+- hvert líf sem þú heldur.","Preencha 75% do tabuleiro para avançar para o próximo nível.
+
+Toque ou clique em qualquer lugar para construir uma parede nessa direção.
+Deslize para escolher a direção da parede.
+
+As paredes começam na borda do tabuleiro ou em uma parede existente.
+
+Não deixe a bola atingir uma parede enquanto está sendo construída!
+
+Você tem três vidas extras por nível, uma vida se recupera a cada nível.
+
+Você ganha pontos bônus por
+- preencher mais de 75%
+- cada vida que mantiver.","Täytä 75% laudasta päästäksesi seuraavalle tasolle.
+
+Napauta tai klikkaa minne tahansa rakentaaksesi seinän siihen suuntaan.
+Pyyhkäise valitaksesi seinän suunnan.
+
+Seinät alkavat laudan reunasta tai olemassa olevasta seinästä.
+
+Älä anna pallon osua seinään sen ollessa rakenteilla!
+
+Sinulla on kolme ylimääräistä elämää per taso, yksi elämä palautuu joka tasolla.
+
+Saat bonuspisteitä
+- täyttämällä yli 75%
+- jokaisesta säilytetystä elämästä.","Fyll 75% av brädet för att gå vidare till nästa nivå.
+
+Tryck eller klicka var som helst för att bygga en vägg i den riktningen.
+Svep för att välja väggriktning.
+
+Väggar startar från brädets kant eller från en befintlig vägg.
+
+Låt inte bollen träffa en vägg medan den fortfarande byggs!
+
+Du har tre extra liv per nivå, ett liv återställs varje nivå.
+
+Du får bonuspoäng för
+- att fylla mer än 75%
+- varje liv du behåller.","Fyld 75% af brættet for at komme videre til næste niveau.
+
+Tryk eller klik hvor som helst for at bygge en væg i den retning.
+Stryg for at vælge vægretning.
+
+Vægge starter fra kanten af brættet eller fra en eksisterende væg.
+
+Lad ikke bolden ramme en væg mens den stadig bygges!
+
+Du har tre ekstra liv per niveau, et liv gendannes hvert niveau.
+
+Du får bonuspoint for
+- at fylde mere end 75%
+- hvert liv du beholder.","Vul 75% van het bord om naar het volgende level te gaan.
+
+Tik of klik ergens om een muur in die richting te bouwen.
+Veeg om de muurrichting te kiezen.
+
+Muren starten vanaf de rand van het bord of vanaf een bestaande muur.
+
+Laat de bal geen muur raken terwijl deze nog gebouwd wordt!
+
+Je hebt drie extra levens per level, één leven herstelt elk level.
+
+Je krijgt bonuspunten voor
+- meer dan 75% vullen
+- elk leven dat je behoudt.","Wypełnij 75% planszy aby przejść do następnego poziomu.
+
+Dotknij lub kliknij gdziekolwiek aby zbudować ścianę w tym kierunku.
+Przesuń aby wybrać kierunek ściany.
+
+Ściany zaczynają się od krawędzi planszy lub od istniejącej ściany.
+
+Nie pozwól piłce uderzyć w ścianę podczas jej budowy!
+
+Masz trzy dodatkowe życia na poziom, jedno życie odnawia się każdego poziomu.
+
+Dostajesz punkty bonusowe za
+- wypełnienie ponad 75%
+- każde zachowane życie.","Vyplňte 75% desky pro postup na další úroveň.
+
+Klepněte nebo klikněte kamkoli pro stavbu zdi v daném směru.
+Přejeďte pro výběr směru zdi.
+
+Zdi začínají od okraje desky nebo od existující zdi.
+
+Nenechte míč narazit do zdi během její stavby!
+
+Máte tři životy navíc na úroveň, jeden život se obnoví každou úroveň.
+
+Získáte bonusové body za
+- vyplnění více než 75%
+- každý zachovaný život.","Umple 75% din tablă pentru a avansa la nivelul următor.
+
+Atinge sau fă clic oriunde pentru a construi un zid în acea direcție.
+Glisează pentru a alege direcția zidului.
+
+Zidurile încep de la marginea tablei sau de la un zid existent.
+
+Nu lăsa mingea să lovească un zid în timp ce este în construcție!
+
+Ai trei vieți suplimentare pe nivel, o viață se recuperează la fiecare nivel.
+
+Primești puncte bonus pentru
+- umplerea a mai mult de 75%
+- fiecare viață păstrată.","Töltsd ki a tábla 75%-át a következő szintre lépéshez.
+
+Koppints vagy kattints bárhová hogy falat építs abba az irányba.
+Húzd az ujjad a fal irányának kiválasztásához.
+
+A falak a tábla szélétől vagy egy meglévő faltól indulnak.
+
+Ne engedd hogy a labda eltaláljon egy épülő falat!
+
+Három tartalék életed van szintenként, egy élet visszatöltődik minden szinten.
+
+Bónuszpontokat kapsz
+- 75% feletti kitöltésért
+- minden megtartott életért."
+BUILT_WITH,Built with: Godot Engine Copyright (c) 2014-present Godot Engine contributors. License: MIT (godotengine.org/license),Erstellt mit: Godot Engine Copyright (c) 2014-heute Godot Engine Mitwirkende. Lizenz: MIT (godotengine.org/license),Créé avec: Godot Engine Copyright (c) 2014-présent contributeurs Godot Engine. Licence: MIT (godotengine.org/license),Creato con: Godot Engine Copyright (c) 2014-presente contributori Godot Engine. Licenza: MIT (godotengine.org/license),Hecho con: Godot Engine Copyright (c) 2014-presente colaboradores de Godot Engine. Licencia: MIT (godotengine.org/license),使用Godot引擎构建 版权所有 (c) 2014至今 Godot引擎贡献者。许可证：MIT (godotengine.org/license),Byggt með: Godot Engine Copyright (c) 2014-nú Godot Engine þátttakendur. Leyfi: MIT (godotengine.org/license),Feito com: Godot Engine Copyright (c) 2014-presente colaboradores do Godot Engine. Licença: MIT (godotengine.org/license),Tehty: Godot Engine Copyright (c) 2014-nykyhetki Godot Engine -avustajat. Lisenssi: MIT (godotengine.org/license),Byggd med: Godot Engine Copyright (c) 2014-nutid Godot Engine-bidragsgivare. Licens: MIT (godotengine.org/license),Bygget med: Godot Engine Copyright (c) 2014-nu Godot Engine-bidragydere. Licens: MIT (godotengine.org/license),Gemaakt met: Godot Engine Copyright (c) 2014-heden Godot Engine-bijdragers. Licentie: MIT (godotengine.org/license),Zbudowano z: Godot Engine Copyright (c) 2014-obecnie współtwórcy Godot Engine. Licencja: MIT (godotengine.org/license),Vytvořeno s: Godot Engine Copyright (c) 2014-současnost přispěvatelé Godot Engine. Licence: MIT (godotengine.org/license),Construit cu: Godot Engine Copyright (c) 2014-prezent contribuitori Godot Engine. Licență: MIT (godotengine.org/license),Készült: Godot Engine Copyright (c) 2014-jelen Godot Engine közreműködők. Licenc: MIT (godotengine.org/license)
 IMPRESSUM_ADDRESS,"Stefan Schimanski
 Gehmerweg 9a
 64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
+E-Mail: kbounce@1stein.org","Stefan Schimanski
+Gehmerweg 9a
+64291 Darmstadt
 E-Mail: kbounce@1stein.org"
-IMPRESSUM_DESCRIPTION,Recreation of the KDE KBounce using Godot 4.5.
-IMPRESSUM_WEBSITE,kbounce.app
-SCORE_UPLOAD_FAILED,Score upload failed
-NETWORK_ERROR,Could not connect to the server.
-SCORE_REJECTED,Score Rejected
-REJECTION_ERROR,Your score could not be verified.
-RETRY,Retry
-REPORT,Report
-IGNORE,Ignore
-RATE_LIMITED,Rate limited. Retry in %ds...
-RETRYING,Retrying...
-OFFLINE_MODE,Offline mode
-SHARED,Shared
-ERROR,Error
-DEBUG_INDICATOR,[DEBUG]
-ENTER_NAME,Enter your name:
-YOUR_NICKNAME,Your nickname
-CONTINUE,Continue
-ENTER_YOUR_NAME,Enter your name
-REPORT_CONTENT,Report Content
-REPORT_SCREENSHOT,Report this screenshot for inappropriate content?
-REPORTED,Reported
-SHARE,Share
+IMPRESSUM_DESCRIPTION,Recreation of the KDE KBounce using Godot 4.5.,Neuauflage des KDE KBounce mit Godot 4.5.,Recréation du KDE KBounce avec Godot 4.5.,Ricreazione di KDE KBounce usando Godot 4.5.,Recreación de KDE KBounce usando Godot 4.5.,使用Godot 4.5重制的KDE KBounce。,Endurgerð af KDE KBounce með Godot 4.5.,Recriação do KDE KBounce usando Godot 4.5.,KDE KBounce -pelin uudelleentoteutus Godot 4.5:llä.,Återskapande av KDE KBounce med Godot 4.5.,Genskabelse af KDE KBounce med Godot 4.5.,Herschepping van KDE KBounce met Godot 4.5.,Odtworzenie KDE KBounce przy użyciu Godot 4.5.,Znovuvytvoření KDE KBounce pomocí Godot 4.5.,Recreere a KDE KBounce folosind Godot 4.5.,A KDE KBounce újraalkotása Godot 4.5-tel.
+IMPRESSUM_WEBSITE,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app,kbounce.app
+SCORE_UPLOAD_FAILED,Score upload failed,Punktestand-Upload fehlgeschlagen,Échec du téléchargement du score,Caricamento punteggio fallito,Error al subir puntuación,分数上传失败,Stigasending mistókst,Falha no envio da pontuação,Pisteiden lähetys epäonnistui,Poänguppladdning misslyckades,Score-upload mislykkedes,Score uploaden mislukt,Przesyłanie wyniku nie powiodło się,Nahrání skóre selhalo,Încărcarea scorului a eșuat,Pontszám feltöltése sikertelen
+NETWORK_ERROR,Could not connect to the server.,Verbindung zum Server fehlgeschlagen.,Impossible de se connecter au serveur.,Impossibile connettersi al server.,No se pudo conectar al servidor.,无法连接到服务器。,Gat ekki tengst netþjóni.,Não foi possível conectar ao servidor.,Yhteyttä palvelimeen ei voitu muodostaa.,Kunde inte ansluta till servern.,Kunne ikke oprette forbindelse til serveren.,Kon geen verbinding maken met de server.,Nie można połączyć się z serwerem.,Nelze se připojit k serveru.,Nu s-a putut conecta la server.,Nem sikerült csatlakozni a szerverhez.
+SCORE_REJECTED,Score Rejected,Punktestand abgelehnt,Score rejeté,Punteggio rifiutato,Puntuación rechazada,分数被拒绝,Stigum hafnað,Pontuação rejeitada,Pisteet hylätty,Poäng avvisad,Score afvist,Score afgewezen,Wynik odrzucony,Skóre odmítnuto,Scor respins,Pontszám elutasítva
+REJECTION_ERROR,Your score could not be verified.,Dein Punktestand konnte nicht verifiziert werden.,Votre score n'a pas pu être vérifié.,Il tuo punteggio non è stato verificato.,Tu puntuación no pudo ser verificada.,您的分数无法验证。,Ekki var hægt að staðfesta stigin þín.,Sua pontuação não pôde ser verificada.,Pisteitäsi ei voitu vahvistaa.,Din poäng kunde inte verifieras.,Din score kunne ikke bekræftes.,Je score kon niet worden geverifieerd.,Twój wynik nie mógł zostać zweryfikowany.,Vaše skóre nebylo možné ověřit.,Scorul tău nu a putut fi verificat.,A pontszámod nem ellenőrizhető.
+RETRY,Retry,Erneut versuchen,Réessayer,Riprova,Reintentar,重试,Reyna aftur,Tentar novamente,Yritä uudelleen,Försök igen,Prøv igen,Opnieuw proberen,Ponów próbę,Zkusit znovu,Reîncearcă,Újra
+REPORT,Report,Melden,Signaler,Segnala,Reportar,举报,Tilkynna,Denunciar,Ilmoita,Rapportera,Rapporter,Melden,Zgłoś,Nahlásit,Raportează,Jelentés
+IGNORE,Ignore,Ignorieren,Ignorer,Ignora,Ignorar,忽略,Hunsa,Ignorar,Ohita,Ignorera,Ignorer,Negeren,Ignoruj,Ignorovat,Ignoră,Mellőzés
+RATE_LIMITED,Rate limited. Retry in %ds...,Limit erreicht. Erneuter Versuch in %ds...,Limite atteinte. Réessai dans %ds...,Limite raggiunto. Riprova tra %ds...,Límite alcanzado. Reintentando en %ds...,请求过于频繁。%d秒后重试...,Takmörk náð. Reyni aftur eftir %ds...,Limite atingido. Tentando novamente em %ds...,Rajaa saavutettu. Yritetään uudelleen %ds...,Gräns nådd. Försöker igen om %ds...,Grænse nået. Prøver igen om %ds...,Limiet bereikt. Opnieuw proberen over %ds...,Limit osiągnięty. Ponowna próba za %ds...,Limit dosažen. Opakování za %ds...,Limită atinsă. Reîncercare în %ds...,Korlát elérve. Újrapróbálkozás %d másodperc múlva...
+RETRYING,Retrying...,Erneuter Versuch...,Nouvelle tentative...,Riprovo...,Reintentando...,正在重试...,Reyni aftur...,Tentando novamente...,Yritetään uudelleen...,Försöker igen...,Prøver igen...,Opnieuw proberen...,Ponawiam próbę...,Opakuji...,Se reîncearcă...,Újrapróbálkozás...
+OFFLINE_MODE,Offline mode,Offline-Modus,Mode hors ligne,Modalità offline,Modo sin conexión,离线模式,Ótengd stilling,Modo offline,Offline-tila,Offlineläge,Offline-tilstand,Offline modus,Tryb offline,Offline režim,Mod offline,Offline mód
+SHARED,Shared,Geteilt,Partagé,Condiviso,Compartido,已分享,Deilt,Compartilhado,Jaettu,Delat,Delt,Gedeeld,Udostępniono,Sdíleno,Distribuit,Megosztva
+ERROR,Error,Fehler,Erreur,Errore,Error,错误,Villa,Erro,Virhe,Fel,Fejl,Fout,Błąd,Chyba,Eroare,Hiba
+DEBUG_INDICATOR,[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[调试],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG],[DEBUG]
+ENTER_NAME,Enter your name:,Gib deinen Namen ein:,Entrez votre nom:,Inserisci il tuo nome:,Introduce tu nombre:,输入你的名字：,Sláðu inn nafnið þitt:,Digite seu nome:,Syötä nimesi:,Ange ditt namn:,Indtast dit navn:,Voer je naam in:,Wpisz swoje imię:,Zadejte své jméno:,Introdu numele tău:,Add meg a neved:
+YOUR_NICKNAME,Your nickname,Dein Spitzname,Votre pseudo,Il tuo nickname,Tu apodo,你的昵称,Gælunafn þitt,Seu apelido,Nimimerkkisi,Ditt smeknamn,Dit kaldenavn,Je bijnaam,Twój pseudonim,Vaše přezdívka,Porecla ta,Beceneved
+CONTINUE,Continue,Weiter,Continuer,Continua,Continuar,继续,Halda áfram,Continuar,Jatka,Fortsätt,Fortsæt,Doorgaan,Kontynuuj,Pokračovat,Continuă,Tovább
+ENTER_YOUR_NAME,Enter your name,Gib deinen Namen ein,Entrez votre nom,Inserisci il tuo nome,Introduce tu nombre,输入你的名字,Sláðu inn nafnið þitt,Digite seu nome,Syötä nimesi,Ange ditt namn,Indtast dit navn,Voer je naam in,Wpisz swoje imię,Zadejte své jméno,Introdu numele tău,Add meg a neved
+REPORT_CONTENT,Report Content,Inhalt melden,Signaler le contenu,Segnala contenuto,Reportar contenido,举报内容,Tilkynna efni,Denunciar conteúdo,Ilmoita sisältö,Rapportera innehåll,Rapporter indhold,Inhoud melden,Zgłoś treść,Nahlásit obsah,Raportează conținut,Tartalom jelentése
+REPORT_SCREENSHOT,Report this screenshot for inappropriate content?,Diesen Screenshot wegen unangemessenem Inhalt melden?,Signaler cette capture d'écran pour contenu inapproprié?,Segnalare questo screenshot per contenuto inappropriato?,¿Reportar esta captura por contenido inapropiado?,举报此截图包含不当内容？,Tilkynna þessa skjámynd fyrir óviðeigandi efni?,Denunciar esta captura por conteúdo inapropriado?,Ilmoita tämä kuvakaappaus sopimattomasta sisällöstä?,Rapportera denna skärmbild för olämpligt innehåll?,Rapporter dette screenshot for upassende indhold?,Dit screenshot melden voor ongepaste inhoud?,Zgłosić ten zrzut ekranu za nieodpowiednią treść?,Nahlásit tento snímek obrazovky za nevhodný obsah?,Raportezi această captură pentru conținut nepotrivit?,Jelenteni ezt a képernyőképet nem megfelelő tartalomért?
+REPORTED,Reported,Gemeldet,Signalé,Segnalato,Reportado,已举报,Tilkynnt,Denunciado,Ilmoitettu,Rapporterad,Rapporteret,Gemeld,Zgłoszono,Nahlášeno,Raportat,Jelentve
+SHARE,Share,Teilen,Partager,Condividi,Compartir,分享,Deila,Compartilhar,Jaa,Dela,Del,Delen,Udostępnij,Sdílet,Distribuie,Megosztás
