@@ -9,7 +9,7 @@ var _entry_scene: PackedScene = preload("res://scenes/ui/leaderboard_entry.tscn"
 @onready var main_menu: Control = $MainMenu
 @onready var game_container: Control = $GameContainer
 @onready var new_game_button: Button = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox/NewGameButton
-@onready var appstore_button: TextureButton = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox/AppStoreButton
+@onready var appstore_button: Button = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox/AppStoreButton
 @onready var entries_container: VBoxContainer = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/ScrollContainer/EntriesContainer
 @onready var scroll_container: ScrollContainer = $MainMenu/CenterContainer/MenuPanel/VBoxContainer/LeaderboardSection/ScrollContainer
 

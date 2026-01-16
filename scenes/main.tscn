@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/main_menu.gd" id="1_main"]
 [ext_resource type="PackedScene" path="res://scenes/game/game.tscn" id="2_game"]
@@ -50,6 +50,23 @@ corner_radius_bottom_left = 16
 shadow_color = Color(0.6, 0.1, 0.1, 0.4)
 shadow_size = 12
 shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_appstore"]
+bg_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_appstore_hover"]
+bg_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.25)
+shadow_size = 10
+shadow_offset = Vector2(0, 5)
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -193,9 +210,13 @@ icon = ExtResource("icon_play")
 icon_alignment = 1
 expand_icon = true
 
-[node name="AppStoreButton" type="TextureButton" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox"]
+[node name="AppStoreButton" type="Button" parent="MainMenu/CenterContainer/MenuPanel/VBoxContainer/ButtonsBox"]
 custom_minimum_size = Vector2(168, 56)
 layout_mode = 2
-texture_normal = ExtResource("icon_appstore")
-ignore_texture_size = true
-stretch_mode = 0
+theme_override_styles/normal = SubResource("StyleBoxFlat_appstore")
+theme_override_styles/hover = SubResource("StyleBoxFlat_appstore_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_appstore")
+theme_override_styles/focus = SubResource("StyleBoxFlat_appstore")
+icon = ExtResource("icon_appstore")
+icon_alignment = 1
+expand_icon = true

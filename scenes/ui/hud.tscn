@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/ui/hud.gd" id="1_hud"]
 [ext_resource type="Texture2D" path="res://assets/icons/stop.svg" id="icon_stop"]
@@ -79,6 +79,27 @@ corner_radius_top_right = 12
 corner_radius_bottom_right = 12
 corner_radius_bottom_left = 12
 shadow_color = Color(0.6, 0.1, 0.1, 0.4)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_default"]
+bg_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_right = 16.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_default_hover"]
+bg_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_right = 16.0
+shadow_color = Color(0.3, 0.3, 0.3, 0.3)
 shadow_size = 8
 shadow_offset = Vector2(0, 4)
 
@@ -482,8 +503,13 @@ size_flags_horizontal = 4
 theme_override_constants/separation = 8
 
 [node name="ShareButton" type="Button" parent="GameOverOverlay/CenterContainer/Panel/HBox/VBox/ButtonsContainer"]
-custom_minimum_size = Vector2(120, 48)
+custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
+theme_override_constants/icon_max_width = 27
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_default")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_default_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_default")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_default")
 icon = ExtResource("icon_share")
 text = "Share
 my score"
@@ -764,8 +790,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="ReportBugButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
-custom_minimum_size = Vector2(120, 48)
 layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_default")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_default_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_default")
+theme_override_styles/focus = SubResource("StyleBoxFlat_button_default")
 text = "Report Bug"
 
 [node name="CloseButton" type="Button" parent="HelpOverlay/CenterContainer/Panel/VBox/BottomRow"]
